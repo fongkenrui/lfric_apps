@@ -645,6 +645,8 @@ contains
     ! Fields owned by the convection scheme
     !========================================================================
 
+    write(*,*) 'create_physics_prognostics_mod.F90: Processing convection prognostics...'
+
     ! 2D fields, might need checkpointing
     if (convection == convection_um) then
       checkpoint_flag = .true.

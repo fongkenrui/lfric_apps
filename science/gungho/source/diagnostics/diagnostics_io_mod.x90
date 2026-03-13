@@ -73,6 +73,8 @@ subroutine write_scalar_diagnostic( field_name, field, &
 
   procedure(write_interface), pointer  :: tmp_write_ptr => null()
 
+  write(*,*) "diagnostics_io_mod.F90: Writing scalar diagnostic for field ", field_name
+
   ! Nodal output
   if ( .not. (use_xios_io) )  then
 
@@ -148,7 +150,7 @@ subroutine write_scalar_diagnostic( field_name, field, &
 
   end if
 
-
+write(*,*) "diagnostics_io_mod.F90: Finished writing scalar diagnostic for field ", field_name
 end subroutine write_scalar_diagnostic
 
 !-------------------------------------------------------------------------------
@@ -354,7 +356,6 @@ subroutine write_vector_diagnostic( field_name, field, &
     nullify(tmp_write_ptr)
 
   end if
-
 
 end subroutine write_vector_diagnostic
 

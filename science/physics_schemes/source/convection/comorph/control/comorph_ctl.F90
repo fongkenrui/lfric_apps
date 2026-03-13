@@ -192,7 +192,7 @@ integer :: i_seg, i_field
 ! 1) Initialisations
 !----------------------------------------------------------------
 
-! write(*,*) "Initialising CoMorph convection scheme..."
+write(*,*) "comorph_ctl.F90: Initialising CoMorph convection scheme..."
 
 ! Set the values of constants that depend on other constants
 ! (if not already set)
@@ -536,7 +536,7 @@ if ( l_turb_par_gen )  call turb_list_clear( turb )
 call fields_list_clear( fields_np1 )
 call fields_list_clear( fields_n )
 
-! write(*,*) "Finalized CoMorph convection scheme."
+write(*,*) "comorph_ctl.F90: Finalized CoMorph convection scheme."
 
 return
 end subroutine comorph_ctl

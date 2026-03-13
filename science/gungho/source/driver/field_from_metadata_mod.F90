@@ -92,6 +92,8 @@ contains
     character(:), allocatable           :: status
     type(function_space_type),  pointer :: vector_space => null()
 
+    write(*,*) "field_from_metadata_mod.F90: Initialising real field from metadata with xios_id = ", xios_id
+
     make_empty = .false.
     if (present(empty)) make_empty = empty
 
@@ -122,6 +124,8 @@ contains
 
     ! paranoia
     nullify(vector_space)
+
+    write(*,*) "field_from_metadata_mod.F90: Finished initialising real field from metadata with xios_id = ", xios_id
   end subroutine init_real_field_from_metadata
 
   !> @brief Initialise an integer-valued field from XIOS metadata.

@@ -1214,6 +1214,8 @@ contains
     real(kind=r_um), target, allocatable, dimension(:,:,:) :: ent_up, ent_down,&
          det_up, det_down, pres_inc_env
 
+    write(*,*) "comorph_kernel_mod.F90: Calling CoMorph kernel code"
+
     !-----------------------------------------------------------------------
     ! Mapping of LFRic fields into UM variables
     !-----------------------------------------------------------------------
@@ -3433,6 +3435,7 @@ contains
       deallocate(tot_tracer)
     end if  ! outer == outer_iterations .AND. l_tracer
 
+  write(*,*) 'comorph_kernel_mod.F90: Finished conv_comorph_code'
   end subroutine conv_comorph_code
 
 end module conv_comorph_kernel_mod

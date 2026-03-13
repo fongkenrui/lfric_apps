@@ -175,6 +175,8 @@ character(len=name_length) :: diag_name
 ! Counters
 integer :: i_diag, i_super, i_region
 
+write(*,*) "comorph_diags_type_mod.F90: In comorph_diags_assign; l_count_diags = ", l_count_diags
+
 
 if ( l_count_diags ) then
   ! Allocate the diags list to size 1 just to avoid illegal
@@ -384,6 +386,7 @@ else  ! ( l_count_diags )
 
 end if  ! ( l_count_diags )
 
+write(*,*) "comorph_diags_type_mod.F90: Exiting comorph_diags_assign."
 
 return
 end subroutine comorph_diags_assign
@@ -401,6 +404,8 @@ implicit none
 
 ! Diagnostic structure
 type(comorph_diags_type), intent(in out) :: comorph_diags
+
+write(*,*) "comorph_diags_type_mod.F90: Deallocating comorph diagnostics..."
 
 ! Deallocate condensed water species diagnostics pointer lists
 if ( n_dndraft_types > 0 ) then
@@ -425,6 +430,7 @@ if ( comorph_diags % n_diags > 0 )                                             &
   deallocate( comorph_diags % list )
 ! (was only allocated if at least one diagnostic was requested).
 
+write(*,*) "comorph_diags_type_mod.F90: Finished deallocating comorph diagnostics."
 return
 end subroutine comorph_diags_dealloc
 

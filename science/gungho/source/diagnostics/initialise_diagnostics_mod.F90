@@ -86,6 +86,8 @@ contains
 
     procedure(write_interface), pointer :: write_behaviour => null()
 
+    write(*,*) "initialise_diagnostics_mod.F90: Initialising diagnostic field with unique_id = ", unique_id
+
     ! field sampling status
     sampling_on = diagnostic_to_be_sampled(unique_id)
 
@@ -126,6 +128,9 @@ contains
       write_behaviour => write_field_generic
       call field%set_write_behaviour(write_behaviour)
     end if
+
+    write(*,*) "initialise_diagnostics_mod.F90: Finished initialising diagnostic field with unique_id = ", unique_id
+    
   end function init_diagnostic_field
 
 end module initialise_diagnostics_mod

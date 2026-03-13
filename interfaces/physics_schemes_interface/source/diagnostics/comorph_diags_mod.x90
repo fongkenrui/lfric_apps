@@ -72,6 +72,8 @@ contains
                                          massflux_up_half
 
     if ( subroutine_timers ) call timer("comorph_diags")
+    
+    write(*,*) "comorph_diags_mod.x90: Initialising diagnostics for comorph..."
 
     ! Convective diagnostics - 2d
     lowest_cv_base_flag = init_diag(lowest_cv_base, 'convection__lowest_cv_base')
@@ -106,6 +108,8 @@ contains
     massflux_up_half_flag = init_diag(massflux_up_half, 'convection__massflux_up_half')
 
     if ( subroutine_timers ) call timer("comorph_diags")
+
+    write(*,*) "Finished initialising diagnostics for comorph."
 
   end subroutine initialise_diags_for_comorph
 
@@ -186,6 +190,8 @@ contains
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
+    write(*,*) "comorph_diags_mod.x90:Outputting diagnostics for comorph..."
+
     ! Prognostic fields
     call cca%write_field('convection__cca')
     call ccw%write_field('convection__ccw')
@@ -231,6 +237,8 @@ contains
     if (massflux_up_half_flag) call massflux_up_half%write_field()
 
     if ( subroutine_timers ) call timer("comorph_diags")
+
+    write(*,*) "Finished outputting diagnostics for comorph."
 
   end subroutine output_diags_for_comorph
 end module comorph_diags_mod

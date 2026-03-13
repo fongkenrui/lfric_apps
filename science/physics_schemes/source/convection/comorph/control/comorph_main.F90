@@ -203,6 +203,7 @@ integer :: lb_p(3), ub_p(3)
 ! Loop counters
 integer :: k, i_type, i_layr
 
+write(*,*) "comorph_main.F90: Starting main CoMorph convection calculations..."
 
 !--------------------------------------------------------------
 ! 1) Calculate initiation mass sources from each model-level
@@ -563,6 +564,7 @@ end do
 deallocate( dndraft_par_gen )
 deallocate( updraft_par_gen )
 
+write(*,*) "comorph_main.F90: Finished main CoMorph convection calculations."
 
 return
 end subroutine comorph_main
