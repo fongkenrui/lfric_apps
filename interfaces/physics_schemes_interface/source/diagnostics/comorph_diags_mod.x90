@@ -145,7 +145,8 @@ contains
                                     entrain_down,           &
                                     detrain_up,             &
                                     detrain_down,           &
-                                    massflux_up_half)
+                                    massflux_up_half,       &
+                                    test_diag)
 
     implicit none
 
