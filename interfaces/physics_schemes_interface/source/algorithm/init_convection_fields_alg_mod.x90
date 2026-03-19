@@ -84,7 +84,7 @@ contains
     call convection_fields%get_field('massflux_up', massflux_up)
     call convection_fields%get_field('massflux_down', massflux_down)
     write(*,*) "init_convection_fields_alg_mod.X90: Finished getting convection fields from collection"
-    call convection_field%get_field('test_diag', test_diag)
+    call convection_fields%get_field('test_diag', test_diag)
 
     ! Initialise increment fields to zero for use when the scheme is off
     write(*,*) "init_convection_fields_alg_mod.X90: Initialising convection fields to zero"

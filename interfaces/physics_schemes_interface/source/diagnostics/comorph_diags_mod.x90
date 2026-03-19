@@ -30,7 +30,7 @@ module comorph_diags_mod
                       entrain_down_flag,           &
                       detrain_up_flag,             &
                       detrain_down_flag,           &
-                      massflux_up_half_flag        &
+                      massflux_up_half_flag
 
   public :: initialise_diags_for_comorph
   public :: output_diags_for_comorph
@@ -69,6 +69,7 @@ contains
                                          entrain_down,            &
                                          detrain_up,              &
                                          detrain_down,            &
+                                         massflux_up_half
 
     if ( subroutine_timers ) call timer("comorph_diags")
     
@@ -187,6 +188,9 @@ contains
                                        detrain_up,             &
                                        detrain_down,           &
                                        massflux_up_half
+
+    ! test field to output
+    type( field_type ), intent(in)  :: test_diag
 
     if ( subroutine_timers ) call timer("comorph_diags")
 

@@ -128,6 +128,8 @@ contains
     type( field_type ), pointer :: massflux_down
     type( field_type ), pointer :: cape_diluted
     type( field_type ), pointer :: pressure_inc_env
+    ! test diag
+    type( field_type ), pointer :: test_diag
 
     type( field_type ), pointer :: cf_fro
     type( field_type ), pointer :: cf_liq
@@ -330,6 +332,8 @@ contains
     call convection_fields%get_field('cv_base', cv_base)
     call convection_fields%get_field('cv_top', cv_top)
     call convection_fields%get_field('pressure_inc_env', pressure_inc_env)
+    ! Unpack test field 
+    call convection_fields%get_field('test_diag', test_diag)
 
     ! Unpack cloud fields
     call cloud_fields%get_field('frozen_fraction', cf_fro)
