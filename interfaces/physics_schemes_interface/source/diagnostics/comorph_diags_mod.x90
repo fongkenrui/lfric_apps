@@ -216,6 +216,9 @@ contains
     call conv_snow_3d%write_field('convection__conv_snow_3d')
     call cca_2d%write_field('convection__cca_2d')
 
+    ! Test field
+    call test_diag%write_field('convection__test_diag')
+
     ! Diagnostics computed within the kernel
     ! 2D
     if (lowest_cv_base_flag) call lowest_cv_base%write_field()
