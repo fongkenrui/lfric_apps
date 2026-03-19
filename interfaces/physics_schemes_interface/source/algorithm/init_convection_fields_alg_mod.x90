@@ -58,6 +58,7 @@ contains
     type( field_type ), pointer :: conv_prog_precip => null()
     type( field_type ), pointer :: massflux_up
     type( field_type ), pointer :: massflux_down
+    type( field_type ), pointer :: test_diag => null()
 
     call convection_fields%get_field('dt_conv', dt_conv)
     call convection_fields%get_field('dmv_conv', dmv_conv)
@@ -82,8 +83,11 @@ contains
     call convection_fields%get_field('conv_prog_precip', conv_prog_precip)
     call convection_fields%get_field('massflux_up', massflux_up)
     call convection_fields%get_field('massflux_down', massflux_down)
+    write(*,*) "init_convection_fields_alg_mod.X90: Finished getting convection fields from collection"
+    call convection_field%get_field('test_diag', test_diag)
 
     ! Initialise increment fields to zero for use when the scheme is off
+    write(*,*) "init_convection_fields_alg_mod.X90: Initialising convection fields to zero"
     call invoke( setval_c(dt_conv,      0.0_r_def), &
                  setval_c(dmv_conv,     0.0_r_def), &
                  setval_c(dmcl_conv,    0.0_r_def), &
@@ -103,7 +107,8 @@ contains
                  setval_c(ccw,          0.0_r_def), &
                  setval_c(cca,          0.0_r_def), &
                  setval_c(massflux_up,  0.0_r_def), &
-                 setval_c(massflux_down, 0.0_r_def))
+                 setval_c(massflux_down, 0.0_r_def), &
+                 setval_c(test_diag,    0.0_r_def))
 
     if (l_conv_prog_dtheta) call invoke(setval_c(conv_prog_dtheta, 0.0_r_def))
     if (l_conv_prog_dq) call invoke(setval_c(conv_prog_dmv, 0.0_r_def))

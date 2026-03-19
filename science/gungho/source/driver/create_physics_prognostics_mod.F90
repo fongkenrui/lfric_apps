@@ -715,6 +715,9 @@ contains
     call processor%apply(make_spec('conv_snow_3d', main%convection, Wtheta))
     call processor%apply(make_spec('pressure_inc_env', main%convection, &
                          Wtheta, empty=(.not. l_pc2_homog_conv_pressure) ))
+    ! Test field 
+    write(*,*) "create_physics_prognostics_mod.F90: Adding test_diag field for convection scheme"
+    call processor%apply(make_spec('test_diag', main%convection, Wtheta))
 
     ! 3D fields on W3 (rho) levels
     call processor%apply(make_spec('du_conv', main%convection, W3))
