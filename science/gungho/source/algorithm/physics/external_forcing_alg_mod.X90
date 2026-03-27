@@ -24,6 +24,7 @@ module external_forcing_alg_mod
                                              wind_forcing_filtering,             &
                                              wind_forcing_diffusion,             &
                                              wind_forcing_profile,               &
+                                             wind_relaxation,
                                              vertadvect_forcing,                 &
                                              geostrophic_forcing,                &
                                              filtering_order,                    &
@@ -362,6 +363,13 @@ contains
 
       nullify( w2_rmultiplicity, u_physics, dA )
 
+    end if
+
+    if ( wind_relaxation ) then
+      nlayers = mesh%get_nlayers()
+      call wind_relax_alg( du_forcing, u, &
+                            twod_mesh, time_now, nlayers )
+      theta_forcing_done = .true.
     end if
 
     if ( geostrophic_forcing ) then
