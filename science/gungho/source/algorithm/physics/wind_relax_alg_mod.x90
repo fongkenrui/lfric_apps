@@ -82,9 +82,9 @@ contains
   ! integer( kind=i_def )       :: k, mesh_id
   ! logical( kind=l_def )       :: profile_extrap
 
-  type( field_type ),         :: u_in_w3 
-  type( field_type ),         :: v_in_w3 
-  type( field_type ),         :: w_in_w3 
+  type( field_type )          :: u_in_w3 
+  type( field_type )          :: v_in_w3 
+  type( field_type )          :: w_in_w3 
 
   type( field_type )          :: du_relaxation_forcing
   type( field_type )          :: du_relax
