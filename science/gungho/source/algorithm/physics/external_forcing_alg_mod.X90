@@ -24,7 +24,7 @@ module external_forcing_alg_mod
                                              wind_forcing_filtering,             &
                                              wind_forcing_diffusion,             &
                                              wind_forcing_profile,               &
-                                             wind_relaxation,
+                                             wind_relaxation,                    &
                                              vertadvect_forcing,                 &
                                              geostrophic_forcing,                &
                                              filtering_order,                    &
