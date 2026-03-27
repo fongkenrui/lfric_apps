@@ -366,10 +366,16 @@ contains
     end if
 
     if ( wind_relaxation ) then
+      
+      if ( .not.wind_forcing_done) then
+        call du_forcing%initialise( vector_space = u%get_function_space() )
+        call invoke(setval_c(du_forcing, 0.0_r_def))
+      end if
+
       nlayers = mesh%get_nlayers()
       call wind_relax_alg( du_forcing, u, &
                             twod_mesh, time_now, nlayers )
-      theta_forcing_done = .true.
+      wind_forcing_done = .true.
     end if
 
     if ( geostrophic_forcing ) then
