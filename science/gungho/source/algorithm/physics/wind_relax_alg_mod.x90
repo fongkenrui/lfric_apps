@@ -81,9 +81,10 @@ contains
   integer( kind=i_def )       :: k, mesh_id
   logical( kind=l_def )       :: profile_extrap
 
-  type( field_type )          :: u_in_w3 
-  type( field_type )          :: v_in_w3 
-  type( field_type )          :: w_in_w3 
+  ! Horizontal winds may need to be assigned as relaxation targets
+  type( field_type ), target  :: u_in_w3 
+  type( field_type ), target  :: v_in_w3 
+  type( field_type ),         :: w_in_w3 
 
   type( field_type )          :: du_relaxation_forcing
   type( field_type )          :: du_relax
@@ -107,7 +108,6 @@ contains
 
   relaxation_coeff = dt_rdef / timescale
   
-  ! Cartesian-Biperiodic mesh
   mesh => du_forcing%get_mesh()
 
   call du_relaxation_forcing%initialise( vector_space = u%get_function_space() )
