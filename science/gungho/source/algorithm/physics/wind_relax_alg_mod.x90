@@ -86,7 +86,9 @@ contains
   type( field_type ), target  :: v_in_w3 
   type( field_type ),         :: w_in_w3 
 
+  ! w2 field for relaxation increments
   type( field_type )          :: du_relaxation_forcing
+  ! Physics fields for relaxation components
   type( field_type )          :: du_relax
   type( field_type )          :: dv_relax
   type( field_type )          :: dw_relax
