@@ -48,7 +48,7 @@ contains
   !> @param[in]     twod_mesh Information  about the horizontal mesh
   !> @param[in]     time_now Current model time in seconds
   !> @param[in]     nlayers Number of layers in the grid
-  subroutine wind_relax_alg( du_forcing, u,                &
+  subroutine wind_relax_alg( du_forcing, u, exner_in_wth,    &
                               twod_mesh, time_now, nlayers )
 
   use wind_relax_config_mod, only:  number_times,                        &
@@ -69,6 +69,7 @@ contains
   type( field_type ), intent(inout)       :: du_forcing
   type( field_type ), intent(in), target  :: u
   type( mesh_type ),  intent(in), pointer :: twod_mesh
+  type( field_type ), intent(in), target  :: exner_in_wth
 
   real( kind=r_def ),    intent(in) :: time_now
   integer( kind=i_def ), intent(in) :: nlayers
