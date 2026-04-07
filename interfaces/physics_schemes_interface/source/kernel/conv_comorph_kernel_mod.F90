@@ -2324,6 +2324,7 @@ contains
                                 % request % x_y_z = .true.
         comorph_diags % dndraft % gen % massflux_d                             &
                                 % field_3d => gen_down_flux_half
+      end if
     end if
     if (l_pc2_homog_conv_pressure) then
       allocate(pres_inc_env(row_length,rows,nlayers))
