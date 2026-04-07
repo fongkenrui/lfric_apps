@@ -229,6 +229,8 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! detrain_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! detrain_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3)                        &! massflux_up_half
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_up
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_down
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -435,6 +437,8 @@ contains
   !> @param[in,out] detrain_up           Convective upwards detrainment
   !> @param[in,out] detrain_down         Convective downwards detrainment
   !> @param[in,out] massflux_up_half     Convective upwards mass flux on half-levels (Pa/s)
+  !> @param[in,out] gen_massflux_up      Convective upwards mass flux from parcel genesis on half-levels (Pa/s)
+  !> @param[in,out] gen_massflux_down    Convective downwards mass flux from parcel genesis on half-levels (Pa/s)
   !> @param[in]     ndf_w3               Number of DOFs per cell for density space
   !> @param[in]     undf_w3              Number of unique DOFs  for density space
   !> @param[in]     map_w3               Dofmap for the cell at the base of the column for density space
@@ -646,6 +650,8 @@ contains
                           detrain_up,                        &
                           detrain_down,                      &
                           massflux_up_half,                  &
+                          gen_massflux_up,                   &
+                          gen_massflux_down,                 &
                           ndf_w3,                            &
                           undf_w3,                           &
                           map_w3,                            &
@@ -1007,7 +1013,9 @@ contains
                                                 entrain_down(:),     &
                                                 detrain_up(:),       &
                                                 detrain_down(:),     &
-                                                massflux_up_half(:)
+                                                massflux_up_half(:), &
+                                                gen_massflux_up(:),  &
+                                                gen_massflux_down(:)
 
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcfl_conv
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcff_conv
@@ -1211,6 +1219,8 @@ contains
     real(kind=r_um), target :: cape_dil(row_length, rows)
     real(kind=r_um), target :: up_flux_half(row_length, rows, nlayers)
     real(kind=r_um), target :: down_flux_half(row_length, rows, nlayers)
+    real(kind=r_um), target :: gen_up_flux_half(row_length, rows, nlayers)
+    real(kind=r_um), target :: gen_down_flux_half(row_length, rows, nlayers)
     real(kind=r_um), target, allocatable, dimension(:,:,:) :: ent_up, ent_down,&
          det_up, det_down, pres_inc_env
 
@@ -2301,6 +2311,19 @@ contains
         comorph_diags % dndraft % plume_model % det_mass_d                     &
                                 % field_3d => det_down
       end if
+      if (.not. associated(gen_massflux_up, empty_real_data) ) then
+        allocate(gen_up_flux_half(row_length,rows,nlayers))
+        comorph_diags % updraft % gen % massflux_d                 &
+                                % request % x_y_z = .true.
+        comorph_diags % updraft % gen % massflux_d                 &
+                                % field_3d => gen_up_flux_half
+      end if
+      if (.not. associated(gen_massflux_down, empty_real_data) ) then
+        allocate(gen_down_flux_half(row_length,rows,nlayers))
+        comorph_diags % dndraft % gen % massflux_d                 &
+                                % request % x_y_z = .true.
+        comorph_diags % dndraft % gen % massflux_d                 &
+                                % field_3d => gen_down_flux_half
     end if
     if (l_pc2_homog_conv_pressure) then
       allocate(pres_inc_env(row_length,rows,nlayers))
@@ -2593,6 +2616,26 @@ contains
           end do
         end do
         deallocate(det_down)
+      end if
+      if (.not.associated(gen_massflux_up, empty_real_data) ) then 
+        do k = 1, n_conv_levels
+          do i = 1, row_length
+            ! Convert to Pa s-1
+            gen_massflux_up(map_w3(1,i) + k) = gen_up_flux_half(i,1,k) * g
+            ! Don't mask below cloud-base mass flux genesis
+          end do
+        end do
+        deallocate(gen_up_flux_half)
+      end if
+      if (.not.associated(gen_massflux_down, empty_real_data) ) then 
+        do k = 1, n_conv_levels
+          do i = 1, row_length
+            ! Convert to Pa s-1
+            gen_massflux_down(map_w3(1,i) + k) = gen_down_flux_half(i,1,k) * g
+            ! Don't mask below cloud-base mass flux genesis
+          end do
+        end do
+        deallocate(gen_down_flux_half)
       end if
     end if ! outer_iterations
 
