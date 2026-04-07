@@ -785,7 +785,7 @@ contains
                                          glomap_mode_ukca
 
     use log_mod, only : log_event, log_scratch_space, LOG_LEVEL_ERROR
-!$  use omp_lib, only : omp_get_max_threads
+    !$  use omp_lib, only : omp_get_max_threads
 
     !---------------------------------------
     ! UM modules containing switches or global constants
@@ -1299,7 +1299,7 @@ contains
     ! If not using OMP, just run with a single segment for all columns.
     segments = 1          ! i.e. one column or whole mpi rank
     ! Under OMP sentinel, set number of segments equal to number of threads
-!$  segments = omp_get_max_threads()
+    !$  segments = omp_get_max_threads()
 
     ! Set number of layers used by convection scheme
     n_conv_levels = nlayers - 1
@@ -2313,16 +2313,16 @@ contains
       end if
       if (.not. associated(gen_massflux_up, empty_real_data) ) then
         allocate(gen_up_flux_half(row_length,rows,nlayers))
-        comorph_diags % updraft % gen % massflux_d                 &
+        comorph_diags % updraft % gen % massflux_d                             &
                                 % request % x_y_z = .true.
-        comorph_diags % updraft % gen % massflux_d                 &
+        comorph_diags % updraft % gen % massflux_d                             &
                                 % field_3d => gen_up_flux_half
       end if
       if (.not. associated(gen_massflux_down, empty_real_data) ) then
         allocate(gen_down_flux_half(row_length,rows,nlayers))
-        comorph_diags % dndraft % gen % massflux_d                 &
+        comorph_diags % dndraft % gen % massflux_d                             &
                                 % request % x_y_z = .true.
-        comorph_diags % dndraft % gen % massflux_d                 &
+        comorph_diags % dndraft % gen % massflux_d                             &
                                 % field_3d => gen_down_flux_half
     end if
     if (l_pc2_homog_conv_pressure) then
@@ -2617,7 +2617,7 @@ contains
         end do
         deallocate(det_down)
       end if
-      if (.not.associated(gen_massflux_up, empty_real_data) ) then 
+      if (.not. associated(gen_massflux_up, empty_real_data) ) then 
         do k = 1, n_conv_levels
           do i = 1, row_length
             ! Convert to Pa s-1
@@ -2627,7 +2627,7 @@ contains
         end do
         deallocate(gen_up_flux_half)
       end if
-      if (.not.associated(gen_massflux_down, empty_real_data) ) then 
+      if (.not. associated(gen_massflux_down, empty_real_data) ) then 
         do k = 1, n_conv_levels
           do i = 1, row_length
             ! Convert to Pa s-1
