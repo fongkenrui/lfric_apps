@@ -360,6 +360,8 @@
   <field id="convection__massflux_up_half" name="massflux_up_half" long_name="conv_upward_massflux_half_levs" unit="Pa s-1" grid_ref="half_level_face_grid" />
   <field id="convection__massflux_up_cmpta" name="massflux_up_cmpta" long_name="conv_upward_mfx_component_a" unit="Pa s-1" grid_ref="half_level_face_grid" />
   <field id="convection__massflux_down" name="massflux_down" long_name="convection_downward_massflux" unit="Pa s-1" grid_ref="full_level_face_grid" />
+  <field id="convection__gen_massflux_up" name="gen_massflux_up" long_name="convection_upward_massflux_genesis" unit="Pa s-1" grid_ref="half_level_face_grid" />
+  <field id="convection__gen_massflux_down" name="gen_massflux_down" long_name="convection_downward_massflux_genesis" unit="Pa s-1" grid_ref="half_level_face_grid" />
   <field id="convection__entrain_up" name="entrain_up" long_name="convection_upward_entrain" unit="1" grid_ref="full_level_face_grid" />
   <field id="convection__entrain_down" name="entrain_down" long_name="convection_downward_entrain" unit="1" grid_ref="full_level_face_grid" />
   <field id="convection__detrain_up" name="detrain_up" long_name="convection_upward_detrain" unit="1" grid_ref="full_level_face_grid" />

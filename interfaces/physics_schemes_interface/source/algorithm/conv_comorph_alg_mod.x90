@@ -263,6 +263,7 @@ contains
     type( field_type ) :: pres_cv_base,pres_cv_top
     type( field_type ) :: pres_lowest_cv_base,pres_lowest_cv_top, lowest_cca_2d
     type( field_type ) :: massflux_up_half
+    type( field_type ) :: gen_massflux_up, gen_massflux_down
 
     type( mesh_type ), pointer  :: mesh
     integer(i_def) :: ncells
@@ -475,7 +476,9 @@ contains
                                       entrain_down,         &
                                       detrain_up,           &
                                       detrain_down,         &
-                                      massflux_up_half)
+                                      massflux_up_half,     &
+                                      gen_massflux_up,      &
+                                      gen_massflux_down)
 
     ! call the scheme
     ncells = mesh%get_last_edge_cell()
@@ -625,7 +628,9 @@ contains
                           entrain_down,                                       &
                           detrain_up,                                         &
                           detrain_down,                                       &
-                          massflux_up_half)                                   &
+                          massflux_up_half,                                   &
+                          gen_massflux_up,                                    &
+                          gen_massflux_down)                                  &
                                            ) ! end of invoke
 
     call um_sizes_init(1_i_def)
@@ -667,7 +672,9 @@ contains
                                   entrain_down,          &
                                   detrain_up,            &
                                   detrain_down,          &
-                                  massflux_up_half)
+                                  massflux_up_half,      &
+                                  gen_massflux_up,       &
+                                  gen_massflux_down)
 
     end if
 
