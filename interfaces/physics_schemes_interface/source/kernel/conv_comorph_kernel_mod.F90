@@ -2312,14 +2312,12 @@ contains
                                 % field_3d => det_down
       end if
       if (.not. associated(gen_massflux_up, empty_real_data) ) then
-        allocate(gen_up_flux_half(row_length,rows,nlayers))
         comorph_diags % updraft % gen % massflux_d                             &
                                 % request % x_y_z = .true.
         comorph_diags % updraft % gen % massflux_d                             &
                                 % field_3d => gen_up_flux_half
       end if
       if (.not. associated(gen_massflux_down, empty_real_data) ) then
-        allocate(gen_down_flux_half(row_length,rows,nlayers))
         comorph_diags % dndraft % gen % massflux_d                             &
                                 % request % x_y_z = .true.
         comorph_diags % dndraft % gen % massflux_d                             &
