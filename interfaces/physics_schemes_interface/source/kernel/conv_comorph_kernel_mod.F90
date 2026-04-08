@@ -2624,7 +2624,6 @@ contains
             ! Don't mask below cloud-base mass flux genesis
           end do
         end do
-        deallocate(gen_up_flux_half)
       end if
       if (.not. associated(gen_massflux_down, empty_real_data) ) then 
         do k = 1, n_conv_levels
@@ -2634,7 +2633,6 @@ contains
             ! Don't mask below cloud-base mass flux genesis
           end do
         end do
-        deallocate(gen_down_flux_half)
       end if
     end if ! outer_iterations
 
