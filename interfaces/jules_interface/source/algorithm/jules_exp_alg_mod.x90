@@ -27,10 +27,14 @@ module jules_exp_alg_mod
   use log_mod,              only: log_event, LOG_LEVEL_DEBUG
   use mesh_mod,             only: mesh_type
 
-  use blayer_config_mod,    only: flux_bc_opt,                    &
-                                  flux_bc_opt_specified_tstar,    &
-                                  flux_bc_opt_specified_scalars,  &
-                                  flux_bc_opt_specified_scalars_tstar
+  use blayer_config_mod,    only: flux_bc_opt,                         &
+                                  flux_bc_opt_specified_tstar,         &
+                                  flux_bc_opt_specified_scalars,       &
+                                  flux_bc_opt_specified_scalars_tstar, &
+                                  homogenise_fluxes
+
+  use horiz_mean_alg_mod,   only: horiz_mean_alg
+  use extrusion_mod,        only: TWOD
 
   ! xios output
   use io_config_mod,        only: write_diag, use_xios_io
@@ -219,7 +223,13 @@ contains
     real(r_def)          :: flux_h, flux_e
 
     ! local variables
-    type(mesh_type),           pointer :: mesh
+    ! Homogenised fluxes
+    type( field_type ), target :: homog_moist_flux_bl
+    type( field_type ), target :: homog_heat_flux_bl
+
+    integer( kind=i_def ) :: nlayers
+    type(mesh_type), pointer :: mesh
+    type(mesh_type), pointer :: twod_mesh
     type( field_type ) :: gross_prim_prod,  &
                           z0h_eff, soil_respiration
     type( field_type ) :: mr_ice
@@ -454,6 +464,26 @@ contains
 
     ! Switch UM back to columns
     call um_sizes_init(1_i_def)
+
+    ! Since flux_e and flux_h are only dummy arguments to the kernel, and the
+    ! surface-flux is directly used to compute boundary-layer fluxes within the
+    ! JULES kernel column-wise, the only way to homogenize fluxes domain-wide
+    ! is to homogenize them here applied to the boundary-layer flux fields.
+
+    if ( homogenise_fluxes ) then 
+      ! Variables needed for horiz_mean_alg
+      nlayers = mesh%get_nlayers()
+      twod_mesh => mesh_collection%get_mesh(mesh, TWOD)
+      ! Initialise homogenised flux fields
+      call homog_heat_flux_bl%initialise( vector_space = heat_flux_bl%get_function_space() )
+      call homog_moist_flux_bl%initialise( vector_space = moist_flux_bl%get_function_space() )
+      ! Compute the horizontal-mean heat flux and moisture flux in BL
+      call horiz_mean_alg( homog_heat_flux_bl, nlayers, twod_mesh, heat_flux_bl )
+      call horiz_mean_alg( homog_moist_flux_bl, nlayers, twod_mesh, moist_flux_bl )
+      ! Replace the original fluxes with the homogenised fluxes
+      call invoke(setval_X(heat_flux_bl, homog_heat_flux_bl))
+      call invoke(setval_X(moist_flux_bl, homog_moist_flux_bl))
+    end if
 
     if ( subroutine_timers ) call timer('jules_exp_alg')
 
