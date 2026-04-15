@@ -498,7 +498,7 @@ contains
       ! Extract the bottom-most layer
       call invoke( extract_2d_field_kernel_type( moist_flux_bl_bot, moist_flux_bl, 0_i_def ) )
       ! If homogenised, should have same min/max values
-      call log_field_minmax( LOG_LEVEL_INFO, 'moist_flux_bl', moist_flux_bl )
+      call log_field_minmax( LOG_LEVEL_INFO, 'moist_flux_bl_bot', moist_flux_bl_bot )
 
     end if
 
