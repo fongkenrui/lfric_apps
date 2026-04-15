@@ -230,6 +230,8 @@ contains
     ! Homogenised fluxes
     type( field_type ), target :: homog_moist_flux_bl
     type( field_type ), target :: homog_heat_flux_bl
+    ! Bottom-most flux layer for logging/debugging
+    type( field_type ), target :: moist_flux_bl_bot
 
     integer( kind=i_def ) :: nlayers
     type(mesh_type), pointer :: mesh
@@ -490,7 +492,10 @@ contains
       call invoke(setval_X(moist_flux_bl, homog_moist_flux_bl))
 
       ! Debug output
-      call log_field_minmax( LOG_LEVEL_INFO, 'homog_moist_flux_bl', homog_moist_flux_bl )
+      call moist_flux_bl_bot%initialise( vector_space = function_space_collection%get_fs( twod_mesh, 0, 0, W3 ) )
+      ! Extract the bottom-most layer
+      call invoke( extract_2d_field_kernel_type( bottom_moist_flux_bl, moist_flux_bl, 0_i_def ) )
+      ! If homogenised, should have same min/max values
       call log_field_minmax( LOG_LEVEL_INFO, 'moist_flux_bl', moist_flux_bl )
 
     end if
