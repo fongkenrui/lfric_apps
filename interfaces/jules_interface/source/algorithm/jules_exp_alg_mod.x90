@@ -28,6 +28,8 @@ module jules_exp_alg_mod
                                   LOG_LEVEL_DEBUG, LOG_LEVEL_INFO
   use sci_field_minmax_alg_mod, &
                             only : log_field_minmax
+  use extract_2d_field_kernel_mod, &
+                            only: extract_2d_field_kernel_type
   use mesh_mod,             only: mesh_type
 
   use blayer_config_mod,    only: flux_bc_opt,                         &
