@@ -496,7 +496,7 @@ contains
       ! Debug output
       call moist_flux_bl_bot%initialise( vector_space = function_space_collection%get_fs( twod_mesh, 0, 0, W3 ) )
       ! Extract the bottom-most layer
-      call invoke( extract_2d_field_kernel_type( bottom_moist_flux_bl, moist_flux_bl, 0_i_def ) )
+      call invoke( extract_2d_field_kernel_type( moist_flux_bl_bot, moist_flux_bl, 0_i_def ) )
       ! If homogenised, should have same min/max values
       call log_field_minmax( LOG_LEVEL_INFO, 'moist_flux_bl', moist_flux_bl )
 
