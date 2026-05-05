@@ -209,7 +209,7 @@ contains
   ! explicitly loop over model levels.
   allocate( sample_exp_profile(sample_n_points) )
   allocate( sample_heights(sample_n_points) )
-  sample_heights = [(i, i=1,sample_n_points)] * (real(newton_dl_top - newton_dl_base, kind=r_def) 
+  sample_heights = [(i, i=0,sample_n_points-1)] * (real(newton_dl_top - newton_dl_base, kind=r_def) 
                     / real(sample_n_points-1, kind=r_def) + real(newton_dl_base, kind=r_def))
   sample_exp_profile = (exp( (sample_heights - real(newton_dl_base, kind=r_def)) 
                     / real(newton_dl_scale_height, kind=r_def) ) - 1)
