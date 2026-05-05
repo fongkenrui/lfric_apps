@@ -374,7 +374,7 @@ contains
       end if
 
       nlayers = mesh%get_nlayers()
-      call wind_relax_alg( du_forcing, u, exner_in_wth,    &
+      call wind_relax_alg( du_forcing, u, exner,    &
                             twod_mesh, time_now, nlayers )
       wind_forcing_done = .true.
     end if

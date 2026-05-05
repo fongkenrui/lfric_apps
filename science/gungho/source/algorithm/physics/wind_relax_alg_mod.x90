@@ -44,11 +44,11 @@ contains
   !> @brief Algorithm to calculate Newtonian relaxation of horizontal wind
   !> @param[in,out] du_forcing Relaxation increment
   !> @param[in]     u Horizontal wind field
-  !> @param[in]     exner_in_wth Exner mapped to Wtheta space
+  !> @param[in]     exner pressure in original W3 space
   !> @param[in]     twod_mesh Information  about the horizontal mesh
   !> @param[in]     time_now Current model time in seconds
   !> @param[in]     nlayers Number of layers in the grid
-  subroutine wind_relax_alg( du_forcing, u, exner_in_wth,    &
+  subroutine wind_relax_alg( du_forcing, u, exner,    &
                               twod_mesh, time_now, nlayers )
 
   use wind_relax_config_mod, only:  number_times,                        &
@@ -68,7 +68,7 @@ contains
   type( field_type ), intent(inout)       :: du_forcing
   type( field_type ), intent(in), target  :: u
   type( mesh_type ),  intent(in), pointer :: twod_mesh
-  type( field_type ), intent(in), target  :: exner_in_wth
+  type( field_type ), intent(in), target  :: exner
 
   real( kind=r_def ),    intent(in) :: time_now
   integer( kind=i_def ), intent(in) :: nlayers
@@ -95,7 +95,7 @@ contains
   type( field_type ), target  :: u_horiz_mean
   type( field_type ), target  :: v_horiz_mean
 
-  type( field_type ), pointer :: height_wth => null()
+  type( field_type ), pointer :: height_w3 => null()
   type( field_type ), pointer :: u_relax_target => null()
   type( field_type ), pointer :: v_relax_target => null()
   type( mesh_type ),  pointer :: mesh
@@ -200,20 +200,20 @@ contains
     if ( coordinate == coordinate_pressure ) then
       ! If the target profile is specified with pressure as the vertical
       ! coordinate then use Exner as the interpolation coordinate. This
-      ! avoids having to create the p_in_wth field for use as vertical
+      ! avoids having to create the pressure field for use as vertical
       ! coordinate of the model data.
       do k = 1, number_heights
         profile_heights(k) = (profile_heights(k) / p_zero) ** kappa
       end do
-      height_wth => exner_in_wth
+      height_w3 => exner
     else
       mesh_id = du_relax%get_mesh_id()
-      height_wth => get_height_fv( Wtheta, mesh_id )
+      height_w3 => get_height_fv( W3, mesh_id )
     end if
     profile_extrap = .false.
     call invoke( setval_X( du_relax, u_relax_target),                  &
                  ! Write interpolated profile to du_relax
-                 profile_interp_kernel_type( du_relax, height_wth, &
+                 profile_interp_kernel_type( du_relax, height_w3, &
                                              profile_extrap ),         &
                  ! Find the difference; this is zero for levels outside of profile range
                  inc_X_minus_Y( du_relax, u_relax_target ),            &
@@ -224,7 +224,7 @@ contains
     ! Not sure if profile_extrap is changed; just to be safe
     profile_extrap = .false.
     call invoke( setval_X( dv_relax, v_relax_target),                  &
-                 profile_interp_kernel_type( dv_relax, height_wth, &
+                 profile_interp_kernel_type( dv_relax, height_w3, &
                                              profile_extrap ),         &
                  inc_X_minus_Y( dv_relax, v_relax_target ),            &
                  inc_a_times_X( relaxation_coeff, dv_relax ) )
