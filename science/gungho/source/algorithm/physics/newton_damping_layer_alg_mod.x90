@@ -20,10 +20,12 @@ module newton_damping_layer_alg_mod
 
   use constants_mod,                 only: i_def, r_def, l_def
   use field_mod,                     only: field_type
-  use fs_continuity_mod,             only: Wtheta, W3
+  use fs_continuity_mod,             only: Wtheta, W3, W2H
   use function_space_collection_mod, only: function_space_collection
   use sci_geometric_constants_mod,   only: get_height_fv
   use mesh_mod,                      only: mesh_type
+  use physics_mappings_alg_mod,      only: map_physics_winds, split_wind_alg
+  use map_fd_to_prognostics_alg_mod, only: set_wind
   use planet_config_mod,             only: kappa, p_zero
   use timestepping_config_mod,       only: dt
   !> @todo Data passed to the kernel via module 'use' statements.
@@ -48,23 +50,23 @@ contains
   !> @param[in]     exner_in_wth Exner mapped to Wtheta space
   !> @param[in]     twod_mesh Information  about the horizontal mesh
   !> @param[in]     time_now Current model time in seconds
-  !> @param[in]     nlayers Number of layers in the grid
-  subroutine theta_relax_alg( dtheta_forcing, du_forcing, theta, u, exner_in_wth,   &
-                              twod_mesh, time_now, nlayers )
+  subroutine newton_damping_layer_alg( dtheta_forcing, du_forcing, theta, u, &
+                              exner, exner_in_wth,   &
+                              twod_mesh, time_now )
   
   !TODO: Edit the rose-meta config definition
   use newton_damping_layer_config_mod, only: number_times,                     &
                                     number_heights,                            &
                                     times,                                     &
                                     heights,                                   &
-                                    coordinate,                                &
-                                    coordinate_pressure,                       &
                                     theta_relax_data => theta_profile_data,    &
                                     u_relax_data => u_profile_data,            &
                                     v_relax_data => v_profile_data,            &
                                     w_relax_data => w_profile_data,            &
                                     newton_dl_base,                            &
+                                    newton_dl_top,                             &
                                     newton_dl_scale_height,                    &
+                                    sample_n_points,                           &
                                     timescale
 
   implicit none
@@ -77,10 +79,10 @@ contains
   type( field_type ), intent(in), target  :: theta
   type( field_type ), intent(in), target  :: u
   type( field_type ), intent(in), target  :: exner_in_wth
+  type( field_type ), intent(in), target  :: exner
   type( mesh_type ),  intent(in), pointer :: twod_mesh
 
   real( kind=r_def ),    intent(in) :: time_now
-  integer( kind=i_def ), intent(in) :: nlayers
 
   real( kind=r_def )          :: dt_rdef
 
@@ -94,21 +96,33 @@ contains
   type( field_type ), target  :: u_in_w3 
   type( field_type ), target  :: v_in_w3 
   type( field_type ), target  :: w_in_w3 
+  type( field_type ), target  :: u_in_w2h 
+  type( field_type ), target  :: v_in_w2h
+  type( field_type ), target  :: w_in_wth
 
   real( kind=r_def )          :: relaxation_coeff
   integer( kind=i_def )       :: k, mesh_id
   logical( kind=l_def )       :: profile_extrap
+
+  ! Temporary arrays for calculating exponential profile
+  real( kind=r_def ), allocatable   :: sample_exp_profile(:)
+  real( kind=r_def ), allocatable   :: sample_heights(:)
+
+  ! Exponential scaling profiles interpolated onto W3 and Wtheta levels
+  type( field_type )          :: relaxation_coeff_w3
+  type( field_type )          :: relaxation_coeff_wth
   
   ! Relaxation increments
   type( field_type )          :: dtheta_relax
   ! w2 field for relaxation increments
   type( field_type )          :: du_relaxation_forcing
   ! Physics fields for relaxation components
-  type( field_type )          :: du_relax
-  type( field_type )          :: dv_relax
-  type( field_type )          :: dw_relax
+  type( field_type )          :: du_relax ! W3
+  type( field_type )          :: dv_relax ! W3
+  type( field_type )          :: dw_relax ! Wtheta
 
   type( field_type ), pointer :: height_wth => null()
+  type( field_type ), pointer :: height_w3 => null()
   type( mesh_type ),  pointer :: u_mesh
 
   ! Only apply relaxation between the specified times, unless only
@@ -117,10 +131,6 @@ contains
        ( time_now < times(1) .or. time_now > times(number_times) ) ) return
 
   dt_rdef = real( dt, kind=r_def )
-
-  ! TODO: Scale the relaxation coefficient with an exponential profile starting
-  ! from newton_dl_base and ending at the model top.
-  relaxation_coeff = dt_rdef / timescale
   
   ! Get mesh information needed for W2 function space
   u_mesh => du_forcing%get_mesh()
@@ -139,14 +149,31 @@ contains
   call w_in_w3%initialise( vector_space = &
                 function_space_collection%get_fs( u_mesh, 0, 0, W3 ) )
 
+  ! Initialization following diagnostics_io_mod
+
+  call u_in_w2h%initialise( vector_space = &
+                function_space_collection%get_fs( u_mesh, 0, 0, W2H ) )
+
+  call v_in_w2h%initialise( vector_space = &
+                function_space_collection%get_fs( u_mesh, 0, 0, W2H ) )
+
+  call w_in_wth%initialise( vector_space = &
+                function_space_collection%get_fs( u_mesh, 0, 0, WTHETA ) )
+  
+  ! Initialise the increment fields
+
   call du_relax%initialise( vector_space = u_in_w3%get_function_space() )
 
   call dv_relax%initialise( vector_space = v_in_w3%get_function_space() )
 
-  call dw_relax%initialise( vector_space = w_in_w3%get_function_space() )
+  call dw_relax%initialise( vector_space = w_in_wth%get_function_space() )
 
   ! Map the actual w2 wind field to physics components
   call map_physics_winds( u_in_w3, v_in_w3, w_in_w3, u )
+  ! Similar call but for w_in_wth specifically
+  ! This is copied over from map_physics_winds_alg_mod
+  call split_wind_alg(u_in_w2h, v_in_w2h, w_in_wth, &
+                        u, u_mesh)
 
   if ( number_times == 1 ) then
     ! This is what applies for a time-constant relaxation profile
@@ -166,80 +193,106 @@ contains
                                w_relax_data, w_relax_now )
   end if
 
+  ! Get height_w3 and height_wth fields. This is generally needed for interpolation
+  ! of relaxation profiles but also for damping layer exponential scaling. 
+  profile_size = number_heights
+  ! Copy over the reference heights
+  profile_heights( 1:profile_size ) = heights( 1:profile_size )
+
+  ! Allow only height coordinates
+  mesh_id = dtheta_relax%get_mesh_id()
+  height_wth => get_height_fv( Wtheta, mesh_id )
+  height_w3 => get_height_fv( W3, mesh_id )
+
+  ! Exponential scaling profile
+  ! Crude way to do this via interpolation; otherwise need a kernel function to
+  ! explicitly loop over model levels.
+  allocate( sample_exp_profile(sample_n_points) )
+  allocate( sample_heights(sample_n_points) )
+  sample_heights = [(i, i=1,sample_n_points)] * (real(newton_dl_top - newton_dl_base, kind=r_def) 
+                    / real(sample_n_points-1, kind=r_def) + real(newton_dl_base, kind=r_def))
+  sample_exp_profile = (exp( (sample_heights - real(newton_dl_base, kind=r_def)) 
+                    / real(newton_dl_scale_height, kind=r_def) ) - 1)
+
+  ! Interpolate the exponential profile to model levels
+  profile_data( 1:sample_n_points ) = sample_exp_profile( 1:sample_n_points )
+  profile_heights( 1:sample_n_points ) = sample_heights( 1:sample_n_points )
+  profile_extrap = .false.
+
+  relaxation_coeff = dt_rdef / timescale
+  ! Calculate the damping coefficient profiles with exponential scaling on W3 and Wtheta levels
+  call invoke( profile_interp_kernel_type( relaxation_coeff_w3, height_w3, profile_extrap ), &
+               inc_a_times_X( relaxation_coeff, relaxation_coeff_w3 ) )
+  call invoke( profile_interp_kernel_type( relaxation_coeff_wth, height_wth, profile_extrap ), &
+               inc_a_times_X( relaxation_coeff, relaxation_coeff_wth ) )
+
 
   if ( number_heights == 1 ) then
     ! Constant relaxation with height
     ! Calculate the relaxation increments
     call invoke( setval_c( dtheta_relax, theta_relax_now(1) ),     &
                  inc_X_minus_Y( dtheta_relax, theta ),             &
-                 inc_a_times_X( relaxation_coeff, dtheta_relax ),  &
+                 inc_X_times_Y( dtheta_relax, relaxation_coeff_wth ),  &
                  inc_X_plus_Y( dtheta_forcing, dtheta_relax ) )
+    ! Transform back to W2 space later for increments
     call invoke( setval_c( du_relax, u_relax_now(1) ),        &
                  inc_X_minus_Y( du_relax, u_in_w3 ),               &
-                 inc_a_times_X( relaxation_coeff, du_relax ) )
+                 inc_X_times_Y( du_relax, relaxation_coeff_w3 ) )
     call invoke( setval_c( dv_relax, v_relax_now(1) ),        &
                  inc_X_minus_Y( dv_relax, v_in_w3 ),               &
-                 inc_a_times_X( relaxation_coeff, dv_relax ) )
+                 inc_X_times_Y( dv_relax, relaxation_coeff_w3 ) )
     call invoke( setval_c( dw_relax, w_relax_now(1) ),        &
-                 inc_X_minus_Y( dw_relax, w_in_w3 ),               &
-                 inc_a_times_X( relaxation_coeff, dw_relax ) )
+                 inc_X_minus_Y( dw_relax, w_in_wth ),               &
+                 inc_X_times_Y( dw_relax, relaxation_coeff_wth ) )
 
   else
     ! Specified relaxation profile with height
-    profile_size = number_heights
-
-    ! Copy over the reference heights
-    profile_heights( 1:profile_size ) = heights( 1:profile_size )
-    if ( coordinate == coordinate_pressure ) then
-      ! If the target profile is specified with pressure as the vertical
-      ! coordinate then use Exner as the interpolation coordinate. This
-      ! avoids having to create the p_in_wth field for use as vertical
-      ! coordinate of the model data.
-      do k = 1, number_heights
-        profile_heights(k) = (profile_heights(k) / p_zero) ** kappa
-      end do
-      height_wth => exner_in_wth
-    else
-      mesh_id = dtheta_relax%get_mesh_id()
-      height_wth => get_height_fv( Wtheta, mesh_id )
-    end if
-
+  
     ! Copy over theta_relax profile to module global profile_data for interpolation kernel
     profile_data( 1:profile_size ) = theta_relax_now( 1:profile_size )
     profile_extrap = .false.
     call invoke( setval_X( dtheta_relax, theta),                  &
                  profile_interp_kernel_type( dtheta_relax, height_wth, &
                                              profile_extrap ),         &
-                 inc_X_minus_Y( dtheta_relax, theta ),            &
-                 inc_a_times_X( relaxation_coeff, dtheta_relax ),      &
+                 inc_X_minus_Y( dtheta_relax, theta ),                 &
+                 inc_X_times_Y( dtheta_relax, relaxation_coeff_wth ),      &
                  inc_X_plus_Y( dtheta_forcing, dtheta_relax ) )
 
-    ! Repeat for u-wind
+    ! Repeat for u-wind but with W3 heights
     profile_data( 1:profile_size ) = u_relax_now( 1:profile_size )
     profile_extrap = .false.
     call invoke( setval_X( du_relax, u_relax_target),                  &
                  ! Write interpolated profile to du_relax
-                 profile_interp_kernel_type( du_relax, height_wth, &
+                 profile_interp_kernel_type( du_relax, height_w3, &
                                              profile_extrap ),         &
                  ! Find the difference; this is zero for levels outside of profile range
                  inc_X_minus_Y( du_relax, u_relax_target ),            &
-                 inc_a_times_X( relaxation_coeff, du_relax ) )
+                 inc_X_times_Y( du_relax, relaxation_coeff_w3 ) )
     
-    ! Now repeat for v-wind
+    ! Now repeat for v-wind but with W3 heights
     profile_data( 1:profile_size ) = v_relax_now( 1:profile_size )
     profile_extrap = .false.
     call invoke( setval_X( dv_relax, v_relax_target),                  &
-                 profile_interp_kernel_type( dv_relax, height_wth, &
+                 profile_interp_kernel_type( dv_relax, height_w3, &
                                              profile_extrap ),         &
                  inc_X_minus_Y( dv_relax, v_relax_target ),            &
-                 inc_a_times_X( relaxation_coeff, dv_relax ) )
+                 inc_X_times_Y( dv_relax, relaxation_coeff_w3 ) )
 
-    ! Transform the relaxation increments back to w2 space
-    call set_wind( du_relaxation_forcing, du_relax, dv_relax, dw_relax)
-    ! Add relaxation increments to forcing
-    call invoke( inc_X_plus_Y( du_forcing, du_relaxation_forcing ) ) 
+    ! Now repeat for w-wind but with Wth heights
+    profile_data( 1:profile_size ) = w_relax_now( 1:profile_size )
+    profile_extrap = .false.
+    call invoke( setval_X( dw_relax, w_relax_target),                  &
+                 profile_interp_kernel_type( dw_relax, height_wth, &
+                                             profile_extrap ),         &
+                 inc_X_minus_Y( dw_relax, w_relax_target ),            &
+                 inc_X_times_Y( dw_relax, relaxation_coeff_wth ) )
 
   end if
+
+  ! Transform the relaxation increments back to w2 space
+  call set_wind( du_relaxation_forcing, du_relax, dv_relax, dw_relax)
+    ! Add relaxation increments to forcing
+  call invoke( inc_X_plus_Y( du_forcing, du_relaxation_forcing ) ) 
 
   end subroutine newton_damping_layer_alg
 end module newton_damping_layer_alg_mod
