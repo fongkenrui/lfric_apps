@@ -59,7 +59,6 @@ contains
                                     coordinate_pressure,                 &
                                     u_wind_relax_data => u_profile_data, &
                                     v_wind_relax_data => v_profile_data, &
-                                    relax_by_domain_mean,                &
                                     timescale
 
   use horiz_mean_alg_mod, only: horiz_mean_alg
@@ -148,22 +147,32 @@ contains
                                v_wind_relax_data, v_wind_relax_now )
   end if
 
-  if ( relax_by_domain_mean ) then
+  ! Initialize the temporary fields to hold the horizontal means
+  call u_horiz_mean%initialise( vector_space = u_in_w3%get_function_space() )
+  call v_horiz_mean%initialise( vector_space = v_in_w3%get_function_space() )
+  ! Calculate the horizontal mean of the wind components
+  call horiz_mean_alg( u_horiz_mean, nlayers, twod_mesh, u_in_w3 )
+  call horiz_mean_alg( v_horiz_mean, nlayers, twod_mesh, v_in_w3 )
+  u_relax_target => u_horiz_mean
+  v_relax_target => v_horiz_mean
+
+  ! Removed ability to do local relaxation; split off to a different module.
+  ! if ( relax_by_domain_mean ) then
     ! Initialize the temporary fields to hold the horizontal means
-    call u_horiz_mean%initialise( vector_space = u_in_w3%get_function_space() )
-    call v_horiz_mean%initialise( vector_space = v_in_w3%get_function_space() )
+    ! call u_horiz_mean%initialise( vector_space = u_in_w3%get_function_space() )
+    ! all v_horiz_mean%initialise( vector_space = v_in_w3%get_function_space() )
     ! Calculate the horizontal mean of the wind components
-    call horiz_mean_alg( u_horiz_mean, nlayers, twod_mesh, u_in_w3 )
-    call horiz_mean_alg( v_horiz_mean, nlayers, twod_mesh, v_in_w3 )
+    ! call horiz_mean_alg( u_horiz_mean, nlayers, twod_mesh, u_in_w3 )
+    ! call horiz_mean_alg( v_horiz_mean, nlayers, twod_mesh, v_in_w3 )
     ! Set the targeted relaxation field to be the horizontal mean
-    u_relax_target => u_horiz_mean
-    v_relax_target => v_horiz_mean
-  else 
+    ! u_relax_target => u_horiz_mean
+    ! v_relax_target => v_horiz_mean
+  ! else 
     ! Set the targeted relaxation field to be the physical winds
     ! This imposes strict local relaxation
-    u_relax_target => u_in_w3
-    v_relax_target => v_in_w3
-  end if
+  !  u_relax_target => u_in_w3
+  !  v_relax_target => v_in_w3
+  !end if
 
   if ( number_heights == 1 ) then
     ! Constant relaxation with height
