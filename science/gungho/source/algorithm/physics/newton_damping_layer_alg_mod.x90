@@ -131,11 +131,11 @@ contains
   dt_rdef = real( dt, kind=r_def )
   
   ! Get mesh information needed for W2 function space
-  call log_event('Getting mesh id information', LOG_LEVEL_INFO)
+  write(*,*) 'Getting mesh id information'
   u_mesh => u%get_mesh()
   
   ! Initialise the temporary fields needed
-  call log_event('Initialising temporary fields W2 function space', LOG_LEVEL_INFO)
+  write(*,*) 'Initialising temporary fields W2 function space'
   call dtheta_relax%initialise( vector_space = theta%get_function_space() )
 
   call du_relaxation_forcing%initialise( vector_space = u%get_function_space() )
@@ -193,7 +193,7 @@ contains
                                w_relax_data, w_relax_now )
   end if
 
-  call log_event('Construct height profile', LOG_LEVEL_INFO)
+  write(*,*) 'Constructing height profile'
   ! Get height_w3 and height_wth fields. This is generally needed for interpolation
   ! of relaxation profiles but also for damping layer exponential scaling. 
   profile_size = number_heights
@@ -222,10 +222,10 @@ contains
 
   relaxation_coeff = dt_rdef / timescale
   ! Calculate the damping coefficient profiles with exponential scaling on W3 and Wtheta levels
-  call log_event('Invoke call 1', LOG_LEVEL_INFO)
+  write(*,*) 'Invoke call 1'
   call invoke( profile_interp_kernel_type( relaxation_coeff_w3, height_w3, profile_extrap ), &
                inc_a_times_X( relaxation_coeff, relaxation_coeff_w3 ) )
-  call log_event('Invoke call 2', LOG_LEVEL_INFO)
+  write(*,*) 'Invoke call 2'
   call invoke( profile_interp_kernel_type( relaxation_coeff_wth, height_wth, profile_extrap ), &
                inc_a_times_X( relaxation_coeff, relaxation_coeff_wth ) )
 
@@ -233,21 +233,21 @@ contains
   if ( number_heights == 1 ) then
     ! Constant relaxation with height
     ! Calculate the relaxation increments
-    call log_event('Invoke call 3', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 3'
     call invoke( setval_c( dtheta_relax, theta_relax_now(1) ),     &
                  inc_X_minus_Y( dtheta_relax, theta ),             &
                  inc_X_times_Y( dtheta_relax, relaxation_coeff_wth ),  &
                  inc_X_plus_Y( dtheta_forcing, dtheta_relax ) )
     ! Transform back to W2 space later for increments
-    call log_event('Invoke call 4', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 4'
     call invoke( setval_c( du_relax, u_relax_now(1) ),        &
                  inc_X_minus_Y( du_relax, u_in_w3 ),               &
                  inc_X_times_Y( du_relax, relaxation_coeff_w3 ) )
-    call log_event('Invoke call 5', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 5'
     call invoke( setval_c( dv_relax, v_relax_now(1) ),        &
                  inc_X_minus_Y( dv_relax, v_in_w3 ),               &
                  inc_X_times_Y( dv_relax, relaxation_coeff_w3 ) )
-    call log_event('Invoke call 6', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 6'
     call invoke( setval_c( dw_relax, w_relax_now(1) ),        &
                  inc_X_minus_Y( dw_relax, w_in_wth ),               &
                  inc_X_times_Y( dw_relax, relaxation_coeff_wth ) )
@@ -259,7 +259,7 @@ contains
     profile_size = number_heights
     profile_data( 1:profile_size ) = theta_relax_now( 1:profile_size )
     profile_extrap = .false.
-    call log_event('Invoke call 7', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 7'
     call invoke( setval_X( dtheta_relax, theta),                  &
                  profile_interp_kernel_type( dtheta_relax, height_wth, &
                                              profile_extrap ),         &
@@ -270,7 +270,7 @@ contains
     ! Repeat for u-wind but with W3 heights
     profile_data( 1:profile_size ) = u_relax_now( 1:profile_size )
     profile_extrap = .false.
-    call log_event('Invoke call 8', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 8'
     call invoke( setval_X( du_relax, u_in_w3),                  &
                  ! Write interpolated profile to du_relax
                  profile_interp_kernel_type( du_relax, height_w3, &
@@ -282,7 +282,7 @@ contains
     ! Now repeat for v-wind but with W3 heights
     profile_data( 1:profile_size ) = v_relax_now( 1:profile_size )
     profile_extrap = .false.
-    call log_event('Invoke call 9', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 9'
     call invoke( setval_X( dv_relax, v_in_w3),                  &
                  profile_interp_kernel_type( dv_relax, height_w3, &
                                              profile_extrap ),         &
@@ -292,7 +292,7 @@ contains
     ! Now repeat for w-wind but with Wth heights
     profile_data( 1:profile_size ) = w_relax_now( 1:profile_size )
     profile_extrap = .false.
-    call log_event('Invoke call 10', LOG_LEVEL_INFO)
+    write(*,*) 'Invoke call 10'
     call invoke( setval_X( dw_relax, w_in_wth),                  &
                  profile_interp_kernel_type( dw_relax, height_wth, &
                                              profile_extrap ),         &
@@ -304,7 +304,7 @@ contains
   ! Transform the relaxation increments back to w2 space
   call set_wind( du_relaxation_forcing, du_relax, dv_relax, dw_relax)
     ! Add relaxation increments to forcing
-  call log_event('Invoke call 11', LOG_LEVEL_INFO)
+  write(*,*) 'Invoke call 11'
   call invoke( inc_X_plus_Y( du_forcing, du_relaxation_forcing ) ) 
 
   end subroutine newton_damping_layer_alg
