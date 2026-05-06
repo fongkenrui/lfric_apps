@@ -88,8 +88,9 @@ contains
 
   ! Interpolated relaxation profiles
   real( kind=r_def )          :: theta_relax_now(number_heights)
-  real( kind=r_def )          :: u_wind_relax_now(number_heights)
-  real( kind=r_def )          :: v_wind_relax_now(number_heights)
+  real( kind=r_def )          :: u_relax_now(number_heights)
+  real( kind=r_def )          :: v_relax_now(number_heights)
+  real( kind=r_def )          :: w_relax_now(number_heights)
 
   ! Physics fields to unpack W2 function space winds into.
   ! Horizontal winds may need to be assigned as relaxation targets
