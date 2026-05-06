@@ -55,7 +55,7 @@ contains
                               twod_mesh, time_now )
   
   !TODO: Edit the rose-meta config definition
-  use newton_damping_layer_config_mod, only: number_times,                     &
+  use newton_damping_config_mod, only: number_times,                     &
                                     number_heights,                            &
                                     times,                                     &
                                     heights,                                   &
