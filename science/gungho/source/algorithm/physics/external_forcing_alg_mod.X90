@@ -414,7 +414,7 @@ contains
         call invoke(setval_c(du_forcing, 0.0_r_def))
       end if
 
-      call newton_damping_alg( dtheta_forcing, du_forcing, theta, u, exner, exner_in_wth, &
+      call newton_damping_layer_alg( dtheta_forcing, du_forcing, theta, u, exner, exner_in_wth, &
                                twod_mesh, time_now )
       theta_forcing_done = .true.
       vapour_forcing_done = .true.
