@@ -51,8 +51,8 @@ contains
   !> @param[in]     theta Dry potential temperature
   !> @param[in]     u Horizontal wind
   !> @param[in]     time_now Current model time in seconds
-  subroutine newton_damping_layer_alg( dtheta_forcing, du_forcing, theta, u, &
-                              time_now )
+  subroutine newton_damping_layer_alg( dtheta_forcing, du_forcing, dmv_forcing, &
+                            theta, u, mv, time_now )    
   
   !TODO: Edit the rose-meta config definition
   use newton_damping_config_mod, only: number_times,                     &
@@ -63,6 +63,7 @@ contains
                                     u_relax_data => u_profile_data,            &
                                     v_relax_data => v_profile_data,            &
                                     w_relax_data => w_profile_data,            &
+                                    mv_relax_data => mv_profile_data,          &
                                     newton_dl_base,                            &
                                     newton_dl_top,                             &
                                     newton_dl_scale_height,                    &
@@ -74,10 +75,12 @@ contains
   ! Slow physics model increments to modify.
   type( field_type ), intent(inout)       :: dtheta_forcing
   type( field_type ), intent(inout)       :: du_forcing
+  type( field_type ), intent(inout)       :: dmv_forcing
 
   ! Model prognostic fields for damping.
-  type( field_type ), intent(in), target  :: theta
-  type( field_type ), intent(in), target  :: u
+  type( field_type ), intent(in), target  :: theta !WTHETA
+  type( field_type ), intent(in), target  :: u !W2 -> W3 + WTHETA
+  type( field_type ), intent(in), target  :: mv !W3
 
   real( kind=r_def ),    intent(in) :: time_now
 
@@ -88,6 +91,7 @@ contains
   real( kind=r_def )          :: u_relax_now(number_heights)
   real( kind=r_def )          :: v_relax_now(number_heights)
   real( kind=r_def )          :: w_relax_now(number_heights)
+  real( kind=r_def )          :: mv_relax_now(number_heights)
 
   ! Physics fields to unpack W2 function space winds into.
   ! Horizontal winds may need to be assigned as relaxation targets
@@ -112,9 +116,10 @@ contains
   
   ! Relaxation increments
   type( field_type )          :: dtheta_relax
+  type( field_type )          :: dmv_relax
   ! w2 field for relaxation increments
   type( field_type )          :: du_relaxation_forcing
-  ! Physics fields for relaxation components
+  ! Physics fields for wind relaxation components
   type( field_type )          :: du_relax ! W3
   type( field_type )          :: dv_relax ! W3
   type( field_type )          :: dw_relax ! Wtheta
@@ -135,11 +140,17 @@ contains
   u_mesh => u%get_mesh()
   
   ! Initialise the temporary fields needed
-  write(*,*) 'Initialising temporary fields W2 function space'
+  write(*,*) 'Initialising temporary fields function space'
+
+  ! Theta and mv are ordinary scalars
   call dtheta_relax%initialise( vector_space = theta%get_function_space() )
 
+  call dmv_relax%initialise( vector_space = mv%get_function_space() )
+  
+  ! W2 space relaxation increment
   call du_relaxation_forcing%initialise( vector_space = u%get_function_space() )
-
+  
+  ! Temporary fields for holding components
   call u_in_w3%initialise( vector_space = &
                 function_space_collection%get_fs( u_mesh, 0, 0, W3 ) )
 
@@ -150,7 +161,6 @@ contains
                 function_space_collection%get_fs( u_mesh, 0, 0, W3 ) )
 
   ! Initialization following diagnostics_io_mod
-
   call u_in_w2h%initialise( vector_space = &
                 function_space_collection%get_fs( u_mesh, 0, 0, W2H ) )
 
@@ -167,8 +177,7 @@ contains
   call relaxation_coeff_wth%initialise( vector_space = &
                 function_space_collection%get_fs( u_mesh, 0, 0, WTHETA ) )
   
-  ! Initialise the increment fields
-
+  ! Initialise the physics component relaxation increment fields
   call du_relax%initialise( vector_space = u_in_w3%get_function_space() )
 
   call dv_relax%initialise( vector_space = v_in_w3%get_function_space() )
@@ -188,6 +197,7 @@ contains
     u_relax_now(:) = u_relax_data(:)
     v_relax_now(:) = v_relax_data(:)
     w_relax_now(:) = w_relax_data(:)
+    mv_relax_now(:) = mv_relax_data(:)
   else
     ! Interpolate the relaxation time series to current time
     call prof_temporal_interp( time_now, number_heights, number_times, times, &
@@ -198,6 +208,8 @@ contains
                                v_relax_data, v_relax_now )
     call prof_temporal_interp( time_now, number_heights, number_times, times, &
                                w_relax_data, w_relax_now )
+    call prof_temporal_interp( time_now, number_heights, number_times, times, &
+                               mv_relax_data, mv_relax_now )
   end if
 
   write(*,*) 'Constructing height profile'
@@ -245,6 +257,10 @@ contains
                  inc_X_minus_Y( dtheta_relax, theta ),             &
                  inc_X_times_Y( dtheta_relax, relaxation_coeff_wth ),  &
                  inc_X_plus_Y( dtheta_forcing, dtheta_relax ) )
+    call invoke( setval_c( dmv_relax, mv_relax_now(1) ),     &
+                 inc_X_minus_Y( dmv_relax, mv ),             &
+                 inc_X_times_Y( dmv_relax, relaxation_coeff_w3 ),  &
+                 inc_X_plus_Y( dmv_forcing, dmv_relax ) )
     ! Transform back to W2 space later for increments
     write(*,*) 'Invoke call 4'
     call invoke( setval_c( du_relax, u_relax_now(1) ),        &
@@ -273,6 +289,16 @@ contains
                  inc_X_minus_Y( dtheta_relax, theta ),                 &
                  inc_X_times_Y( dtheta_relax, relaxation_coeff_wth ),      &
                  inc_X_plus_Y( dtheta_forcing, dtheta_relax ) )
+
+    ! Repeat for mv with wth heights
+    profile_data( 1:profile_size ) = mv_relax_now( 1:profile_size )
+    profile_extrap = .false.
+    call invoke( setval_X( dmv_relax, mv),                  &
+                 profile_interp_kernel_type( dmv_relax, height_wth, &
+                                             profile_extrap ),         &
+                 inc_X_minus_Y( dmv_relax, mv ),                 &
+                 inc_X_times_Y( dmv_relax, relaxation_coeff_wth ),      &
+                 inc_X_plus_Y( dmv_forcing, dmv_relax ) )
 
     ! Repeat for u-wind but with W3 heights
     profile_data( 1:profile_size ) = u_relax_now( 1:profile_size )

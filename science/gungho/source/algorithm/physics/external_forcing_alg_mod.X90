@@ -59,7 +59,7 @@ module external_forcing_alg_mod
                                              get_height_fv,   &
                                              get_dx_at_w2
   use mesh_mod,                        only: mesh_type
-  use mr_indices_mod,                  only: nummr
+  use mr_indices_mod,                  only: nummr, imr_v, imr_cl
   use io_config_mod,                   only: subroutine_timers, write_diag, &
                                              use_xios_io
   use planet_config_mod,               only: kappa
@@ -414,7 +414,8 @@ contains
         call invoke(setval_c(du_forcing, 0.0_r_def))
       end if
 
-      call newton_damping_layer_alg( dtheta_forcing, du_forcing, theta, u, time_now )
+      call newton_damping_layer_alg( dtheta_forcing, du_forcing, dmv_forcing, &
+                                     theta, u, mr_n(imr_v), time_now )
       theta_forcing_done = .true.
       vapour_forcing_done = .true.
       wind_forcing_done  = .true.
