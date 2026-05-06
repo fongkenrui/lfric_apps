@@ -101,7 +101,7 @@ contains
   type( field_type ), target  :: w_in_wth
 
   real( kind=r_def )          :: relaxation_coeff
-  integer( kind=i_def )       :: k, mesh_id
+  integer( kind=i_def )       :: i, k, mesh_id
   logical( kind=l_def )       :: profile_extrap
 
   ! Temporary arrays for calculating exponential profile
@@ -249,6 +249,7 @@ contains
     ! Specified relaxation profile with height
   
     ! Copy over theta_relax profile to module global profile_data for interpolation kernel
+    profile_size = number_heights
     profile_data( 1:profile_size ) = theta_relax_now( 1:profile_size )
     profile_extrap = .false.
     call invoke( setval_X( dtheta_relax, theta),                  &
