@@ -47,13 +47,12 @@ contains
 
   !> @brief Algorithm to calculate Newtonian relaxation of potential temperature
   !> @param[in,out] dtheta_forcing Relaxation increment
+  !> @param[in,out] du_forcing Relaxation increment
   !> @param[in]     theta Dry potential temperature
-  !> @param[in]     exner_in_wth Exner mapped to Wtheta space
-  !> @param[in]     twod_mesh Information  about the horizontal mesh
+  !> @param[in]     u Horizontal wind
   !> @param[in]     time_now Current model time in seconds
   subroutine newton_damping_layer_alg( dtheta_forcing, du_forcing, theta, u, &
-                              exner, exner_in_wth,   &
-                              twod_mesh, time_now )
+                              time_now )
   
   !TODO: Edit the rose-meta config definition
   use newton_damping_config_mod, only: number_times,                     &
@@ -79,9 +78,6 @@ contains
   ! Model prognostic fields for damping.
   type( field_type ), intent(in), target  :: theta
   type( field_type ), intent(in), target  :: u
-  type( field_type ), intent(in), target  :: exner_in_wth
-  type( field_type ), intent(in), target  :: exner
-  type( mesh_type ),  intent(in), pointer :: twod_mesh
 
   real( kind=r_def ),    intent(in) :: time_now
 
