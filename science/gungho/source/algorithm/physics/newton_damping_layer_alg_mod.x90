@@ -131,8 +131,8 @@ contains
   dt_rdef = real( dt, kind=r_def )
   
   ! Get mesh information needed for W2 function space
-  call log_event('Getting mesh for W2 function space', LOG_LEVEL_INFO)
-  u_mesh => du_forcing%get_mesh()
+  call log_event('Getting mesh id information', LOG_LEVEL_INFO)
+  u_mesh => u%get_mesh()
   
   ! Initialise the temporary fields needed
   call log_event('Initialising temporary fields W2 function space', LOG_LEVEL_INFO)
