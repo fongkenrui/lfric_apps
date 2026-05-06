@@ -159,6 +159,13 @@ contains
 
   call w_in_wth%initialise( vector_space = &
                 function_space_collection%get_fs( u_mesh, 0, 0, WTHETA ) )
+
+  ! Initialise the relaxation coefficient fields on W3 and Wtheta levels
+  call relaxation_coeff_w3%initialise( vector_space = &
+                function_space_collection%get_fs( u_mesh, 0, 0, W3 ) )
+
+  call relaxation_coeff_wth%initialise( vector_space = &
+                function_space_collection%get_fs( u_mesh, 0, 0, WTHETA ) )
   
   ! Initialise the increment fields
 
