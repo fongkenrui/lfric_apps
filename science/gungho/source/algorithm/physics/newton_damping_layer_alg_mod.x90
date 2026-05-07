@@ -29,6 +29,7 @@ module newton_damping_layer_alg_mod
   use map_fd_to_prognostics_alg_mod, only: set_wind
   use planet_config_mod,             only: kappa, p_zero
   use timestepping_config_mod,       only: dt
+  use horiz_mean_alg_mod,            only: horiz_mean_alg
   !> @todo Data passed to the kernel via module 'use' statements.
   !>       When PSyclone supports passing of arrays into kernels (issue #1312),
   !>       these data should be passed through the argument list of the invoke.
@@ -49,13 +50,15 @@ contains
   !> @param[in,out] dtheta_forcing Relaxation increment
   !> @param[in,out] du_forcing Relaxation increment
   !> @param[in]     theta Dry potential temperature
+  !> @param[in]     twod_mesh Information  about the horizontal mesh
   !> @param[in]     u Horizontal wind
   !> @param[in]     time_now Current model time in seconds
+  !> @param[in]     nlayers Number of layers in the grid
   subroutine newton_damping_layer_alg( dtheta_forcing, du_forcing, dmv_forcing, &
-                            theta, u, mv, time_now )    
+                            theta, u, mv, twod_mesh, time_now, nlayers )    
   
   !TODO: Edit the rose-meta config definition
-  use newton_damping_config_mod, only: number_times,                     &
+  use newton_damping_config_mod, only: number_times,                           &
                                     number_heights,                            &
                                     times,                                     &
                                     heights,                                   &
@@ -68,7 +71,8 @@ contains
                                     newton_dl_top,                             &
                                     newton_dl_scale_height,                    &
                                     sample_n_points,                           &
-                                    timescale
+                                    timescale,                                 &
+                                    damp_to_domain_mean
 
   implicit none
   
@@ -82,7 +86,10 @@ contains
   type( field_type ), intent(in), target  :: u !W2 -> W3 + WTHETA
   type( field_type ), intent(in), target  :: mv !W3
 
+  ! Auxillary variables
+  type( mesh_type ),  intent(in), pointer :: twod_mesh
   real( kind=r_def ),    intent(in) :: time_now
+  integer( kind=i_def ), intent(in) :: nlayers
 
   real( kind=r_def )          :: dt_rdef
 
@@ -94,13 +101,19 @@ contains
   real( kind=r_def )          :: mv_relax_now(number_heights)
 
   ! Physics fields to unpack W2 function space winds into.
-  ! Horizontal winds may need to be assigned as relaxation targets
   type( field_type ), target  :: u_in_w3 
   type( field_type ), target  :: v_in_w3 
   type( field_type ), target  :: w_in_w3 
   type( field_type ), target  :: u_in_w2h 
   type( field_type ), target  :: v_in_w2h
   type( field_type ), target  :: w_in_wth
+  
+  ! Horizontal-mean prognostic fields
+  type( field_type ), target  :: theta_horiz_mean
+  type( field_type ), target  :: mv_horiz_mean
+  type( field_type ), target  :: u_horiz_mean
+  type( field_type ), target  :: v_horiz_mean
+  type( field_type ), target  :: w_horiz_mean
 
   real( kind=r_def )          :: relaxation_coeff
   integer( kind=i_def )       :: i, k, mesh_id
@@ -191,8 +204,22 @@ contains
   call split_wind_alg(u_in_w2h, v_in_w2h, w_in_wth, &
                         u, u_mesh)
 
-  if ( number_times == 1 ) then
-    ! This is what applies for a time-constant relaxation profile
+  if ( damp_to_domain_mean ) then
+    ! Set the damping target to the domain mean of the prognostic field
+    call u_horiz_mean%initialise( vector_space = u_in_w3%get_function_space() )
+    call v_horiz_mean%initialise( vector_space = v_in_w3%get_function_space() )
+    call w_horiz_mean%initialise( vector_space = w_in_wth%get_function_space() )
+    call theta_horiz_mean%initialise( vector_space = theta%get_function_space() )
+    call mv_horiz_mean%initialise( vector_space = mv%get_function_space() )
+    ! Calculate the horizontal-mean profiles
+    call horiz_mean_alg( u_horiz_mean, nlayers, twod_mesh, u_in_w3 )
+    call horiz_mean_alg( v_horiz_mean, nlayers, twod_mesh, v_in_w3 )
+    call horiz_mean_alg( w_horiz_mean, nlayers, twod_mesh, w_in_wth )
+    call horiz_mean_alg( theta_horiz_mean, nlayers, twod_mesh, theta )
+    call horiz_mean_alg( mv_horiz_mean, nlayers, twod_mesh, mv )
+
+  else if ( number_times == 1 ) then
+    ! This is what applies for a time-constant damping profile
     theta_relax_now(:) = theta_relax_data(:)
     u_relax_now(:) = u_relax_data(:)
     v_relax_now(:) = v_relax_data(:)
@@ -248,8 +275,33 @@ contains
   call invoke( profile_interp_kernel_type( relaxation_coeff_wth, height_wth, profile_extrap ), &
                inc_a_times_X( relaxation_coeff, relaxation_coeff_wth ) )
 
-
-  if ( number_heights == 1 ) then
+  ! Its probably more elegant to use pointers to a damping target instead of repeating the code
+  ! but this is easier to debug. Possible refactoring in the future.
+  if ( damp_to_domain_mean ) then
+    ! Set the damping target to the domain mean of the prognostic field
+    ! Calculate the damping increments
+    ! Note that in this case, the mean-profile is specified throughout the atmosphere
+    ! but the damping extent is controlled solely by the exponential scaling profile.
+    call invoke( setval_X( dtheta_relax, theta_horiz_mean ),     &
+                 inc_X_minus_Y( dtheta_relax, theta ),             &
+                 inc_X_times_Y( dtheta_relax, relaxation_coeff_wth ),  &
+                 inc_X_plus_Y( dtheta_forcing, dtheta_relax ) )
+    call invoke( setval_X( dmv_relax, mv_horiz_mean ),     &
+                 inc_X_minus_Y( dmv_relax, mv ),             &
+                 inc_X_times_Y( dmv_relax, relaxation_coeff_wth ),  &
+                 inc_X_plus_Y( dmv_forcing, dmv_relax ) )
+    ! Transform back to W2 space later for increments
+    call invoke( setval_X( du_relax, u_horiz_mean ),        &
+                 inc_X_minus_Y( du_relax, u_in_w3 ),               &
+                 inc_X_times_Y( du_relax, relaxation_coeff_w3 ) )
+    call invoke( setval_X( dv_relax, v_horiz_mean ),        &
+                 inc_X_minus_Y( dv_relax, v_in_w3 ),               &
+                 inc_X_times_Y( dv_relax, relaxation_coeff_w3 ) )
+    call invoke( setval_X( dw_relax, w_horiz_mean ),        &
+                 inc_X_minus_Y( dw_relax, w_in_wth ),               &
+                 inc_X_times_Y( dw_relax, relaxation_coeff_wth ) )
+    
+  else if ( number_heights == 1 ) then
     ! Constant relaxation with height
     ! Calculate the relaxation increments
     write(*,*) 'Invoke call 3'
@@ -277,7 +329,6 @@ contains
 
   else
     ! Specified relaxation profile with height
-  
     ! Copy over theta_relax profile to module global profile_data for interpolation kernel
     profile_size = number_heights
     profile_data( 1:profile_size ) = theta_relax_now( 1:profile_size )

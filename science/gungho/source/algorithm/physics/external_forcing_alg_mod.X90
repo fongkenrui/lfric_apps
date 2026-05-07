@@ -413,9 +413,10 @@ contains
         call du_forcing%initialise( vector_space = u%get_function_space() )
         call invoke(setval_c(du_forcing, 0.0_r_def))
       end if
-
+      
+      nlayers = mesh%get_nlayers()
       call newton_damping_layer_alg( dtheta_forcing, du_forcing, dmv_forcing, &
-                                     theta, u, mr_n(imr_v), time_now )
+                                     theta, u, mr_n(imr_v), twod_mesh, time_now, nlayers )
       theta_forcing_done = .true.
       vapour_forcing_done = .true.
       wind_forcing_done  = .true.
