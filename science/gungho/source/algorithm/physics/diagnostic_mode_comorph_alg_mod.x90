@@ -847,7 +847,7 @@ contains
 
     ! Placeholder invoke call needed for psyclone to parse and transform
     ! without falling over.
-    call invoke( setval_c(exner_in_wth_coarse), 0.0 )
+    call invoke( setval_c(exner_in_wth_coarse, 0.0_r_def) )
 
     !call invoke( conv_comorph_kernel_type( outer, rho, rho_in_wth,            &
     !                      wetrho_in_w3, wetrho_in_wth, exner, exner_in_wth,   &
