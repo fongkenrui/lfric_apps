@@ -660,7 +660,7 @@ contains
     call init_coarse_field_from(zh_nonloc_coarse, zh_nonloc, conv_mesh)
     call init_coarse_field_from(zhsc_coarse, zhsc, conv_mesh)
     call init_coarse_field_from(inv_depth_coarse, inv_depth, conv_mesh)
-    call init_coarse_field_from(bl_type_ind_coarse, bl_type_ind, conv_mesh)
+    call init_coarse_integer_field_from(bl_type_ind_coarse, bl_type_ind, conv_mesh)
     call init_coarse_field_from(tke_bl_coarse, tke_bl, conv_mesh)
     call init_coarse_field_from(wvar_coarse, wvar, conv_mesh)
     call init_coarse_field_from(rhokm_bl_coarse, rhokm_bl, conv_mesh)
@@ -1077,5 +1077,41 @@ contains
     end if
 
   end subroutine init_coarse_field_from
+
+  !> @brief Initialise a integer_field type coarse field from a given reference fine field.
+  !> @post  The field name will be set equal to the XIOS id passed in.
+  !> @param[inout]        field            Field to initialise
+  !> @param[in]           ref_field        Reference field
+  !> @param[in]           conv_mesh        mesh name of the coarse convection grid
+  !> @param[in, optional] xios_id          XIOS id of field
+  subroutine init_coarse_integer_field_from(field, ref_field, conv_mesh, xios_id)
+
+    use function_space_collection_mod, only: function_space_collection
+    use function_space_mod,            only: function_space_type
+
+    implicit none
+
+    type(integer_field_type),      intent(inout) :: field
+    type(integer_field_type),         intent(in) :: ref_field
+    type(mesh_type), pointer, intent(in) :: conv_mesh
+    character(*), optional,   intent(in) :: xios_id
+
+    ! Local variables
+    integer(kind=i_def)                :: fs
+    type(function_space_type), pointer :: vs_conv
+    
+    ! Retrieve the function space type
+    fs = ref_field%which_function_space()
+    ! Create the convection grid vector space
+    vs_conv = function_space_collection%get_fs( conv_mesh, 0, 0, fs )
+    ! Initialise the coarse convection grid field
+    if ( present(xios_id) ) then 
+      ! Assign the corresponding xios id
+      call field%initialise(vector_space = vs_conv, name=xios_id)
+    else
+      call field%initialise(vector_space = vs_conv)
+    end if
+
+  end subroutine init_coarse_integer_field_from
 
 end module diagnostic_mode_comorph_alg_mod
