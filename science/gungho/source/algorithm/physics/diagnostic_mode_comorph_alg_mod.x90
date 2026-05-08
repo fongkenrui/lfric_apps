@@ -1040,7 +1040,7 @@ contains
 
     nullify( conv_mesh )
 
-  end subroutine conv_comorph_alg
+  end subroutine diagnostic_mode_comorph_alg
 
   !> @brief Initialise a coarse field from a given reference fine field.
   !> @post  The field name will be set equal to the XIOS id passed in.
