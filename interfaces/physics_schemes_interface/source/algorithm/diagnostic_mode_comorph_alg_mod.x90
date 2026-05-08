@@ -845,6 +845,10 @@ contains
     !ncells = mesh%get_last_edge_cell()
     !call um_sizes_init(ncells)
 
+    ! Placeholder invoke call needed for psyclone to parse and transform
+    ! without falling over.
+    call invoke( setval_c(exner_in_wth_coarse), 0.0 )
+
     !call invoke( conv_comorph_kernel_type( outer, rho, rho_in_wth,            &
     !                      wetrho_in_w3, wetrho_in_wth, exner, exner_in_wth,   &
     !                      delta, theta, u_in_w3, v_in_w3, w_in_wth,           &
