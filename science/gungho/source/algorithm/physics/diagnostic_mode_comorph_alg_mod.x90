@@ -1067,7 +1067,7 @@ contains
     ! Retrieve the function space type
     fs = ref_field%which_function_space()
     ! Create the convection grid vector space
-    vs_conv = function_space_collection%get_fs( conv_mesh, 0, 0, fs )
+    vs_conv => function_space_collection%get_fs( conv_mesh, 0, 0, fs )
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
@@ -1103,7 +1103,7 @@ contains
     ! Retrieve the function space type
     fs = ref_int_field%which_function_space()
     ! Create the convection grid vector space
-    vs_conv = function_space_collection%get_fs( conv_mesh, 0, 0, fs )
+    vs_conv => function_space_collection%get_fs( conv_mesh, 0, 0, fs )
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
