@@ -1084,15 +1084,15 @@ contains
   !> @param[in]           ref_field        Reference field
   !> @param[in]           conv_mesh        mesh name of the coarse convection grid
   !> @param[in, optional] xios_id          XIOS id of field
-  subroutine init_coarse_integer_field_from(field, ref_field, conv_mesh, xios_id)
+  subroutine init_coarse_integer_field_from(int_field, ref_int_field, conv_mesh, xios_id)
 
     use function_space_collection_mod, only: function_space_collection
     use function_space_mod,            only: function_space_type
 
     implicit none
 
-    type(integer_field_type),      intent(inout) :: field
-    type(integer_field_type),         intent(in) :: ref_field
+    type(integer_field_type),      intent(inout) :: int_field
+    type(integer_field_type),         intent(in) :: ref_int_field
     type(mesh_type), pointer, intent(in) :: conv_mesh
     character(*), optional,   intent(in) :: xios_id
 
@@ -1101,7 +1101,7 @@ contains
     type(function_space_type), pointer :: vs_conv
     
     ! Retrieve the function space type
-    fs = ref_field%which_function_space()
+    fs = ref_int_field%which_function_space()
     ! Create the convection grid vector space
     vs_conv = function_space_collection%get_fs( conv_mesh, 0, 0, fs )
     ! Initialise the coarse convection grid field
