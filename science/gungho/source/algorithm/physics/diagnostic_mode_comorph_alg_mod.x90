@@ -1107,9 +1107,9 @@ contains
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
-      call field%initialise(vector_space = vs_conv, name=xios_id)
+      call int_field%initialise(vector_space = vs_conv, name=xios_id)
     else
-      call field%initialise(vector_space = vs_conv)
+      call int_field%initialise(vector_space = vs_conv)
     end if
 
   end subroutine init_coarse_integer_field_from
