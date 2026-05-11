@@ -1062,7 +1062,7 @@ contains
 
     ! Local variables
     integer(kind=i_def)                :: fs
-    type(function_space_type), pointer :: vs_conv
+    type(function_space_type), pointer :: vs_conv => null()
     
     ! Retrieve the function space type
     fs = ref_field%which_function_space()
@@ -1098,7 +1098,7 @@ contains
 
     ! Local variables
     integer(kind=i_def)                :: fs
-    type(function_space_type), pointer :: vs_conv
+    type(function_space_type), pointer :: vs_conv => null()
     
     ! Retrieve the function space type
     fs = ref_int_field%which_function_space()
