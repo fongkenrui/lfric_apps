@@ -460,6 +460,9 @@ contains
     type( mesh_type ), pointer  :: conv_mesh
     integer(i_def) :: ncells
 
+    ! Loop variable
+    integer( kind=i_def ) :: i_mr
+
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
     call log_event( 'Running Comorph convection scheme', LOG_LEVEL_DEBUG )
@@ -658,13 +661,13 @@ contains
     ! Initialise the coarse convection fields
 
     ! Model prognostics
-    call init_coarse_field_from(rho, rho_coarse, conv_mesh)
-    call init_coarse_field_from(exner, exner_coarse, conv_mesh)
-    call init_coarse_field_from(theta, theta_coarse, conv_mesh)
+    call init_coarse_field_from(rho_coarse, rho, conv_mesh)
+    call init_coarse_field_from(exner_coarse, exner, conv_mesh)
+    call init_coarse_field_from(theta_coarse, theta, conv_mesh)
     ! Mixing ratios - need special handling
     do i_mr=1, nummr
-      call init_coarse_field_from(mr(i_mr), mr_coarse(i_mr), conv_mesh)
-      call init_coarse_field_from(mr_n(i_mr), mr_n_coarse(i_mr), conv_mesh)
+      call init_coarse_field_from(mr_coarse(i_mr), mr(i_mr), conv_mesh)
+      call init_coarse_field_from(mr_n_coarse(i_mr), mr_n(i_mr), conv_mesh)
     end do
 
     ! Derived fields/packed fields
@@ -887,7 +890,7 @@ contains
     call map_scalar_field(theta_star_coarse, theta_star)
     call map_scalar_field(u_in_w3_star_coarse, u_in_w3_star)
     call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
-    ! Boundary layer fields
+    ! Boundary layer fields; these are 2D fields
     call map_scalar_field(zh_coarse, zh)
     call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
     call map_scalar_field(zhsc_coarse, zhsc)
