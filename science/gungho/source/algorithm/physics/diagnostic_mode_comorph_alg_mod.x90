@@ -59,6 +59,11 @@ contains
 
     use conv_comorph_kernel_mod, only: conv_comorph_kernel_type
     use diagnostic_mode_conv_config_mod, only: conv_mesh_name
+    use intermesh_mappings_alg_mod, &
+                              only: map_scalar_field,  &
+                                    map_rho_intermesh, &
+                                    map_mr_bundle_intermesh
+    use physics_mappings_alg_mod,  only: map_physics_scalars
 
     implicit none
 
@@ -260,6 +265,12 @@ contains
     type( field_type ), pointer :: height_wth
 
     ! Coarsened fields to be passed to CoMorph kernel
+    type( field_type ) :: rho_coarse 
+    type( field_type ) :: exner_coarse
+    type( field_type ) :: theta_coarse
+    type( field_type ) :: mr_coarse(nummr)
+    type( field_type ) :: mr_n_coarse(nummr)
+
     type( field_type ) :: exner_in_wth_coarse
     type( field_type ) :: delta_coarse
     type( field_type ) :: rho_in_wth_coarse
@@ -645,6 +656,18 @@ contains
     !height_w3  => get_height_fv(W3, mesh%get_id())
 
     ! Initialise the coarse convection fields
+
+    ! Model prognostics
+    call init_coarse_field_from(rho, rho_coarse, conv_mesh)
+    call init_coarse_field_from(exner, exner_coarse, conv_mesh)
+    call init_coarse_field_from(theta, theta_coarse, conv_mesh)
+    ! Mixing ratios - need special handling
+    do i_mr=1, nummr
+      call init_coarse_field_from(mr(i_mr), mr_coarse(i_mr), conv_mesh)
+      call init_coarse_field_from(mr_n(i_mr), mr_n_coarse(i_mr), conv_mesh)
+    end do
+
+    ! Derived fields/packed fields
     call init_coarse_field_from(exner_in_wth_coarse, exner_in_wth, conv_mesh)
     call init_coarse_field_from(rho_in_wth_coarse, rho_in_wth, conv_mesh)
     call init_coarse_field_from(wetrho_in_wth_coarse, wetrho_in_wth, conv_mesh)
@@ -841,13 +864,57 @@ contains
     !                                  detrain_down,         &
     !                                  massflux_up_half)
 
+    ! Map the fine fields to the coarse fields
+    ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
+    ! map_rho_intermesh is only for W3 space rho
+    call map_rho_intermesh(rho_coarse, rho)
+    call map_scalar_field(exner_coarse, exner)
+    call map_scalar_field(theta_coarse, theta)
+    ! mr bundle fields
+    call map_mr_bundle_intermesh(mr_coarse, mr, rho_coarse, rho)
+    call map_mr_bundle_intermesh(mr_n_coarse, mr_n, rho_coarse, rho)
+    ! Other derived fields
+    call map_scalar_field(exner_in_wth_coarse, exner_in_wth)
+    ! map_rho_intermesh only works with W3 fields, so use physics field
+    ! mapping for wth equivalents of rho/wetrho
+    call map_rho_intermesh(wetrho_in_w3_coarse, wetrho_in_w3)
+    call map_physics_scalars(rho_in_wth_coarse, rho_coarse)
+    call map_physics_scalars(wetrho_in_wth_coarse, wetrho_in_w3_coarse)
+    ! u,v,w velocity components
+    call map_scalar_field(u_in_w3_coarse, u_in_w3)
+    call map_scalar_field(v_in_w3_coarse, v_in_w3)
+    call map_scalar_field(w_in_wth_coarse, w_in_wth)
+    call map_scalar_field(theta_star_coarse, theta_star)
+    call map_scalar_field(u_in_w3_star_coarse, u_in_w3_star)
+    call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
+    ! Boundary layer fields
+    call map_scalar_field(zh_coarse, zh)
+    call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
+    call map_scalar_field(zhsc_coarse, zhsc)
+    call map_scalar_field(inv_depth_coarse, inv_depth)
+    ! bl_type_ind is an integer field; TODO: use majority vote mapping
+    ! For now we just set all indicators to zero since the kernel only
+    ! cares whether or not it is a Type 7 BL; this is equivalent to saying
+    ! that all of them are not Type 7 BL.
+    call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
+    ! Boundary layer fields
+    call map_scalar_field(tke_bl_coarse, tke_bl)
+    call map_scalar_field(wvar_coarse, wvar)
+    call map_scalar_field(rhokm_bl_coarse, rhokm_bl)
+    call map_scalar_field(moist_flux_coarse, moist_flux)
+    call map_scalar_field(heat_flux_coarse, heat_flux)
+    call map_scalar_field(taux_coarse, taux)
+    call map_scalar_field(tauy_coarse, tauy)
+    ! Surface fields; does map_scalar_field work for 2D fields?
+    
+
     ! call the scheme
     !ncells = mesh%get_last_edge_cell()
     !call um_sizes_init(ncells)
 
     ! Placeholder invoke call needed for psyclone to parse and transform
     ! without falling over.
-    call invoke( setval_c(exner_in_wth_coarse, 0.0_r_def) )
+    ! call invoke( setval_c(exner_in_wth_coarse, 0.0_r_def) )
 
     !call invoke( conv_comorph_kernel_type( outer, rho, rho_in_wth,            &
     !                      wetrho_in_w3, wetrho_in_wth, exner, exner_in_wth,   &
