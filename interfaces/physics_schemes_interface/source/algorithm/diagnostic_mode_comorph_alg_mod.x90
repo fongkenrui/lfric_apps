@@ -465,8 +465,7 @@ contains
 
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
-    call log_event( 'Running Comorph convection scheme', LOG_LEVEL_DEBUG )
-
+    write(*,*) "conv_mesh=", conv_mesh_name
     ! Get the convection grid mesh
     conv_mesh => mesh_collection%get_mesh( conv_mesh_name )
     delta => get_delta_at_wtheta( conv_mesh%get_id() )
