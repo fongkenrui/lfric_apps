@@ -25,7 +25,7 @@ module diagnostic_mode_comorph_alg_mod
   ! TODO: Create a specific module for diagnostic-mode comorph
   use comorph_diags_mod,    only: initialise_diags_for_comorph, &
                                   output_diags_for_comorph
-  use log_mod,              only: log_event, LOG_LEVEL_DEBUG
+  use log_mod,              only: log_event, LOG_LEVEL_DEBUG, LOG_LEVEL_INFO
   use mesh_mod,             only: mesh_type
   use mesh_collection_mod,  only: mesh_collection
   use um_sizes_init_mod,    only: um_sizes_init
@@ -870,6 +870,7 @@ contains
     ! Map the fine fields to the coarse fields
     ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
     ! map_rho_intermesh is only for W3 space rho
+    call log_event( 'map_rho_intermesh on rho', LOG_LEVEL_INFO )
     call map_rho_intermesh(rho_coarse, rho)
     call map_scalar_field(exner_coarse, exner)
     call map_scalar_field(theta_coarse, theta)
@@ -880,7 +881,9 @@ contains
     call map_scalar_field(exner_in_wth_coarse, exner_in_wth)
     ! map_rho_intermesh only works with W3 fields, so use physics field
     ! mapping for wth equivalents of rho/wetrho
+    call log_event( 'map_rho_intermesh on wet_rho', LOG_LEVEL_INFO )
     call map_rho_intermesh(wetrho_in_w3_coarse, wetrho_in_w3)
+    call log_event( 'map_physics_scalars for rho and wetrho', LOG_LEVEL_INFO )
     call map_physics_scalars(rho_in_wth_coarse, rho_coarse)
     call map_physics_scalars(wetrho_in_wth_coarse, wetrho_in_w3_coarse)
     ! u,v,w velocity components
@@ -891,6 +894,7 @@ contains
     call map_scalar_field(u_in_w3_star_coarse, u_in_w3_star)
     call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
     ! Boundary layer fields; these are 2D fields
+    call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
     call map_scalar_field(zh_coarse, zh)
     call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
     call map_scalar_field(zhsc_coarse, zhsc)
@@ -899,6 +903,7 @@ contains
     ! For now we just set all indicators to zero since the kernel only
     ! cares whether or not it is a Type 7 BL; this is equivalent to saying
     ! that all of them are not Type 7 BL.
+    call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
     call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
     ! Boundary layer fields
     call map_scalar_field(tke_bl_coarse, tke_bl)
@@ -909,6 +914,34 @@ contains
     call map_scalar_field(taux_coarse, taux)
     call map_scalar_field(tauy_coarse, tauy)
     ! Surface fields; does map_scalar_field work for 2D fields?
+    call map_scalar_field(surf_interp_coarse, surf_interp)
+    call map_scalar_field(ustar_coarse, ustar)
+    ! Convection diagnostics
+    call map_scalar_field(conv_rain_coarse, conv_rain)
+    call map_scalar_field(conv_rain_3d_coarse, conv_rain_3d)
+    call map_scalar_field(conv_snow_coarse, conv_snow)
+    call map_scalar_field(conv_snow_3d_coarse, conv_snow_3d)
+    call map_scalar_field(cca_2d_coarse, cca_2d)
+    call map_scalar_field(cv_base_coarse, cv_base)
+    call map_scalar_field(cv_top_coarse, cv_top)
+    call map_scalar_field(cca_coarse, cca)
+    call map_scalar_field(ccw_coarse, ccw)
+    call map_scalar_field(dt_conv_coarse, dt_conv)
+    call map_scalar_field(dmv_conv_coarse, dmv_conv)
+    call map_scalar_field(dmcl_conv_coarse, dmcl_conv)
+    call map_scalar_field(dms_conv_coarse, dms_conv)
+    call map_scalar_field(dcfl_conv_coarse, dcfl_conv)
+    call map_scalar_field(dcff_conv_coarse, dcff_conv)
+    call map_scalar_field(dbcf_conv_coarse, dbcf_conv)
+    call map_scalar_field(du_conv_coarse, du_conv)
+    call map_scalar_field(dv_conv_coarse, dv_conv)
+    call map_scalar_field(conv_prog_dtheta_coarse, conv_prog_dtheta)
+    call map_scalar_field(conv_prog_dmv_coarse, conv_prog_dmv)
+    call map_scalar_field(dd_mf_cb_coarse, dd_mf_cb)
+    call map_scalar_field(massflux_up_coarse, massflux_up)
+    call map_scalar_field(massflux_down_coarse, massflux_down)
+    call map_scalar_field(cape_diluted_coarse, cape_diluted)
+    call map_scalar_field(pressure_inc_env_coarse, pressure_inc_env)
     
 
     ! call the scheme
