@@ -26,7 +26,7 @@ module diagnostic_mode_comorph_alg_mod
   use comorph_diags_mod,    only: initialise_diags_for_comorph, &
                                   output_diags_for_comorph
   use log_mod,              only: log_event, log_scratch_space, &
-                                  LOG_LEVEL_DEBUG, LOG_LEVEL_INFO
+                                  LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_ERROR
   use mesh_mod,             only: mesh_type
   use mesh_collection_mod,  only: mesh_collection
   use um_sizes_init_mod,    only: um_sizes_init
@@ -1177,13 +1177,42 @@ contains
     character(*), optional,   intent(in) :: xios_id
 
     ! Local variables
-    integer(kind=i_def)                :: fs
+    integer                            :: fs
+    integer                            :: element_order_h
+    integer                            :: element_order_v
+    integer                            :: ref_extrusion_id
+    type(mesh_type), pointer           :: ref_mesh => null()
+    type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
     
     ! Retrieve the function space type
     fs = ref_field%which_function_space()
+
+    ! Should be lowest order, but this is for safety 
+    element_order_h = ref_field%get_element_order_h()
+    element_order_v = ref_field%get_element_order_v()
+
+    ! Need to be able to handle 2D fields correctly; otherwise will try to
+    ! map 2D fine fields to 3D coarse fields and fail.
+    ref_mesh => ref_field%get_mesh()
+    ref_extrusion_id = ref_mesh%get_extrusion_id()
+
+    if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
+      target_mesh => conv_mesh
+    else
+      target_mesh => mesh_collection%get_mesh(conv_mesh, ref_extrusion_id)
+    end if
+
+    ! Raise an error if no equivalent extrusion for the conv_mesh
+    if ( .not. associated(target_mesh) ) then
+      call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
+    end if
+
     ! Create the convection grid vector space
-    vs_conv => function_space_collection%get_fs( conv_mesh, 0, 0, fs )
+    vs_conv => function_space_collection%get_fs( target_mesh,      &
+                                                 element_order_h,  &
+                                                 element_order_v,  &
+                                                 fs )
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
@@ -1213,13 +1242,34 @@ contains
     character(*), optional,   intent(in) :: xios_id
 
     ! Local variables
-    integer(kind=i_def)                :: fs
+    integer                            :: fs
+    integer                            :: ref_extrusion_id
+    type(mesh_type), pointer           :: ref_mesh => null()
+    type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
     
     ! Retrieve the function space type
     fs = ref_int_field%which_function_space()
+    ! Note: Integer fields are discontinuous spaces so no element orders
+
+    ! Need to be able to handle 2D fields correctly; otherwise will try to
+    ! map 2D fine fields to 3D coarse fields and fail.
+    ref_mesh => ref_int_field%get_mesh()
+    ref_extrusion_id = ref_mesh%get_extrusion_id()
+
+    if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
+      target_mesh => conv_mesh
+    else
+      target_mesh => mesh_collection%get_mesh(conv_mesh, ref_extrusion_id)
+    end if
+    
+    ! Raise an error if no equivalent extrusion for the conv_mesh
+    if ( .not. associated(target_mesh) ) then
+      call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
+    end if
+
     ! Create the convection grid vector space
-    vs_conv => function_space_collection%get_fs( conv_mesh, 0, 0, fs )
+    vs_conv => function_space_collection%get_fs( target_mesh, 0, 0, fs )
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
