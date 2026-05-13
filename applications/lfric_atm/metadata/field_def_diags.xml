@@ -400,6 +400,18 @@
   <field id="convection__pres_lowest_cv_top" name="pres_lowest_cv_top" long_name="pressure_at_lowest_convective_cloud_top" unit="Pa" domain_ref="face" />
   <field id="convection__pres_cv_base" name="pres_cv_base" long_name="pressure_at_convective_cloud_base" unit="Pa" domain_ref="face" />
   <field id="convection__pres_cv_top" name="pres_cv_top" long_name="pressure_at_convective_cloud_top" unit="Pa" domain_ref="face" />
+  <!-- Coarsened diagnostic-mode CoMorph diagnostics -->
+  <!-- The following definitions are essential because the code uses the xios metadata defined here for initializing the fields -->
+  <field id="convection__pres_lowest_cv_base_coarse" name="pres_lowest_cv_base_coarse" long_name="pressure_at_lowest_convective_cloud_base_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
+  <field id="convection__pres_lowest_cv_top_coarse" name="pres_lowest_cv_top_coarse" long_name="pressure_at_lowest_convective_cloud_top_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
+  <field id="convection__pres_cv_base_coarse" name="pres_cv_base_coarse" long_name="pressure_at_convective_cloud_base_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
+  <field id="convection__pres_cv_top_coarse" name="pres_cv_top_coarse" long_name="pressure_at_convective_cloud_top_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
+  <field id="convection__lowest_cca_2d_coarse" name="lowest_cca_2d_coarse" long_name="lowest_convective_cloud_amount_(2d)_with_no_anvil_on_coarse_grid" unit="1" domain_ref="conv_face" />
+  <field id="convection__entrain_up_coarse" name="entrain_up_coarse" long_name="convection_upward_entrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
+  <field id="convection__entrain_down_coarse" name="entrain_down_coarse" long_name="convection_downward_entrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
+  <field id="convection__detrain_up_coarse" name="detrain_up_coarse" long_name="convection_upward_detrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
+  <field id="convection__detrain_down_coarse" name="detrain_down_coarse" long_name="convection_downward_detrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
+  <field id="convection__massflux_up_half_coarse" name="massflux_up_half_coarse" long_name="conv_upward_massflux_half_levs_on_coarse_grid" unit="Pa s-1" grid_ref="conv_half_level_face_grid" />
   <!-- microphysics diagnostics -->
   <field id="microphysics__dtheta_mphys" name="dtheta_mphys" long_name="potential_temperature_increment_due_to_microphysics" unit="K" grid_ref="full_level_face_grid" />
   <field id="microphysics__dt_mphys" name="dt_mphys" long_name="temperature_increment_due_to_microphysics" unit="K" grid_ref="full_level_face_grid" />

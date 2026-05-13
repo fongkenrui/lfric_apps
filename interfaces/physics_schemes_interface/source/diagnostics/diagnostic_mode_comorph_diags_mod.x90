@@ -1,0 +1,301 @@
+!-------------------------------------------------------------------------------
+! (c) Crown copyright 2024 Met Office. All rights reserved.
+! The file LICENCE, distributed with this code, contains details of the terms
+! under which the code may be used.
+!-------------------------------------------------------------------------------
+!> @brief Diagnostic module for diagnostic-mode comorph
+
+module diagnostic_mode_comorph_diags_mod
+
+  use constants_mod,       only: l_def
+  use field_mod,           only: field_type
+  use integer_field_mod,    only: integer_field_type
+  use field_collection_mod, only: field_collection_type
+  use log_mod,              only: log_event, log_scratch_space, &
+                                  LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_ERROR
+  use mesh_mod,             only: mesh_type
+  use mesh_collection_mod,  only: mesh_collection
+  use mr_indices_mod,       only: nummr, imr_v, imr_cl, imr_ci, imr_r, imr_g,&
+       imr_s
+  use fs_continuity_mod,           only: W3, Wtheta
+  use io_config_mod,       only: subroutine_timers
+  use timer_mod,           only: timer
+  use function_space_collection_mod, only: function_space_collection
+  use function_space_mod,            only: function_space_type
+  use initialise_diagnostics_mod,     only : init_diag &
+                                             => init_diagnostic_field
+
+  implicit none
+
+  private
+
+  ! Module-level logicals indicating whether diagnostics are requested
+  ! Shouldn't have namespace clashes with original comorph_diags_mod
+  logical( l_def ) :: lowest_cv_base_flag,         &
+                      lowest_cv_top_flag,          &
+                      pres_cv_base_flag,           &
+                      pres_cv_top_flag,            &
+                      pres_lowest_cv_base_flag,    &
+                      pres_lowest_cv_top_flag,     &
+                      lowest_cca_2d_flag,          &
+                      entrain_up_flag,             & ! 3-D
+                      entrain_down_flag,           &
+                      detrain_up_flag,             &
+                      detrain_down_flag,           &
+                      massflux_up_half_flag
+
+  public :: initialise_diags_for_diagnostic_mode_comorph
+  public :: output_diags_for_comorph
+
+contains
+
+  !> @brief Initialise a coarse field from a given reference fine field.
+  !> @post  The field name will be set equal to the XIOS id passed in.
+  !> @param[inout]        field            Field to initialise
+  !> @param[in]           ref_field        Reference field
+  !> @param[in]           conv_mesh        mesh name of the coarse convection grid
+  !> @param[in, optional] xios_id          XIOS id of field
+  subroutine init_coarse_field_from(field, ref_field, conv_mesh, xios_id)
+
+    implicit none
+
+    type(field_type),      intent(inout) :: field
+    type(field_type),         intent(in) :: ref_field
+    type(mesh_type), pointer, intent(in) :: conv_mesh
+    character(*), optional,   intent(in) :: xios_id
+
+    ! Local variables
+    integer                            :: fs
+    integer                            :: element_order_h
+    integer                            :: element_order_v
+    integer                            :: ref_extrusion_id
+    type(mesh_type), pointer           :: ref_mesh => null()
+    type(mesh_type), pointer           :: target_mesh => null()
+    type(function_space_type), pointer :: vs_conv => null()
+    
+    ! Retrieve the function space type
+    fs = ref_field%which_function_space()
+
+    ! Should be lowest order, but this is for safety 
+    element_order_h = ref_field%get_element_order_h()
+    element_order_v = ref_field%get_element_order_v()
+
+    ! Need to be able to handle 2D fields correctly; otherwise will try to
+    ! map 2D fine fields to 3D coarse fields and fail.
+    ref_mesh => ref_field%get_mesh()
+    ref_extrusion_id = ref_mesh%get_extrusion_id()
+
+    if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
+      target_mesh => conv_mesh
+    else
+      target_mesh => mesh_collection%get_mesh(conv_mesh, ref_extrusion_id)
+    end if
+
+    ! Raise an error if no equivalent extrusion for the conv_mesh
+    if ( .not. associated(target_mesh) ) then
+      call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
+    end if
+
+    ! Create the convection grid vector space
+    vs_conv => function_space_collection%get_fs( target_mesh,      &
+                                                 element_order_h,  &
+                                                 element_order_v,  &
+                                                 fs )
+    ! Initialise the coarse convection grid field
+    if ( present(xios_id) ) then 
+      ! Assign the corresponding xios id
+      call field%initialise(vector_space = vs_conv, name=xios_id)
+    else
+      call field%initialise(vector_space = vs_conv)
+    end if
+
+  end subroutine init_coarse_field_from
+
+  !> @brief Initialise a integer_field type coarse field from a given reference fine field.
+  !> @post  The field name will be set equal to the XIOS id passed in.
+  !> @param[inout]        field            Field to initialise
+  !> @param[in]           ref_field        Reference field
+  !> @param[in]           conv_mesh        mesh name of the coarse convection grid
+  !> @param[in, optional] xios_id          XIOS id of field
+  subroutine init_coarse_integer_field_from(int_field, ref_int_field, conv_mesh, xios_id)
+
+    implicit none
+
+    type(integer_field_type),      intent(inout) :: int_field
+    type(integer_field_type),         intent(in) :: ref_int_field
+    type(mesh_type), pointer, intent(in) :: conv_mesh
+    character(*), optional,   intent(in) :: xios_id
+
+    ! Local variables
+    integer                            :: fs
+    integer                            :: ref_extrusion_id
+    type(mesh_type), pointer           :: ref_mesh => null()
+    type(mesh_type), pointer           :: target_mesh => null()
+    type(function_space_type), pointer :: vs_conv => null()
+    
+    ! Retrieve the function space type
+    fs = ref_int_field%which_function_space()
+    ! Note: Integer fields are discontinuous spaces so no element orders
+
+    ! Need to be able to handle 2D fields correctly; otherwise will try to
+    ! map 2D fine fields to 3D coarse fields and fail.
+    ref_mesh => ref_int_field%get_mesh()
+    ref_extrusion_id = ref_mesh%get_extrusion_id()
+
+    if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
+      target_mesh => conv_mesh
+    else
+      target_mesh => mesh_collection%get_mesh(conv_mesh, ref_extrusion_id)
+    end if
+    
+    ! Raise an error if no equivalent extrusion for the conv_mesh
+    if ( .not. associated(target_mesh) ) then
+      call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
+    end if
+
+    ! Create the convection grid vector space
+    vs_conv => function_space_collection%get_fs( target_mesh, 0, 0, fs )
+    ! Initialise the coarse convection grid field
+    if ( present(xios_id) ) then 
+      ! Assign the corresponding xios id
+      call int_field%initialise(vector_space = vs_conv, name=xios_id)
+    else
+      call int_field%initialise(vector_space = vs_conv)
+    end if
+
+  end subroutine init_coarse_integer_field_from
+
+  !> @brief Initialise fields for locally-computed diagnostics
+  subroutine initialise_diags_for_diagnostic_mode_comorph(lowest_cv_base_coarse,         &
+                                                          lowest_cv_top_coarse,          &
+                                                          cv_base_coarse,                &
+                                                          cv_top_coarse,                 &
+                                                          pres_cv_base_coarse,           &
+                                                          pres_cv_top_coarse,            &
+                                                          pres_lowest_cv_base_coarse,    &
+                                                          pres_lowest_cv_top_coarse,     &
+                                                          lowest_cca_2d_coarse,          &
+                                                          entrain_up_coarse,             & ! 3-D
+                                                          entrain_down_coarse,           &
+                                                          detrain_up_coarse,             &
+                                                          detrain_down_coarse,           &
+                                                          massflux_up_half_coarse)
+
+    implicit none
+    ! This is pretty much a copy of initialise_diags_for_comorph, but modified to pair
+    ! with the specific coarse-field diagnostics as defined in xios metadata.
+
+    ! Diagnostic fields to initialise
+    type( field_type ), intent(inout) :: lowest_cv_base_coarse,          &
+                                         lowest_cv_top_coarse,           &
+                                         cv_base_coarse,                 &
+                                         cv_top_coarse,                  &
+                                         pres_cv_base_coarse,            &
+                                         pres_cv_top_coarse,             &
+                                         pres_lowest_cv_base_coarse,     &
+                                         pres_lowest_cv_top_coarse,      &
+                                         lowest_cca_2d_coarse,           &
+                                         entrain_up_coarse,              & ! 3-D
+                                         entrain_down_coarse,            &
+                                         detrain_up_coarse,              &
+                                         detrain_down_coarse,            &
+                                         massflux_up_half_coarse
+
+    if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
+
+    ! init_diag intialises the fields based on xios metadata
+
+    ! Convective diagnostics - 2d
+    lowest_cv_base_flag = init_diag(lowest_cv_base_coarse, 'convection__lowest_cv_base_coarse')
+    lowest_cv_top_flag = init_diag(lowest_cv_top_coarse, 'convection__lowest_cv_top_coarse')
+
+    ! cv_base and _top are dependencies for chemistry, hence need to be 'active'
+
+    pres_cv_base_flag = init_diag(pres_cv_base_coarse, 'convection__pres_cv_base_coarse')
+    pres_cv_top_flag = init_diag(pres_cv_top_coarse, 'convection__pres_cv_top_coarse')
+
+    pres_lowest_cv_base_flag = init_diag(pres_lowest_cv_base_coarse, &
+                                         'convection__pres_lowest_cv_base_coarse')
+    pres_lowest_cv_top_flag = init_diag(pres_lowest_cv_top_coarse, &
+                                        'convection__pres_lowest_cv_top_coarse')
+
+    lowest_cca_2d_flag = init_diag(lowest_cca_2d_coarse, &
+                                   'convection__lowest_cca_2d_coarse')
+
+    ! Convective diagnostics - 3d  - theta levels
+    entrain_up_flag = init_diag(entrain_up_coarse, 'convection__entrain_up_coarse')
+    if (entrain_up_flag) call invoke( setval_c(entrain_up_coarse, 0.0_r_def) )
+
+    entrain_down_flag = init_diag(entrain_down_coarse, 'convection__entrain_down_coarse')
+    if (entrain_down_flag) call invoke( setval_c(entrain_down_coarse, 0.0_r_def) )
+
+    detrain_up_flag = init_diag(detrain_up_coarse, 'convection__detrain_up_coarse')
+    if (detrain_up_flag) call invoke( setval_c(detrain_up_coarse, 0.0_r_def) )
+
+    detrain_down_flag = init_diag(detrain_down_coarse, 'convection__detrain_down_coarse')
+    if (detrain_down_flag) call invoke( setval_c(detrain_down_coarse, 0.0_r_def) )
+    massflux_up_half_flag = init_diag(massflux_up_half_coarse, 'convection__massflux_up_half_coarse')
+
+    if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
+
+  end subroutine initialise_diags_for_diagnostic_mode_comorph
+
+  !> @brief Output diagnostics from comorph_alg
+  subroutine output_diags_for_diagnostic_mode_comorph( lowest_cv_base_coarse,        &
+                                                       lowest_cv_top_coarse,         &
+                                                       cv_base_coarse,               &
+                                                       cv_top_coarse,                &
+                                                       pres_cv_base_coarse,          &
+                                                       pres_cv_top_coarse,           &
+                                                       pres_lowest_cv_base_coarse,   &
+                                                       pres_lowest_cv_top_coarse,    &
+                                                       lowest_cca_2d_coarse,         &
+                                                       entrain_up_coarse,            & 
+                                                       entrain_down_coarse,          &
+                                                       detrain_up_coarse,            &
+                                                       detrain_down_coarse,          &
+                                                       massflux_up_half_coarse)
+
+    implicit none
+
+    ! Local diagnostic fields to output
+    type( field_type ), intent(in) :: lowest_cv_base_coarse,          &
+                                      lowest_cv_top_coarse,           &
+                                      cv_base_coarse,                 &
+                                      cv_top_coarse,                  &
+                                      pres_cv_base_coarse,            &
+                                      pres_cv_top_coarse,             &
+                                      pres_lowest_cv_base_coarse,     &
+                                      pres_lowest_cv_top_coarse,      &
+                                      lowest_cca_2d_coarse,           &
+                                      entrain_up_coarse,              & 
+                                      entrain_down_coarse,            &
+                                      detrain_up_coarse,              &
+                                      detrain_down_coarse,            &
+                                      massflux_up_half_coarse
+
+    if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
+    ! Write the fields here
+    ! Diagnostics computed within the kernel
+    ! 2D
+    if (lowest_cv_base_flag) call lowest_cv_base_coarse%write_field()
+    if (lowest_cv_top_flag) call lowest_cv_top_coarse%write_field()
+    call cv_base_coarse%write_field()
+    call cv_top_coarse%write_field()
+    if (pres_cv_base_flag) call pres_cv_base_coarse%write_field()
+    if (pres_cv_top_flag) call pres_cv_top_coarse%write_field()
+    if (pres_lowest_cv_base_flag) call pres_lowest_cv_base_coarse%write_field()
+    if (pres_lowest_cv_top_flag) call pres_lowest_cv_top_coarse%write_field()
+    if (lowest_cca_2d_flag) call lowest_cca_2d_coarse%write_field()
+
+    ! 3D
+    if (entrain_up_flag) call entrain_up_coarse%write_field()
+    if (entrain_down_flag) call entrain_down_coarse%write_field()
+    if (detrain_up_flag) call detrain_up_coarse%write_field()
+    if (detrain_down_flag) call detrain_down_coarse%write_field()
+    if (massflux_up_half_flag) call massflux_up_half_coarse%write_field()
+    if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
+
+  end subroutine output_diags_for_diagnostic_mode_comorph 
+  
+end module diagnostic_mode_comorph_diags_mod

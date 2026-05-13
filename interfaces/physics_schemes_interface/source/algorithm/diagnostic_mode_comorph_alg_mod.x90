@@ -63,6 +63,10 @@ contains
 
     use conv_comorph_kernel_mod, only: conv_comorph_kernel_type
     use diagnostic_mode_conv_config_mod, only: conv_mesh_name
+    use diagnostic_mode_comorph_diags_mod, only: init_coarse_field_from, &
+                                                 init_coarse_integer_field_from, &
+                                                 initialise_diags_for_diagnostic_mode_comorph, &
+                                                 output_diags_for_diagnostic_mode_comorph
     use intermesh_mappings_alg_mod, &
                               only: map_scalar_field,  &
                                     map_rho_intermesh, &
@@ -1157,127 +1161,5 @@ contains
     nullify( conv_mesh )
 
   end subroutine diagnostic_mode_comorph_alg
-
-  !> @brief Initialise a coarse field from a given reference fine field.
-  !> @post  The field name will be set equal to the XIOS id passed in.
-  !> @param[inout]        field            Field to initialise
-  !> @param[in]           ref_field        Reference field
-  !> @param[in]           conv_mesh        mesh name of the coarse convection grid
-  !> @param[in, optional] xios_id          XIOS id of field
-  subroutine init_coarse_field_from(field, ref_field, conv_mesh, xios_id)
-
-    use function_space_collection_mod, only: function_space_collection
-    use function_space_mod,            only: function_space_type
-
-    implicit none
-
-    type(field_type),      intent(inout) :: field
-    type(field_type),         intent(in) :: ref_field
-    type(mesh_type), pointer, intent(in) :: conv_mesh
-    character(*), optional,   intent(in) :: xios_id
-
-    ! Local variables
-    integer                            :: fs
-    integer                            :: element_order_h
-    integer                            :: element_order_v
-    integer                            :: ref_extrusion_id
-    type(mesh_type), pointer           :: ref_mesh => null()
-    type(mesh_type), pointer           :: target_mesh => null()
-    type(function_space_type), pointer :: vs_conv => null()
-    
-    ! Retrieve the function space type
-    fs = ref_field%which_function_space()
-
-    ! Should be lowest order, but this is for safety 
-    element_order_h = ref_field%get_element_order_h()
-    element_order_v = ref_field%get_element_order_v()
-
-    ! Need to be able to handle 2D fields correctly; otherwise will try to
-    ! map 2D fine fields to 3D coarse fields and fail.
-    ref_mesh => ref_field%get_mesh()
-    ref_extrusion_id = ref_mesh%get_extrusion_id()
-
-    if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
-      target_mesh => conv_mesh
-    else
-      target_mesh => mesh_collection%get_mesh(conv_mesh, ref_extrusion_id)
-    end if
-
-    ! Raise an error if no equivalent extrusion for the conv_mesh
-    if ( .not. associated(target_mesh) ) then
-      call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
-    end if
-
-    ! Create the convection grid vector space
-    vs_conv => function_space_collection%get_fs( target_mesh,      &
-                                                 element_order_h,  &
-                                                 element_order_v,  &
-                                                 fs )
-    ! Initialise the coarse convection grid field
-    if ( present(xios_id) ) then 
-      ! Assign the corresponding xios id
-      call field%initialise(vector_space = vs_conv, name=xios_id)
-    else
-      call field%initialise(vector_space = vs_conv)
-    end if
-
-  end subroutine init_coarse_field_from
-
-  !> @brief Initialise a integer_field type coarse field from a given reference fine field.
-  !> @post  The field name will be set equal to the XIOS id passed in.
-  !> @param[inout]        field            Field to initialise
-  !> @param[in]           ref_field        Reference field
-  !> @param[in]           conv_mesh        mesh name of the coarse convection grid
-  !> @param[in, optional] xios_id          XIOS id of field
-  subroutine init_coarse_integer_field_from(int_field, ref_int_field, conv_mesh, xios_id)
-
-    use function_space_collection_mod, only: function_space_collection
-    use function_space_mod,            only: function_space_type
-
-    implicit none
-
-    type(integer_field_type),      intent(inout) :: int_field
-    type(integer_field_type),         intent(in) :: ref_int_field
-    type(mesh_type), pointer, intent(in) :: conv_mesh
-    character(*), optional,   intent(in) :: xios_id
-
-    ! Local variables
-    integer                            :: fs
-    integer                            :: ref_extrusion_id
-    type(mesh_type), pointer           :: ref_mesh => null()
-    type(mesh_type), pointer           :: target_mesh => null()
-    type(function_space_type), pointer :: vs_conv => null()
-    
-    ! Retrieve the function space type
-    fs = ref_int_field%which_function_space()
-    ! Note: Integer fields are discontinuous spaces so no element orders
-
-    ! Need to be able to handle 2D fields correctly; otherwise will try to
-    ! map 2D fine fields to 3D coarse fields and fail.
-    ref_mesh => ref_int_field%get_mesh()
-    ref_extrusion_id = ref_mesh%get_extrusion_id()
-
-    if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
-      target_mesh => conv_mesh
-    else
-      target_mesh => mesh_collection%get_mesh(conv_mesh, ref_extrusion_id)
-    end if
-    
-    ! Raise an error if no equivalent extrusion for the conv_mesh
-    if ( .not. associated(target_mesh) ) then
-      call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
-    end if
-
-    ! Create the convection grid vector space
-    vs_conv => function_space_collection%get_fs( target_mesh, 0, 0, fs )
-    ! Initialise the coarse convection grid field
-    if ( present(xios_id) ) then 
-      ! Assign the corresponding xios id
-      call int_field%initialise(vector_space = vs_conv, name=xios_id)
-    else
-      call int_field%initialise(vector_space = vs_conv)
-    end if
-
-  end subroutine init_coarse_integer_field_from
 
 end module diagnostic_mode_comorph_alg_mod
