@@ -861,22 +861,22 @@ contains
 
     ! Initialise local coarse fields
     ! TODO: This needs to be handled seperately because they don't
-    ! have any corresponding coarse fields!
-    ! Likely need to copy a modified version of comorph_diags_mod.x90
-    !call initialise_diags_for_comorph(lowest_cv_base,       &
-    !                                  lowest_cv_top,        &
-    !                                  cv_base,              &
-    !                                  cv_top,               &
-    !                                  pres_cv_base,         &
-    !                                  pres_cv_top,          &
-    !                                  pres_lowest_cv_base,  &
-    !                                  pres_lowest_cv_top,   &
-    !                                  lowest_cca_2d,        &
-    !                                  entrain_up,           & ! 3-D variables
-    !                                  entrain_down,         &
-    !                                  detrain_up,           &
-    !                                  detrain_down,         &
-    !                                  massflux_up_half)
+    ! have any corresponding fine fields!
+  
+    call initialise_diags_for_diagnostic_mode_comorph(lowest_cv_base_coarse,       &
+                                                      lowest_cv_top_coarse,        &
+                                                      cv_base_coarse,              &
+                                                      cv_top_coarse,               &
+                                                      pres_cv_base_coarse,         &
+                                                      pres_cv_top_coarse,          &
+                                                      pres_lowest_cv_base_coarse,  &
+                                                      pres_lowest_cv_top_coarse,   &
+                                                      lowest_cca_2d_coarse,        &
+                                                      entrain_up_coarse,           & ! 3-D variables
+                                                      entrain_down_coarse,         &
+                                                      detrain_up_coarse,           &
+                                                      detrain_down_coarse,         &
+                                                      massflux_up_half_coarse)
 
     ! Map the fine fields to the coarse fields
     ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
@@ -1081,16 +1081,10 @@ contains
     call map_scalar_field(precfrac_coarse, precfrac)
     call map_scalar_field(ls_rain_coarse, ls_rain)
     call map_scalar_field(ls_snow_coarse, ls_snow)
-    
-    
 
     ! call the scheme
     !ncells = mesh%get_last_edge_cell()
     !call um_sizes_init(ncells)
-
-    ! Placeholder invoke call needed for psyclone to parse and transform
-    ! without falling over.
-    ! call invoke( setval_c(exner_in_wth_coarse, 0.0_r_def) )
 
     !call invoke( conv_comorph_kernel_type( outer, rho, rho_in_wth,            &
     !                      wetrho_in_w3, wetrho_in_wth, exner, exner_in_wth,   &
@@ -1243,7 +1237,7 @@ contains
 
     !if ( subroutine_timers ) call timer("conv_comorph_alg")
 
-    ! output diagnostics on last iteration only
+    ! Call the diagnostics output routine
     !if (write_diag .and. use_xios_io .and. outer == outer_iterations) then
 
     !  call output_diags_for_comorph( cca,                & ! prognostics
