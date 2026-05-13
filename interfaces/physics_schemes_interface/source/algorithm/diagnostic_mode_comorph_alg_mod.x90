@@ -513,6 +513,7 @@ contains
     call surface_fields%get_field('ustar', ustar)
 
     ! Unpack convection fields
+    ! These are fields we'd want to write out as diagnostics 
     call convection_fields%get_field('conv_rain', conv_rain)
     call convection_fields%get_field('conv_rain_3d', conv_rain_3d)
     call convection_fields%get_field('conv_snow', conv_snow)
