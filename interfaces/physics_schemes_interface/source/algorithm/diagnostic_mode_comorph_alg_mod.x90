@@ -30,6 +30,9 @@ module diagnostic_mode_comorph_alg_mod
   use mesh_collection_mod,  only: mesh_collection
   use um_sizes_init_mod,    only: um_sizes_init
 
+  ! Logging
+  use print_field_stats_alg_mod, only: print_field_stats_alg
+
   implicit none
 
   private
@@ -869,18 +872,24 @@ contains
     ! Map the fine fields to the coarse fields
     ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
     ! map_rho_intermesh is only for W3 space rho
-    write(*,*) 'map_rho_intermesh on rho'
+    call log_event( 'map_rho_intermesh on ordinary rho', LOG_LEVEL_INFO )
     call map_rho_intermesh(rho_coarse, rho)
     call map_scalar_field(exner_coarse, exner)
     call map_scalar_field(theta_coarse, theta)
+
+    ! Check coarse rho field
+    call print_field_stats_alg(rho_coarse, LOG_LEVEL_INFO, name='rho_coarse after map_rho_intermesh')
+
     ! mr bundle fields
+    call log_event( 'map_mr_bundle_intermesh on mr', LOG_LEVEL_INFO )
     call map_mr_bundle_intermesh(mr_coarse, mr, rho_coarse, rho)
+    call log_event( 'map_mr_bundle_intermesh on mr_n', LOG_LEVEL_INFO )
     call map_mr_bundle_intermesh(mr_n_coarse, mr_n, rho_coarse, rho)
     ! Other derived fields
     call map_scalar_field(exner_in_wth_coarse, exner_in_wth)
     ! map_rho_intermesh only works with W3 fields, so use physics field
     ! mapping for wth equivalents of rho/wetrho
-    write(*,*) 'map_rho_intermesh on wet_rho'
+    call log_event( 'map_rho_intermesh on wet_rho', LOG_LEVEL_INFO )
     call map_rho_intermesh(wetrho_in_w3_coarse, wetrho_in_w3)
     call log_event( 'map_physics_scalars for rho and wetrho', LOG_LEVEL_INFO )
     call map_physics_scalars(rho_in_wth_coarse, rho_coarse)
@@ -893,7 +902,7 @@ contains
     call map_scalar_field(u_in_w3_star_coarse, u_in_w3_star)
     call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
     ! Boundary layer fields; these are 2D fields
-    write(*,*) 'map_scalar_field on 2D BL fields'
+    call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
     call map_scalar_field(zh_coarse, zh)
     call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
     call map_scalar_field(zhsc_coarse, zhsc)
@@ -902,7 +911,7 @@ contains
     ! For now we just set all indicators to zero since the kernel only
     ! cares whether or not it is a Type 7 BL; this is equivalent to saying
     ! that all of them are not Type 7 BL.
-    write(*,*) 'setval_c on bl_type_ind'
+    call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
     call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
     ! Boundary layer fields
     call map_scalar_field(tke_bl_coarse, tke_bl)
