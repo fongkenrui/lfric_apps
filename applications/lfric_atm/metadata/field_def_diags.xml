@@ -1021,9 +1021,9 @@
   <field id="convection__cv_top" name="cv_top" long_name="model_level_number_at_conv_cloud_top" unit="1" domain_ref="face" />
   <field id="processed__trop_level" name="trop_level" long_name="tropopause_level" unit="1" grid_ref="var_face" />
   <!-- Coarse version diagnostics -->
-  <field id="convection__lowest_cv_base_coarse" name="lowest_cv_base_coarse" long_name="model_level_number_at_lowest_conv_cloud_base_on_coarse_grid" unit="1" domain_ref="conv_face" />
-  <field id="convection__lowest_cv_top_coarse" name="lowest_cv_top_coarse" long_name="model_level_number_at_lowest_conv_cloud_top_on_coarse_grid" unit="1" domain_ref="conv_face" />
-  <field id="convection__cv_base_coarse" name="cv_base_coarse" long_name="model_level_number_at_conv_cloud_base_on_coarse_grid" unit="1" domain_ref="conv_face" />
-  <field id="convection__cv_top_coarse" name="cv_top_coarse" long_name="model_level_number_at_conv_cloud_top_on_coarse_grid" unit="1" domain_ref="conv_face" />
+  <field id="convection__lowest_cv_base_coarse" name="lowest_cv_base_coarse" long_name="model_level_number_at_lowest_conv_cloud_base_on_coarse_grid" unit="1" grid_ref="conv_face" />
+  <field id="convection__lowest_cv_top_coarse" name="lowest_cv_top_coarse" long_name="model_level_number_at_lowest_conv_cloud_top_on_coarse_grid" unit="1" grid_ref="conv_face" />
+  <field id="convection__cv_base_coarse" name="cv_base_coarse" long_name="model_level_number_at_conv_cloud_base_on_coarse_grid" unit="1" grid_ref="conv_face" />
+  <field id="convection__cv_top_coarse" name="cv_top_coarse" long_name="model_level_number_at_conv_cloud_top_on_coarse_grid" unit="1" grid_ref="conv_face" />
 </field_group>
 </field_definition>
