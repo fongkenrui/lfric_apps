@@ -44,8 +44,10 @@ module diagnostic_mode_comorph_diags_mod
                       detrain_down_flag,           &
                       massflux_up_half_flag
 
+  public :: init_coarse_field_from
+  public :: init_coarse_integer_field_from
   public :: initialise_diags_for_diagnostic_mode_comorph
-  public :: output_diags_for_comorph
+  public :: output_diags_for_diagnostic_mode_comorph
 
 contains
 
