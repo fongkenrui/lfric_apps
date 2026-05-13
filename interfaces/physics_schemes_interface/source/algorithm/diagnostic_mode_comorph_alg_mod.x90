@@ -25,7 +25,8 @@ module diagnostic_mode_comorph_alg_mod
   ! TODO: Create a specific module for diagnostic-mode comorph
   use comorph_diags_mod,    only: initialise_diags_for_comorph, &
                                   output_diags_for_comorph
-  use log_mod,              only: log_event, LOG_LEVEL_DEBUG, LOG_LEVEL_INFO
+  use log_mod,              only: log_event, log_scratch_space, &
+                                  LOG_LEVEL_DEBUG, LOG_LEVEL_INFO
   use mesh_mod,             only: mesh_type
   use mesh_collection_mod,  only: mesh_collection
   use um_sizes_init_mod,    only: um_sizes_init
@@ -468,10 +469,14 @@ contains
 
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
-    write(*,*) "conv_mesh=", conv_mesh_name
+    write(log_scratch_space,*) "conv_mesh_name = ", conv_mesh_name
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
     ! Get the convection grid mesh
     conv_mesh => mesh_collection%get_mesh( conv_mesh_name )
     delta => get_delta_at_wtheta( conv_mesh%get_id() )
+
+    write(log_scratch_space,*) "conv_mesh_id = ", conv_mesh%get_id()
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
     ! Unpack derived fields
     call derived_fields%get_field('exner_in_wth', exner_in_wth)
