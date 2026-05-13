@@ -309,19 +309,10 @@ contains
     type(function_space_type), pointer :: fs_type
     type(function_space_type), pointer :: fs_source_2d
 
-    write(log_scratch_space,*) "source_field=", source_field%get_name(),
-    write(log_scratch_space,*) "target_field=", target_field%get_name(),
-    call log_event( log_scratch_space, LOG_LEVEL_INFO )
-
     ! Get source and target mesh ids and meshes
     source_mesh => source_field%get_mesh()
     target_mesh => target_field%get_mesh()
     source_mesh_2d => mesh_collection%get_mesh(source_mesh, TWOD)
-
-    ! Log statements
-    write(log_scratch_space,*) "Mapping scalar field between meshes: source mesh = ", source_field%get_mesh()%get_id(), &
-                             ", target mesh = ", target_field%get_mesh()%get_id()
-    call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
     element_order_h = source_field%get_element_order_h()
     element_order_v = source_field%get_element_order_v()
