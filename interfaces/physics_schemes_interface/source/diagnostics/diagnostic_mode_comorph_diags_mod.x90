@@ -229,11 +229,11 @@ contains
   !> @param[in]           fs_type          Function space type of the field to be initialised
   !> @param[in, optional] extrusion_id     Extrusion id of the field to be initialised (if TWOD)
   !> @param[in, optional] xios_id          XIOS id of field
-  subroutine init_coarse_integer_field(field, conv_mesh, fs_type, extrusion_id, xios_id)
+  subroutine init_coarse_integer_field(int_field, conv_mesh, fs_type, extrusion_id, xios_id)
 
     implicit none
 
-    type(integer_field_type), intent(inout) :: field
+    type(integer_field_type), intent(inout) :: int_field
     type(mesh_type), pointer,    intent(in) :: conv_mesh
     ! Specify whether it is W3 or WTHETA
     integer,                  intent(in) :: fs_type
@@ -266,9 +266,9 @@ contains
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
-      call field%initialise(vector_space = vs_conv, name=xios_id)
+      call int_field%initialise(vector_space = vs_conv, name=xios_id)
     else
-      call field%initialise(vector_space = vs_conv)
+      call int_field%initialise(vector_space = vs_conv)
     end if
 
   end subroutine init_coarse_integer_field
