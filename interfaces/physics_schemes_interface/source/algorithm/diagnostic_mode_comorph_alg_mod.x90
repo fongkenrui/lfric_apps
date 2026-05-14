@@ -864,10 +864,9 @@ contains
     ! TODO: This needs to be handled seperately because they don't
     ! have any corresponding fine fields!
   
-    call initialise_diags_for_diagnostic_mode_comorph(lowest_cv_base_coarse,       &
-                                                      lowest_cv_top_coarse,        &
-                                                      cv_base_coarse,              &
-                                                      cv_top_coarse,               &
+    call initialise_diags_for_diagnostic_mode_comorph(conv_mesh,                   &
+                                                      lowest_cv_base_coarse,       &
+                                                      lowest_cv_top_coarse,        &               &
                                                       pres_cv_base_coarse,         &
                                                       pres_cv_top_coarse,          &
                                                       pres_lowest_cv_base_coarse,  &

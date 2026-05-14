@@ -274,7 +274,8 @@ contains
   end subroutine init_coarse_integer_field
 
   !> @brief Initialise fields for locally-computed diagnostics
-  subroutine initialise_diags_for_diagnostic_mode_comorph(lowest_cv_base_coarse,         &
+  subroutine initialise_diags_for_diagnostic_mode_comorph(conv_mesh,                     &
+                                                          lowest_cv_base_coarse,         &
                                                           lowest_cv_top_coarse,          &
                                                           pres_cv_base_coarse,           &
                                                           pres_cv_top_coarse,            &
@@ -290,6 +291,8 @@ contains
     implicit none
     ! This is pretty much a copy of initialise_diags_for_comorph, but modified to pair
     ! with the specific coarse-field diagnostics as defined in xios metadata.
+
+    type(mesh_type), pointer,    intent(in) :: conv_mesh
 
     ! Diagnostic fields to initialise
     type( field_type ), intent(inout) :: lowest_cv_base_coarse,          &
