@@ -31,20 +31,20 @@ module diagnostic_mode_comorph_diags_mod
   private
 
   ! Module-level logicals indicating whether diagnostics are requested
-  ! This isn't actually being used currently because the diagnostics are
-  ! initialised with hardcoded function space definitions...
-  logical( l_def ) :: lowest_cv_base_flag,         &
-                      lowest_cv_top_flag,          &
-                      pres_cv_base_flag,           &
-                      pres_cv_top_flag,            &
-                      pres_lowest_cv_base_flag,    &
-                      pres_lowest_cv_top_flag,     &
-                      lowest_cca_2d_flag,          &
-                      entrain_up_flag,             & ! 3-D
-                      entrain_down_flag,           &
-                      detrain_up_flag,             &
-                      detrain_down_flag,           &
-                      massflux_up_half_flag
+  ! The compiler doesn't like unused private module variables so these
+  ! are commented out entirely for now.
+  !logical( l_def ) :: lowest_cv_base_flag,         &
+  !                    lowest_cv_top_flag,          &
+  !                    pres_cv_base_flag,           &
+  !                    pres_cv_top_flag,            &
+  !                    pres_lowest_cv_base_flag,    &
+  !                    pres_lowest_cv_top_flag,     &
+  !                    lowest_cca_2d_flag,          &
+  !                    entrain_up_flag,             & ! 3-D
+  !                    entrain_down_flag,           &
+  !                    detrain_up_flag,             &
+  !                    detrain_down_flag,           &
+  !                    massflux_up_half_flag
 
   ! At some point maybe want to add interfaces to overload the
   ! init subroutines similar to init_field_fro_metadata in field_from_metadata_mod.  
