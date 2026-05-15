@@ -46,8 +46,12 @@ module diagnostic_mode_comorph_diags_mod
                       detrain_down_flag,           &
                       massflux_up_half_flag
 
+  ! At some point maybe want to add interfaces to overload the
+  ! init subroutines similar to init_field_fro_metadata in field_from_metadata_mod.  
   public :: init_coarse_field_from
   public :: init_coarse_integer_field_from
+  public :: init_coarse_field
+  public :: init_coarse_integer_field
   public :: initialise_diags_for_diagnostic_mode_comorph
   public :: output_diags_for_diagnostic_mode_comorph
 
@@ -314,9 +318,11 @@ contains
     ! hardcoded, to avoid having to modify the metadata parser. This isn't a good
     ! long-term solution however...
 
-    ! conv_face (TWOD, WTHETA) integer
-    call init_coarse_integer_field(lowest_cv_base_coarse, conv_mesh, WTHETA, TWOD)
-    call init_coarse_integer_field(lowest_cv_top_coarse, conv_mesh, WTHETA, TWOD)
+    ! conv_face (TWOD, WTHETA)
+    ! While these are integer outputs in xios diagnostics, they are regular
+    ! fields in the comorph kernel type definition...
+    call init_coarse_field(lowest_cv_base_coarse, conv_mesh, WTHETA, TWOD)
+    call init_coarse_field(lowest_cv_top_coarse, conv_mesh, WTHETA, TWOD)
     
     ! conv_face (TWOD, WTHETA) real
     call init_coarse_field(pres_cv_base_coarse, conv_mesh, WTHETA, TWOD)
