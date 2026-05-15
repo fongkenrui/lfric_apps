@@ -866,7 +866,7 @@ contains
   
     call initialise_diags_for_diagnostic_mode_comorph(conv_mesh,                   &
                                                       lowest_cv_base_coarse,       &
-                                                      lowest_cv_top_coarse,        &               &
+                                                      lowest_cv_top_coarse,        &         
                                                       pres_cv_base_coarse,         &
                                                       pres_cv_top_coarse,          &
                                                       pres_lowest_cv_base_coarse,  &
