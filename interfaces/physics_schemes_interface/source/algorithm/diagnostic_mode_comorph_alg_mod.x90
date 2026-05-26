@@ -1237,7 +1237,7 @@ contains
     ! Call the diagnostics output routine
     if ( write_diag .and. use_xios_io ) then
 
-      call output_diags_for_diagnostic_mode_comorph( 
+      call output_diags_for_diagnostic_mode_comorph(            &
                                   lowest_cv_base_coarse,        &
                                   lowest_cv_top_coarse,         &
                                   cv_base_coarse,               &
