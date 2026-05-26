@@ -387,22 +387,22 @@ contains
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
     ! Write the fields here
     
-    call lowest_cv_base_coarse%write_field()
-    call lowest_cv_top_coarse%write_field()
-    call cv_base_coarse%write_field()
-    call cv_top_coarse%write_field()
-    call pres_cv_base_coarse%write_field()
-    call pres_cv_top_coarse%write_field()
-    call pres_lowest_cv_base_coarse%write_field()
-    call pres_lowest_cv_top_coarse%write_field()
-    call lowest_cca_2d_coarse%write_field()
+    call lowest_cv_base_coarse%write_field('convection__lowest_cv_base_coarse')
+    call lowest_cv_top_coarse%write_field('convection__lowest_cv_top_coarse')
+    call cv_base_coarse%write_field('convection__cv_base_coarse')
+    call cv_top_coarse%write_field('convection__cv_top_coarse')
+    call pres_cv_base_coarse%write_field('convection__pres_cv_base_coarse')
+    call pres_cv_top_coarse%write_field('convection__pres_cv_top_coarse')
+    call pres_lowest_cv_base_coarse%write_field('convection__pres_lowest_cv_base_coarse')
+    call pres_lowest_cv_top_coarse%write_field('convection__pres_lowest_cv_top_coarse')
+    call lowest_cca_2d_coarse%write_field('convection__lowest_cca_2d_coarse')
 
     ! 3D
-    call entrain_up_coarse%write_field()
-    call entrain_down_coarse%write_field()
-    call detrain_up_coarse%write_field()
-    call detrain_down_coarse%write_field()
-    call massflux_up_half_coarse%write_field()
+    call entrain_up_coarse%write_field('convection__entrain_up_coarse')
+    call entrain_down_coarse%write_field('convection__entrain_down_coarse')
+    call detrain_up_coarse%write_field('convection__detrain_up_coarse')
+    call detrain_down_coarse%write_field('convection__detrain_down_coarse')
+    call massflux_up_half_coarse%write_field('convection__massflux_up_half_coarse')
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
 
   end subroutine output_diags_for_diagnostic_mode_comorph 
