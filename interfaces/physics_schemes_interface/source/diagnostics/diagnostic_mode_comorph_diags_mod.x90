@@ -25,6 +25,8 @@ module diagnostic_mode_comorph_diags_mod
   use function_space_mod,            only: function_space_type
   use initialise_diagnostics_mod,     only : init_diag &
                                              => init_diagnostic_field
+  use lfric_xios_write_mod,      only: write_field_generic
+  use field_parent_mod,          only: write_interface
 
   implicit none
 
@@ -80,6 +82,7 @@ contains
     type(mesh_type), pointer           :: ref_mesh => null()
     type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
+    procedure(write_interface), pointer :: write_diag_behaviour => null()
     
     ! Retrieve the function space type
     fs = ref_field%which_function_space()
@@ -117,7 +120,9 @@ contains
     else
       call field%initialise(vector_space = vs_conv)
     end if
-
+  ! Set write behaviour
+  write_diag_behaviour => write_field_generic
+  call field%set_write_behaviour(write_diag_behaviour)
   end subroutine init_coarse_field_from
 
   !> @brief Initialise a integer_field type coarse field from a given reference fine field.
@@ -141,6 +146,7 @@ contains
     type(mesh_type), pointer           :: ref_mesh => null()
     type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
+    procedure(write_interface), pointer :: write_diag_behaviour => null()
     
     ! Retrieve the function space type
     fs = ref_int_field%which_function_space()
@@ -172,7 +178,9 @@ contains
     else
       call int_field%initialise(vector_space = vs_conv)
     end if
-
+    ! Set write behaviour
+    write_diag_behaviour => write_field_generic
+    call int_field%set_write_behaviour(write_diag_behaviour)
   end subroutine init_coarse_integer_field_from
 
   !> @brief Initialise a custom coarse field.
@@ -198,6 +206,7 @@ contains
 
     type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
+    procedure(write_interface), pointer :: write_diag_behaviour => null()
 
     ! Check whether asking for 2D field
     if ( present(extrusion_id) ) then
@@ -223,7 +232,9 @@ contains
     else
       call field%initialise(vector_space = vs_conv)
     end if
-
+    ! Set write behaviour
+    write_diag_behaviour => write_field_generic
+    call field%set_write_behaviour(write_diag_behaviour)
   end subroutine init_coarse_field
 
   !> @brief Initialise a custom coarse field.
@@ -249,6 +260,7 @@ contains
 
     type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
+    procedure(write_interface), pointer :: write_diag_behaviour => null()
 
     ! Check whether asking for 2D field
     if ( present(extrusion_id) ) then
@@ -274,6 +286,9 @@ contains
     else
       call int_field%initialise(vector_space = vs_conv)
     end if
+    ! Set write behaviour
+    write_diag_behaviour => write_field_generic
+    call int_field%set_write_behaviour(write_diag_behaviour)
 
   end subroutine init_coarse_integer_field
 
