@@ -474,6 +474,13 @@ contains
     call log_event( log_scratch_space, LOG_LEVEL_INFO )
     ! Get the convection grid mesh
     conv_mesh => mesh_collection%get_mesh( conv_mesh_name )
+    
+    ! Validate that mesh retrieval succeeded
+    if ( .not. associated(conv_mesh) ) then
+      call log_event( 'ERROR: conv_mesh not found in mesh_collection', LOG_LEVEL_ERROR )
+      return
+    end if
+    
     delta => get_delta_at_wtheta( conv_mesh%get_id() )
 
     write(log_scratch_space,*) "conv_mesh_id = ", conv_mesh%get_id()
@@ -668,6 +675,7 @@ contains
     !height_w3  => get_height_fv(W3, mesh%get_id())
 
     ! Initialise the coarse convection fields
+    call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
 
     ! Model prognostics
     call init_coarse_field_from(rho_coarse, rho, conv_mesh)
@@ -1082,6 +1090,16 @@ contains
     ! call the scheme
     ncells = conv_mesh%get_last_edge_cell()
     call um_sizes_init(ncells)
+    
+    ! Validate critical coarse fields before kernel call
+    if ( .not. allocated(rho_coarse%data) ) then
+      call log_event( 'ERROR: rho_coarse%data not allocated before kernel call', LOG_LEVEL_ERROR )
+      return
+    end if
+    if ( .not. associated(rho_coarse%vspace) ) then
+      call log_event( 'ERROR: rho_coarse%vspace not associated before kernel call', LOG_LEVEL_ERROR )
+      return
+    end if
 
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
