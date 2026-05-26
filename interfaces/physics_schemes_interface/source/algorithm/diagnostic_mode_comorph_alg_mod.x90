@@ -1223,7 +1223,7 @@ contains
                           pres_lowest_cv_base_coarse,                                                                   &
                           pres_lowest_cv_top_coarse,                                                                    &
                           lowest_cca_2d_coarse,                                                                         &
-                          entrain_up_coarse,                                                                            &   ! 3-D local variables
+                          entrain_up_coarse,                                                                            &
                           entrain_down_coarse,                                                                          &
                           detrain_up_coarse,                                                                            &
                           detrain_down_coarse,                                                                          &
