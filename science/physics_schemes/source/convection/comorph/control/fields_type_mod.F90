@@ -426,14 +426,15 @@ do i_field = 1, n_fields_tot
     if ( .not. ( lb(1) <= 1 .and. ub(1) >= nx_full                             &
            .and. lb(2) <= 1 .and. ub(2) >= ny_full                             &
            .and. lb(3) <= k_bot_conv .and. ub(3) >= k_top_conv ) ) then
-      write(*,*) "WARNING: field ", trim(adjustl(field_names(i_field))),                 &
+      call raise_fatal(routinename,   &
+             "WARNING: field ", trim(adjustl(field_names(i_field))),        &
              " has insufficient extent / the wrong shape. Expected at least: ", &
-             nx_full, " x ", ny_full, " x ", k_bot_conv, " to ", k_top_conv,     &
-             " but got: ", ub(1)-lb(1)+1, " x ", ub(2)-lb(2)+1, " x ", ub(3)-lb(3)+1
-      call raise_fatal( routinename,                                           &
-             "Required input primary field " //                                &
-             trim(adjustl(field_names(i_field))) //                            &
-             "has insufficient extent / the wrong shape." )
+             nx_full, " x ", ny_full, " x ", k_bot_conv, " to ", k_top_conv,    &
+             " but got: ", ub(1)-lb(1)+1, " x ", ub(2)-lb(2)+1, " x ", ub(3)-lb(3)+1)
+      !call raise_fatal( routinename,                                           &
+      !       "Required input primary field " //                                &
+      !       trim(adjustl(field_names(i_field))) //                            &
+      !       "has insufficient extent / the wrong shape." )
       
     end if
   end if
