@@ -671,8 +671,8 @@ contains
     call microphysics_fields%get_field('ls_rain', ls_rain)
     call microphysics_fields%get_field('ls_snow', ls_snow)
 
-    !height_wth => get_height_fv(Wtheta, mesh%get_id())
-    !height_w3  => get_height_fv(W3, mesh%get_id())
+    height_wth => get_height_fv(Wtheta, conv_mesh%get_id())
+    height_w3  => get_height_fv(W3, conv_mesh%get_id())
 
     ! Initialise the coarse convection fields
     call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
@@ -1090,16 +1090,6 @@ contains
     ! call the scheme
     ncells = conv_mesh%get_last_edge_cell()
     call um_sizes_init(ncells)
-    
-    ! Validate critical coarse fields before kernel call
-    if ( .not. allocated(rho_coarse%data) ) then
-      call log_event( 'ERROR: rho_coarse%data not allocated before kernel call', LOG_LEVEL_ERROR )
-      return
-    end if
-    if ( .not. associated(rho_coarse%vspace) ) then
-      call log_event( 'ERROR: rho_coarse%vspace not associated before kernel call', LOG_LEVEL_ERROR )
-      return
-    end if
 
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
