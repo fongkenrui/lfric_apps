@@ -277,7 +277,7 @@ contains
     type( field_type ) :: mr_n_coarse(nummr)
 
     type( field_type ) :: exner_in_wth_coarse
-    type( field_type ) :: delta_coarse
+    ! type( field_type ) :: delta_coarse
     type( field_type ) :: rho_in_wth_coarse
     type( field_type ) :: wetrho_in_wth_coarse
     type( field_type ) :: wetrho_in_w3_coarse
@@ -1093,7 +1093,7 @@ contains
 
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
-                          delta_coarse, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
+                          delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
                           theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
                           height_w3, height_wth,                                                                        &
                           dt_conv_coarse, dmv_conv_coarse, dmcl_conv_coarse,                                            &
