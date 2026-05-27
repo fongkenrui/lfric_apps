@@ -176,6 +176,7 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
     call check_bad_values_cmpr( cmpr_init, k, par_gen_mean(:,i_field),         &
                                 call_string, field_name,                       &
                                 field_positive(i_field) )
+    call raise_fatal( routinename, "Force flushing before l_par_core branch" )
     if ( l_par_core ) then
       call raise_warning(routinename, "Check core winds")
       field_name = "par_gen_core_" // trim(adjustl(field_names(i_field)))
@@ -199,7 +200,6 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
                                     field_positive(i_field) )
       end if
     end do
-    call raise_fatal( routinename, "Force flushing within l_tracer branch" )
   end if
 
 end if  ! ( i_check_bad_values_cmpr > i_check_bad_none )
