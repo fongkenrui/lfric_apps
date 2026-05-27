@@ -163,13 +163,14 @@ end if
 
 if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   ! Check outputs for bad values (NaN, Inf etc).
-
+  call raise_warning(routinename, "name_length assigned to call_string is "//trim(adjustl(str(name_length))))
+  call raise_fatal( routinename, "Force flushing before setting call_string" ) 
   if ( l_down ) then
     call_string = "On output from set_par_winds; dndraft"
   else
     call_string = "On output from set_par_winds; updraft"
   end if
-  call raise_fatal( routinename, "Force flushing before checks after setting call_string" )
+  
   do i_field = i_wind_u, i_wind_w
     call raise_warning(routinename, "Check parcel mean winds")
     field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
