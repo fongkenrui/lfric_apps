@@ -91,12 +91,13 @@ character(len=name_length) :: field_name
 ! Loop counters
 integer :: ic, i_field
 
-
+write(*,*) "Start set_par_winds, n_points = ", n_points, " n_par = ", n_par
+write(*, *) "Parcel radius copy"
 do ic = 1, n_points
   ! Copy parcel radius into the parcel
   par_gen_par(ic,i_radius) = par_radius_k(ic)
 end do
-
+write(*,*) "Call write virt temp"
 ! Set initial edge virtual temperature to the environment value at k
 call calc_virt_temp( n_points, n_points_super,                                 &
                      fields_k(:,i_temperature),                                &
@@ -110,7 +111,7 @@ if ( l_down ) then
 else
   factor = one
 end if
-
+write(*,*) "Set mean winds"
 ! Set in-parcel mean winds
 do i_field = i_wind_u, i_wind_w
   do ic = 1, n_points
@@ -121,7 +122,7 @@ end do
 
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
-
+write(*,*) "Set core winds"
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
   do ic = 1, n_points
@@ -129,7 +130,7 @@ do i_field = i_wind_u, i_wind_w
                              + factor * turb_pert_k(ic,i_field)
   end do
 end do
-
+write(*,*) "Copy tracer values"
 ! For now, copy grid-mean tracer values into the parcel
 ! (planning to add a turbulence-based perturbation to the
 !  tracer fields if l_turb_par_gen, but not yet implemented).
