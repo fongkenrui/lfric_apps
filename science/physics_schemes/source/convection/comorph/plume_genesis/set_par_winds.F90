@@ -141,7 +141,6 @@ do i_field = i_wind_u, i_wind_w
                              + factor * turb_pert_k(ic,i_field)
   end do
 end do
-call raise_fatal( routinename, "Force flushing after setting core winds" )
 call raise_warning(routinename, &
   "Copy tracer values")
 ! For now, copy grid-mean tracer values into the parcel
@@ -172,18 +171,22 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   end if
 
   do i_field = i_wind_u, i_wind_w
+    call raise_warning(routinename, "Check parcel mean winds")
     field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
     call check_bad_values_cmpr( cmpr_init, k, par_gen_mean(:,i_field),         &
                                 call_string, field_name,                       &
                                 field_positive(i_field) )
     if ( l_par_core ) then
+      call raise_warning(routinename, "Check core winds")
       field_name = "par_gen_core_" // trim(adjustl(field_names(i_field)))
       call check_bad_values_cmpr( cmpr_init, k, par_gen_core(:,i_field),       &
                                   call_string, field_name,                     &
                                   field_positive(i_field) )
     end if
   end do
+  
   if ( l_tracer .and. n_tracers > 0 ) then
+    call raise_warning(routinename, 'Check tracer values')
     do i_field = i_tracers(1), i_tracers(n_tracers)
       field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
       call check_bad_values_cmpr( cmpr_init, k, par_gen_mean(:,i_field),       &
@@ -196,6 +199,7 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
                                     field_positive(i_field) )
       end if
     end do
+    call raise_fatal( routinename, "Force flushing within l_tracer branch" )
   end if
 
 end if  ! ( i_check_bad_values_cmpr > i_check_bad_none )
