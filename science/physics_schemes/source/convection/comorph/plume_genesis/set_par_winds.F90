@@ -209,4 +209,15 @@ end if  ! ( i_check_bad_values_cmpr > i_check_bad_none )
 return
 end subroutine set_par_winds
 
+! Helper function for casting integers to string
+pure function str(i) result(s)
+    integer, intent(in) :: i
+    character(:), allocatable :: s
+
+    character(32) :: tmp
+
+    write(tmp, '(I0)') i
+    s = trim(tmp)
+end function
+
 end module set_par_winds_mod
