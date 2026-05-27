@@ -169,7 +169,7 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   else
     call_string = "On output from set_par_winds; updraft"
   end if
-
+  call raise_fatal( routinename, "Force flushing before checks after setting call_string" )
   do i_field = i_wind_u, i_wind_w
     call raise_warning(routinename, "Check parcel mean winds")
     field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
@@ -184,7 +184,6 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
                                   field_positive(i_field) )
     end if
   end do
-  call raise_fatal( routinename, "Force flushing before l_tracer branch" )
   if ( l_tracer .and. n_tracers > 0 ) then
     call raise_warning(routinename, 'Check tracer values')
     do i_field = i_tracers(1), i_tracers(n_tracers)
