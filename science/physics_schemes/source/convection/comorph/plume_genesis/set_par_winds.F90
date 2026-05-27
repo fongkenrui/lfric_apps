@@ -105,9 +105,6 @@ do ic = 1, n_points
   par_gen_par(ic,i_radius) = par_radius_k(ic)
 end do
 
-call raise_fatal( routinename, "Force flushing after copying parcel radius" )
-
-
 call raise_warning(routinename, &
  "Call write virt temp")
 ! Set initial edge virtual temperature to the environment value at k
@@ -132,6 +129,8 @@ do i_field = i_wind_u, i_wind_w
                              + factor * turb_pert_k(ic,i_field)
   end do
 end do
+
+call raise_fatal( routinename, "Force flushing after setting in-parcel mean winds" )
 
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
