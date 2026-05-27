@@ -141,6 +141,7 @@ do i_field = i_wind_u, i_wind_w
                              + factor * turb_pert_k(ic,i_field)
   end do
 end do
+call raise_fatal( routinename, "Force flushing after setting core winds" )
 call raise_warning(routinename, &
   "Copy tracer values")
 ! For now, copy grid-mean tracer values into the parcel
@@ -160,7 +161,6 @@ if ( l_tracer .and. n_tracers > 0 ) then
     end do
   end if
 end if
-call raise_fatal( routinename, "Force flushing after setting copying tracer values" )
 
 if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   ! Check outputs for bad values (NaN, Inf etc).
