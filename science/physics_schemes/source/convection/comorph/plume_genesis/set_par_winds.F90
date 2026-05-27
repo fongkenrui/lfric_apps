@@ -147,11 +147,14 @@ call raise_warning(routinename, &
 ! (planning to add a turbulence-based perturbation to the
 !  tracer fields if l_turb_par_gen, but not yet implemented).
 if ( l_tracer .and. n_tracers > 0 ) then
+  call raise_warning(routinename, &
+   "Copy tracer values into parcel, n_tracers = "//trim(adjustl(str(n_tracers))))
   do i_field = i_tracers(1), i_tracers(n_tracers)
     do ic = 1, n_points
       par_gen_mean(ic,i_field) = fields_k(ic,i_field)
     end do
   end do
+  call raise_fatal(routinename, "Terminate after assigning tracers to par_gen_mean")
   if ( l_par_core ) then
     do i_field = i_tracers(1), i_tracers(n_tracers)
       do ic = 1, n_points
@@ -164,7 +167,6 @@ end if
 if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   ! Check outputs for bad values (NaN, Inf etc).
   call raise_warning(routinename, "name_length assigned to call_string is "//trim(adjustl(str(name_length))))
-  !call raise_fatal( routinename, "Force flushing before setting call_string" ) 
   if ( l_down ) then
     call_string = "On output from set_par_winds; dndraft"
   else
