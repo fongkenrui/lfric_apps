@@ -101,9 +101,9 @@ call raise_warning(routinename, &
 write(*,*) 'Test write statement'
 
 ! Defensive call
-if ( i_radius > n_par ) then
-  call raise_fatal( routinename, "i_radius index exceeds n_par" )
-end if
+!if ( i_radius > n_par ) then
+call raise_fatal( routinename, "i_radius index exceeds n_par" )
+!end if
 
 do ic = 1, n_points
   ! Copy parcel radius into the parcel
