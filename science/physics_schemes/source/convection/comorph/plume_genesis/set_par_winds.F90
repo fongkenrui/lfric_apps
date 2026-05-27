@@ -34,7 +34,7 @@ use cmpr_type_mod, only: cmpr_type
 
 use calc_virt_temp_mod, only: calc_virt_temp
 use check_bad_values_mod, only: check_bad_values_cmpr
-use raise_error_mod, only: raise_warning
+use raise_error_mod, only: raise_warning, raise_fatal
 
 implicit none
 
