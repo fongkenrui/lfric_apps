@@ -95,9 +95,9 @@ integer :: ic, i_field
 character(len=*), parameter :: routinename = "SET_PAR_WINDS"
 
 call raise_warning(routinename, &
- "Start set_par_winds, n_points = ", n_points, " n_par = ", n_par)
+ "Start set_par_winds, n_points = "//trim(adjustl(str(n_points)))//", n_par = "//trim(adjustl(str(n_par))))
 call raise_warning(routinename, &
- "Parcel radius copy: i_radius = ", i_radius)
+ "Parcel radius copy: i_radius = "//trim(adjustl(str(i_radius))))
 write(*,*) 'Test write statement'
 
 ! Defensive call
