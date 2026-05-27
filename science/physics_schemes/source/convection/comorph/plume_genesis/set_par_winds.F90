@@ -105,7 +105,7 @@ do ic = 1, n_points
   par_gen_par(ic,i_radius) = par_radius_k(ic)
 end do
 
-call raise_fatal( routinename, "Force flushing" )
+call raise_fatal( routinename, "Force flushing after copying parcel radius" )
 
 
 call raise_warning(routinename, &
