@@ -97,7 +97,13 @@ character(len=*), parameter :: routinename = "SET_PAR_WINDS"
 call raise_warning(routinename, &
  "Start set_par_winds, n_points = ", n_points, " n_par = ", n_par)
 call raise_warning(routinename, &
- "Parcel radius copy: ic = ", ic, " i_radius = ", i_radius)
+ "Parcel radius copy: i_radius = ", i_radius)
+write(*,*) 'Test write statement'
+
+! Defensive call
+if ( i_radius > n_par ) then
+  call raise_fatal( routinename, "i_radius index exceeds n_par" )
+end if
 
 do ic = 1, n_points
   ! Copy parcel radius into the parcel
