@@ -130,8 +130,6 @@ do i_field = i_wind_u, i_wind_w
   end do
 end do
 
-call raise_fatal( routinename, "Force flushing after setting in-parcel mean winds" )
-
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
 call raise_warning(routinename, &
@@ -162,7 +160,7 @@ if ( l_tracer .and. n_tracers > 0 ) then
     end do
   end if
 end if
-
+call raise_fatal( routinename, "Force flushing after setting copying tracer values" )
 
 if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   ! Check outputs for bad values (NaN, Inf etc).
