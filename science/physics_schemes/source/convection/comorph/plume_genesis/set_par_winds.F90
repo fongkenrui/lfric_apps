@@ -86,7 +86,7 @@ real(kind=real_cvprec), intent(in out) :: par_gen_core                         &
 real(kind=real_cvprec) :: factor
 
 ! String containing info to print in error messages
-character(len=name_length) :: call_string
+character(len=64) :: call_string
 character(len=name_length) :: field_name
 
 ! Loop counters
