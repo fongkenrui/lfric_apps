@@ -132,6 +132,7 @@ end do
 
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
+call raise_fatal(routinename, "Terminate before setting core winds")
 call raise_warning(routinename, &
   "Set core winds")
 ! Set parcel core winds
@@ -149,7 +150,6 @@ call raise_warning(routinename, &
 if ( l_tracer .and. n_tracers > 0 ) then
   call raise_warning(routinename, &
    "Copy tracer values into parcel, n_tracers = "//trim(adjustl(str(n_tracers))))
-  call raise_fatal(routinename, "Terminate before assigning tracers to par_gen_mean")
   do i_field = i_tracers(1), i_tracers(n_tracers)
     do ic = 1, n_points
       par_gen_mean(ic,i_field) = fields_k(ic,i_field)
