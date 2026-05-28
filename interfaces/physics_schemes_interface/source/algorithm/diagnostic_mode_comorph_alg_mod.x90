@@ -88,186 +88,186 @@ contains
     integer(kind=i_def), intent(in)         :: outer
 
     ! Temporary fields unpacked fields from collections
-    type( field_type ), pointer :: exner_in_wth
-    type( field_type ), pointer :: delta
-    type( field_type ), pointer :: rho_in_wth
-    type( field_type ), pointer :: wetrho_in_wth
-    type( field_type ), pointer :: wetrho_in_w3
-    type( field_type ), pointer :: u_in_w3
-    type( field_type ), pointer :: v_in_w3
-    type( field_type ), pointer :: w_in_wth
-    type( field_type ), pointer :: theta_star
-    type( field_type ), pointer :: u_in_w3_star
-    type( field_type ), pointer :: v_in_w3_star
+    type( field_type ), pointer :: exner_in_wth => null()
+    type( field_type ), pointer :: delta => null()
+    type( field_type ), pointer :: rho_in_wth => null()
+    type( field_type ), pointer :: wetrho_in_wth => null()
+    type( field_type ), pointer :: wetrho_in_w3 => null()
+    type( field_type ), pointer :: u_in_w3 => null()
+    type( field_type ), pointer :: v_in_w3 => null()
+    type( field_type ), pointer :: w_in_wth => null()
+    type( field_type ), pointer :: theta_star => null()
+    type( field_type ), pointer :: u_in_w3_star => null()
+    type( field_type ), pointer :: v_in_w3_star => null()
 
-    type( field_type ), pointer :: zh
-    type( field_type ), pointer :: zh_nonloc
-    type( field_type ), pointer :: zhsc
-    type( field_type ), pointer :: inv_depth
-    type( integer_field_type ), pointer :: bl_type_ind
-    type( field_type ), pointer :: tke_bl
-    type( field_type ), pointer :: wvar
-    type( field_type ), pointer :: rhokm_bl
-    type( field_type ), pointer :: moist_flux
-    type( field_type ), pointer :: heat_flux
-    type( field_type ), pointer :: taux
-    type( field_type ), pointer :: tauy
+    type( field_type ), pointer :: zh => null()
+    type( field_type ), pointer :: zh_nonloc => null()
+    type( field_type ), pointer :: zhsc => null()
+    type( field_type ), pointer :: inv_depth => null()
+    type( integer_field_type ), pointer :: bl_type_ind => null()
+    type( field_type ), pointer :: tke_bl => null()
+    type( field_type ), pointer :: wvar => null()
+    type( field_type ), pointer :: rhokm_bl => null()
+    type( field_type ), pointer :: moist_flux => null()
+    type( field_type ), pointer :: heat_flux => null()
+    type( field_type ), pointer :: taux => null()
+    type( field_type ), pointer :: tauy => null()
 
-    type( field_type ), pointer :: surf_interp
-    type( field_type ), pointer :: ustar
+    type( field_type ), pointer :: surf_interp => null()
+    type( field_type ), pointer :: ustar => null()
 
-    type( field_type ), pointer :: conv_rain
-    type( field_type ), pointer :: conv_rain_3d
-    type( field_type ), pointer :: conv_snow
-    type( field_type ), pointer :: conv_snow_3d
-    type( field_type ), pointer :: cca_2d
-    type( field_type ), pointer :: cv_base
-    type( field_type ), pointer :: cv_top
-    type( field_type ), pointer :: cca
-    type( field_type ), pointer :: ccw
-    type( field_type ), pointer :: dt_conv
-    type( field_type ), pointer :: dmv_conv
-    type( field_type ), pointer :: dmcl_conv
-    type( field_type ), pointer :: dms_conv
-    type( field_type ), pointer :: dcfl_conv
-    type( field_type ), pointer :: dcff_conv
-    type( field_type ), pointer :: dbcf_conv
-    type( field_type ), pointer :: du_conv
-    type( field_type ), pointer :: dv_conv
-    type( field_type ), pointer :: conv_prog_dtheta
-    type( field_type ), pointer :: conv_prog_dmv
-    type( field_type ), pointer :: dd_mf_cb
-    type( field_type ), pointer :: massflux_up
-    type( field_type ), pointer :: massflux_down
-    type( field_type ), pointer :: cape_diluted
-    type( field_type ), pointer :: pressure_inc_env
+    type( field_type ), pointer :: conv_rain => null()
+    type( field_type ), pointer :: conv_rain_3d => null()
+    type( field_type ), pointer :: conv_snow => null()
+    type( field_type ), pointer :: conv_snow_3d => null()
+    type( field_type ), pointer :: cca_2d => null()
+    type( field_type ), pointer :: cv_base => null()
+    type( field_type ), pointer :: cv_top => null()
+    type( field_type ), pointer :: cca => null()
+    type( field_type ), pointer :: ccw => null()
+    type( field_type ), pointer :: dt_conv => null()
+    type( field_type ), pointer :: dmv_conv => null()
+    type( field_type ), pointer :: dmcl_conv => null()
+    type( field_type ), pointer :: dms_conv => null()
+    type( field_type ), pointer :: dcfl_conv => null()
+    type( field_type ), pointer :: dcff_conv => null()
+    type( field_type ), pointer :: dbcf_conv => null()
+    type( field_type ), pointer :: du_conv => null()
+    type( field_type ), pointer :: dv_conv => null()
+    type( field_type ), pointer :: conv_prog_dtheta => null()
+    type( field_type ), pointer :: conv_prog_dmv => null()
+    type( field_type ), pointer :: dd_mf_cb => null()
+    type( field_type ), pointer :: massflux_up => null()
+    type( field_type ), pointer :: massflux_down => null()
+    type( field_type ), pointer :: cape_diluted => null()
+    type( field_type ), pointer :: pressure_inc_env => null()
 
-    type( field_type ), pointer :: cf_fro
-    type( field_type ), pointer :: cf_liq
-    type( field_type ), pointer :: cf_bulk
-    type( field_type ), pointer :: cf_liq_n
-    type( field_type ), pointer :: cf_fro_n
-    type( field_type ), pointer :: cf_bulk_n
+    type( field_type ), pointer :: cf_fro => null()
+    type( field_type ), pointer :: cf_liq => null()
+    type( field_type ), pointer :: cf_bulk => null()
+    type( field_type ), pointer :: cf_liq_n => null()
+    type( field_type ), pointer :: cf_fro_n => null()
+    type( field_type ), pointer :: cf_bulk_n => null()
 
-    type( field_type ), pointer :: o3p
-    type( field_type ), pointer :: o1d
-    type( field_type ), pointer :: o3
-    type( field_type ), pointer :: n
-    type( field_type ), pointer :: no
-    type( field_type ), pointer :: no3
-    type( field_type ), pointer :: lumped_n
-    type( field_type ), pointer :: n2o5
-    type( field_type ), pointer :: ho2no2
-    type( field_type ), pointer :: hono2
-    type( field_type ), pointer :: h2o2
-    type( field_type ), pointer :: ch4
-    type( field_type ), pointer :: co
-    type( field_type ), pointer :: hcho
-    type( field_type ), pointer :: meoo
-    type( field_type ), pointer :: meooh
-    type( field_type ), pointer :: h
-    type( field_type ), pointer :: oh
-    type( field_type ), pointer :: ho2
-    type( field_type ), pointer :: cl
-    type( field_type ), pointer :: cl2o2
-    type( field_type ), pointer :: clo
-    type( field_type ), pointer :: oclo
-    type( field_type ), pointer :: br
-    type( field_type ), pointer :: lumped_br
-    type( field_type ), pointer :: brcl
-    type( field_type ), pointer :: brono2
-    type( field_type ), pointer :: n2o
-    type( field_type ), pointer :: lumped_cl
-    type( field_type ), pointer :: hocl
-    type( field_type ), pointer :: hbr
-    type( field_type ), pointer :: hobr
-    type( field_type ), pointer :: clono2
-    type( field_type ), pointer :: cfcl3
-    type( field_type ), pointer :: cf2cl2
-    type( field_type ), pointer :: mebr
-    type( field_type ), pointer :: hono
-    type( field_type ), pointer :: c2h6
-    type( field_type ), pointer :: etoo
-    type( field_type ), pointer :: etooh
-    type( field_type ), pointer :: mecho
-    type( field_type ), pointer :: meco3
-    type( field_type ), pointer :: pan
-    type( field_type ), pointer :: c3h8
-    type( field_type ), pointer :: n_proo
-    type( field_type ), pointer :: i_proo
-    type( field_type ), pointer :: n_prooh
-    type( field_type ), pointer :: i_prooh
-    type( field_type ), pointer :: etcho
-    type( field_type ), pointer :: etco3
-    type( field_type ), pointer :: me2co
-    type( field_type ), pointer :: mecoch2oo
-    type( field_type ), pointer :: mecoch2ooh
-    type( field_type ), pointer :: ppan
-    type( field_type ), pointer :: meono2
-    type( field_type ), pointer :: c5h8
-    type( field_type ), pointer :: iso2
-    type( field_type ), pointer :: isooh
-    type( field_type ), pointer :: ison
-    type( field_type ), pointer :: macr
-    type( field_type ), pointer :: macro2
-    type( field_type ), pointer :: macrooh
-    type( field_type ), pointer :: mpan
-    type( field_type ), pointer :: hacet
-    type( field_type ), pointer :: mgly
-    type( field_type ), pointer :: nald
-    type( field_type ), pointer :: hcooh
-    type( field_type ), pointer :: meco3h
-    type( field_type ), pointer :: meco2h
-    type( field_type ), pointer :: h2
-    type( field_type ), pointer :: meoh
-    type( field_type ), pointer :: msa
-    type( field_type ), pointer :: nh3
-    type( field_type ), pointer :: cs2
-    type( field_type ), pointer :: csul
-    type( field_type ), pointer :: h2s
-    type( field_type ), pointer :: so3
-    type( field_type ), pointer :: passive_o3
-    type( field_type ), pointer :: age_of_air
+    type( field_type ), pointer :: o3p => null()
+    type( field_type ), pointer :: o1d => null()
+    type( field_type ), pointer :: o3 => null()
+    type( field_type ), pointer :: n => null()
+    type( field_type ), pointer :: no => null()
+    type( field_type ), pointer :: no3 => null()
+    type( field_type ), pointer :: lumped_n => null()
+    type( field_type ), pointer :: n2o5 => null()
+    type( field_type ), pointer :: ho2no2 => null()
+    type( field_type ), pointer :: hono2 => null()
+    type( field_type ), pointer :: h2o2 => null()
+    type( field_type ), pointer :: ch4 => null()
+    type( field_type ), pointer :: co => null()
+    type( field_type ), pointer :: hcho => null()
+    type( field_type ), pointer :: meoo => null()
+    type( field_type ), pointer :: meooh => null()
+    type( field_type ), pointer :: h => null()
+    type( field_type ), pointer :: oh => null()
+    type( field_type ), pointer :: ho2 => null()
+    type( field_type ), pointer :: cl => null()
+    type( field_type ), pointer :: cl2o2 => null()
+    type( field_type ), pointer :: clo => null()
+    type( field_type ), pointer :: oclo => null()
+    type( field_type ), pointer :: br => null()
+    type( field_type ), pointer :: lumped_br => null()
+    type( field_type ), pointer :: brcl => null()
+    type( field_type ), pointer :: brono2 => null()
+    type( field_type ), pointer :: n2o => null()
+    type( field_type ), pointer :: lumped_cl => null()
+    type( field_type ), pointer :: hocl => null()
+    type( field_type ), pointer :: hbr => null()
+    type( field_type ), pointer :: hobr => null()
+    type( field_type ), pointer :: clono2 => null()
+    type( field_type ), pointer :: cfcl3 => null()
+    type( field_type ), pointer :: cf2cl2 => null()
+    type( field_type ), pointer :: mebr => null()
+    type( field_type ), pointer :: hono => null()
+    type( field_type ), pointer :: c2h6 => null()
+    type( field_type ), pointer :: etoo => null()
+    type( field_type ), pointer :: etooh => null()
+    type( field_type ), pointer :: mecho => null()
+    type( field_type ), pointer :: meco3 => null()
+    type( field_type ), pointer :: pan => null()
+    type( field_type ), pointer :: c3h8 => null()
+    type( field_type ), pointer :: n_proo => null()
+    type( field_type ), pointer :: i_proo => null()
+    type( field_type ), pointer :: n_prooh => null()
+    type( field_type ), pointer :: i_prooh => null()
+    type( field_type ), pointer :: etcho => null()
+    type( field_type ), pointer :: etco3 => null()
+    type( field_type ), pointer :: me2co => null()
+    type( field_type ), pointer :: mecoch2oo => null()
+    type( field_type ), pointer :: mecoch2ooh => null()
+    type( field_type ), pointer :: ppan => null()
+    type( field_type ), pointer :: meono2 => null()
+    type( field_type ), pointer :: c5h8 => null()
+    type( field_type ), pointer :: iso2 => null()
+    type( field_type ), pointer :: isooh => null()
+    type( field_type ), pointer :: ison => null()
+    type( field_type ), pointer :: macr => null()
+    type( field_type ), pointer :: macro2 => null()
+    type( field_type ), pointer :: macrooh => null()
+    type( field_type ), pointer :: mpan => null()
+    type( field_type ), pointer :: hacet => null()
+    type( field_type ), pointer :: mgly => null()
+    type( field_type ), pointer :: nald => null()
+    type( field_type ), pointer :: hcooh => null()
+    type( field_type ), pointer :: meco3h => null()
+    type( field_type ), pointer :: meco2h => null()
+    type( field_type ), pointer :: h2 => null()
+    type( field_type ), pointer :: meoh => null()
+    type( field_type ), pointer :: msa => null()
+    type( field_type ), pointer :: nh3 => null()
+    type( field_type ), pointer :: cs2 => null()
+    type( field_type ), pointer :: csul => null()
+    type( field_type ), pointer :: h2s => null()
+    type( field_type ), pointer :: so3 => null()
+    type( field_type ), pointer :: passive_o3 => null()
+    type( field_type ), pointer :: age_of_air => null()
 
-    type( field_type ), pointer :: dms
-    type( field_type ), pointer :: so2
-    type( field_type ), pointer :: h2so4
-    type( field_type ), pointer :: dmso
-    type( field_type ), pointer :: monoterpene
-    type( field_type ), pointer :: secondary_organic
+    type( field_type ), pointer :: dms => null()
+    type( field_type ), pointer :: so2 => null()
+    type( field_type ), pointer :: h2so4 => null()
+    type( field_type ), pointer :: dmso => null()
+    type( field_type ), pointer :: monoterpene => null()
+    type( field_type ), pointer :: secondary_organic => null()
 
-    type( field_type ), pointer :: n_nuc_sol
-    type( field_type ), pointer :: nuc_sol_su
-    type( field_type ), pointer :: nuc_sol_om
-    type( field_type ), pointer :: n_ait_sol
-    type( field_type ), pointer :: ait_sol_su
-    type( field_type ), pointer :: ait_sol_bc
-    type( field_type ), pointer :: ait_sol_om
-    type( field_type ), pointer :: n_acc_sol
-    type( field_type ), pointer :: acc_sol_su
-    type( field_type ), pointer :: acc_sol_bc
-    type( field_type ), pointer :: acc_sol_om
-    type( field_type ), pointer :: acc_sol_ss
-    type( field_type ), pointer :: n_cor_sol
-    type( field_type ), pointer :: cor_sol_su
-    type( field_type ), pointer :: cor_sol_bc
-    type( field_type ), pointer :: cor_sol_om
-    type( field_type ), pointer :: cor_sol_ss
-    type( field_type ), pointer :: n_ait_ins
-    type( field_type ), pointer :: ait_ins_bc
-    type( field_type ), pointer :: ait_ins_om
-    type( field_type ), pointer :: n_acc_ins
-    type( field_type ), pointer :: acc_ins_du
-    type( field_type ), pointer :: n_cor_ins
-    type( field_type ), pointer :: cor_ins_du
+    type( field_type ), pointer :: n_nuc_sol => null()
+    type( field_type ), pointer :: nuc_sol_su => null()
+    type( field_type ), pointer :: nuc_sol_om => null()
+    type( field_type ), pointer :: n_ait_sol => null()
+    type( field_type ), pointer :: ait_sol_su => null()
+    type( field_type ), pointer :: ait_sol_bc => null()
+    type( field_type ), pointer :: ait_sol_om => null()
+    type( field_type ), pointer :: n_acc_sol => null()
+    type( field_type ), pointer :: acc_sol_su => null()
+    type( field_type ), pointer :: acc_sol_bc => null()
+    type( field_type ), pointer :: acc_sol_om => null()
+    type( field_type ), pointer :: acc_sol_ss => null()
+    type( field_type ), pointer :: n_cor_sol => null()
+    type( field_type ), pointer :: cor_sol_su => null()
+    type( field_type ), pointer :: cor_sol_bc => null()
+    type( field_type ), pointer :: cor_sol_om => null()
+    type( field_type ), pointer :: cor_sol_ss => null()
+    type( field_type ), pointer :: n_ait_ins => null()
+    type( field_type ), pointer :: ait_ins_bc => null()
+    type( field_type ), pointer :: ait_ins_om => null()
+    type( field_type ), pointer :: n_acc_ins => null()
+    type( field_type ), pointer :: acc_ins_du => null()
+    type( field_type ), pointer :: n_cor_ins => null()
+    type( field_type ), pointer :: cor_ins_du => null()
 
-    type( field_type ), pointer :: tnuc
-    type( field_type ), pointer :: precfrac
-    type( field_type ), pointer :: ls_rain
-    type( field_type ), pointer :: ls_snow
+    type( field_type ), pointer :: tnuc => null()
+    type( field_type ), pointer :: precfrac => null()
+    type( field_type ), pointer :: ls_rain => null()
+    type( field_type ), pointer :: ls_snow => null()
 
-    type( field_type ), pointer :: height_w3
-    type( field_type ), pointer :: height_wth
+    type( field_type ), pointer :: height_w3 => null()
+    type( field_type ), pointer :: height_wth => null()
 
     ! Coarsened fields to be passed to CoMorph kernel
     type( field_type ) :: rho_coarse 
@@ -676,6 +676,8 @@ contains
 
     ncells = conv_mesh%get_last_edge_cell()
     call um_sizes_init(ncells)
+    write(log_scratch_space,*) ", ncells = ", ncells
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
     ! Initialise the coarse convection fields
     call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
