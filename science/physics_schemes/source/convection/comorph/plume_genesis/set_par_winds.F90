@@ -143,8 +143,8 @@ do i_field = i_wind_u, i_wind_w
       "par_gen_core shape: ", (shape(par_gen_core)), ", fields_k shape: ", shape(fields_k), &
       ", turb_pert_k shape: ", shape(turb_pert_k)
     write(10, *) "turb_pert_k_l_bound_2=", lbound(turb_pert_k,2), ", turb_pert_k_u_bound=", ubound(turb_pert_k,2)
-    call flush(10) ! Flush out PET channel
-    
+    call flush(10) ! This doesn't quite seem to work
+    call raise_fatal(routinename, "Debug write statements for par_gen_core")    
     par_gen_core(ic,i_field) = fields_k(ic,i_field)                            &
                              + factor * turb_pert_k(ic,i_field)
   end do
