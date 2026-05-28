@@ -39,6 +39,7 @@ use mphys_inputs_mod, only: l_mcr_qcf2, l_mcr_qrain, l_mcr_qgraup
 use cloud_inputs_mod, only: i_cld_vn
 use pc2_constants_mod, only: i_cld_pc2
 use timestep_mod, only: recip_timestep
+use raise_error_mod, only: raise_fatal
 
 implicit none
 
@@ -229,6 +230,9 @@ integer :: i, j, k
 ! Which call to this routine are we in?
 select case (i_call)
 
+write(10, *) "i_call: ", i_call
+flush(10)
+
 case (i_call_save_before_conv)
   ! 1st call: save fields before convection...
 
@@ -239,6 +243,13 @@ case (i_call_save_before_conv)
   do k = 1, tdims%k_end-1
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end
+        ! Stack trace suggests culprit is somewhere here
+        write(10, *) "Processing i,j,k: ", i, j, k
+        flush(10)
+        if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
+          call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )
+        end if
+        call raise_fatal( "calc_conv_incs", "Terminated before suspected failure point." )
         interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
                / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
 
