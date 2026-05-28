@@ -674,6 +674,9 @@ contains
     height_wth => get_height_fv(Wtheta, conv_mesh%get_id())
     height_w3  => get_height_fv(W3, conv_mesh%get_id())
 
+    ncells = conv_mesh%get_last_edge_cell()
+    call um_sizes_init(ncells)
+
     ! Initialise the coarse convection fields
     call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
 
@@ -1088,9 +1091,6 @@ contains
     call map_scalar_field(ls_snow_coarse, ls_snow)
 
     ! call the scheme
-    ncells = conv_mesh%get_last_edge_cell()
-    call um_sizes_init(ncells)
-
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
                           delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
