@@ -228,10 +228,10 @@ integer :: i, j, k
 !$OMP         dubydt_pout, dvbydt_pout, recip_timestep )
 
 ! Which call to this routine are we in?
-select case (i_call)
-
 write(10, *) "i_call: ", i_call
 flush(10)
+
+select case (i_call)
 
 case (i_call_save_before_conv)
   ! 1st call: save fields before convection...
@@ -245,6 +245,7 @@ case (i_call_save_before_conv)
       do i = tdims%i_start, tdims%i_end
         ! Stack trace suggests culprit is somewhere here
         write(10, *) "Processing i,j,k: ", i, j, k
+        write(10, *) "tdims: ", tdims%i_start, tdims%i_end, tdims%j_start, tdims%j_end, tdims%k_end
         flush(10)
         if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
           call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )

@@ -1092,6 +1092,7 @@ contains
     call map_scalar_field(ls_rain_coarse, ls_rain)
     call map_scalar_field(ls_snow_coarse, ls_snow)
 
+    call log_event( 'Calling conv_comorph_kernel', LOG_LEVEL_INFO )
     ! call the scheme
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
@@ -1239,14 +1240,14 @@ contains
                           detrain_down_coarse,                                                                          &
                           massflux_up_half_coarse)                                                                      &
                                                ) ! end of invoke
-
+    
     call um_sizes_init(1_i_def)
 
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
     ! Call the diagnostics output routine
     if ( write_diag .and. use_xios_io ) then
-
+      call log_event( 'Calling diagnostics output routine', LOG_LEVEL_INFO )
       call output_diags_for_diagnostic_mode_comorph(            &
                                   lowest_cv_base_coarse,        &
                                   lowest_cv_top_coarse,         &
