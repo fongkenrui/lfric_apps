@@ -250,13 +250,37 @@ case (i_call_save_before_conv)
         write(10, *) "z_rho: ", z_rho(i,j,k), z_rho(i,j,k+1)
         write(10, *) "z_rho shape: ", size(z_rho, 1), size(z_rho, 2), size(z_rho, 3)
         write(10, *) "z_theta shape: ", size(z_theta, 1), size(z_theta, 2), size(z_theta, 3)
+        write(10, *) "z_rho lbounds:", lbound(z_rho, 1), lbound(z_rho, 2), lbound(z_rho, 3)
+        write(10, *) "z_rho ubounds:", ubound(z_rho, 1), ubound(z_rho, 2), ubound(z_rho, 3)
+        write(10, *) "z_theta lbounds:", lbound(z_theta, 1), lbound(z_theta, 2), lbound(z_theta, 3)
+        write(10, *) "z_theta ubounds:", ubound(z_theta, 1), ubound(z_theta, 2), ubound(z_theta, 3)
         flush(10)
         if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
           call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )
         end if
-        
+        write(10, *) "Denominator is" , z_rho(i,j,k+1) - z_rho(i,j,k)
+        write(10, *) "Numerator is" , z_theta(i,j,k) - z_rho(i,j,k)
         interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
                / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
+
+        write(10, *) "interp: ", interp
+        write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
+        write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
+        write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
+        write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
+        write(10, *) "u_p shape: ", size(u_p, 1), size(u_p, 2), size(u_p, 3)
+        write(10, *) "v_p shape: ", size(v_p, 1), size(v_p, 2), size(v_p, 3)
+        write(10, *) "ustar_p shape: ", size(ustar_p, 1), size(ustar_p, 2), size(ustar_p, 3)
+        write(10, *) "vstar_p shape: ", size(vstar_p, 1), size(vstar_p, 2), size(vstar_p, 3)
+        write(10, *) "u_p lbounds:", lbound(u_p, 1), lbound(u_p, 2), lbound(u_p, 3)
+        write(10, *) "v_p lbounds:", lbound(v_p, 1), lbound(v_p, 2), lbound(v_p, 3)
+        write(10, *) "ustar_p lbounds:", lbound(ustar_p, 1), lbound(ustar_p, 2), lbound(ustar_p, 3)
+        write(10, *) "vstar_p lbounds:", lbound(vstar_p, 1), lbound(vstar_p, 2), lbound(vstar_p, 3)
+        write(10, *) "u_p ubounds:", ubound(u_p, 1), ubound(u_p, 2), ubound(u_p, 3)
+        write(10, *) "v_p ubounds:", ubound(v_p, 1), ubound(v_p, 2), ubound(v_p, 3)
+        write(10, *) "ustar_p ubounds:", ubound(ustar_p, 1), ubound(ustar_p, 2), ubound(ustar_p, 3) 
+        write(10, *) "vstar_p ubounds:", ubound(vstar_p, 1), ubound(vstar_p, 2), ubound(vstar_p, 3)
+        flush(10)
 
         u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
                       +      interp  * u_p(i,j,k+1)
@@ -285,8 +309,6 @@ case (i_call_save_before_conv)
     end do
 !$OMP end do NOWAIT
 
-    call raise_fatal( "calc_conv_incs", "Terminated after completing l_conv_inc_w branch." )
-
   else
 
     ! Make a separate work array for w if we don't want convection
@@ -300,8 +322,6 @@ case (i_call_save_before_conv)
       end do
     end do
 !$OMP end do NOWAIT
-
-    call raise_fatal( "calc_conv_incs", "Terminated after completing l_conv_inc_w else branch." )
 
   end if
 
