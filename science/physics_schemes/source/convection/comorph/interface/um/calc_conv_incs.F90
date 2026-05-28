@@ -254,9 +254,11 @@ case (i_call_save_before_conv)
         if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
           call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )
         end if
-        call raise_fatal( "calc_conv_incs", "Terminated before suspected failure point." )
+        
         interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
                / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
+
+        call raise_fatal( "calc_conv_incs", "Terminated after interp weight calculation." )
 
         u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
                       +      interp  * u_p(i,j,k+1)
