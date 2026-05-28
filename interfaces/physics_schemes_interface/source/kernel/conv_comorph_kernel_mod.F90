@@ -1223,6 +1223,10 @@ contains
     ! assuming map_wth(1) points to level 0
     ! and map_w3(1) points to level 1
     !-----------------------------------------------------------------------
+    
+    write(10, *) "Profile fields sized to (row_length, rows, nlayers)", row_length, rows, nlayers
+    flush(10)
+    
     do i = 1, row_length
       do k = 0, nlayers
         ! w wind on theta levels

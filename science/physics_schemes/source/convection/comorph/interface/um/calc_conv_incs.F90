@@ -258,8 +258,6 @@ case (i_call_save_before_conv)
         interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
                / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
 
-        call raise_fatal( "calc_conv_incs", "Terminated after interp weight calculation." )
-
         u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
                       +      interp  * u_p(i,j,k+1)
         v_th_n(i,j,k) = (1.0-interp) * v_p(i,j,k)                              &
@@ -269,6 +267,7 @@ case (i_call_save_before_conv)
                         +      interp  * ustar_p(i,j,k+1)
         v_th_np1(i,j,k) = (1.0-interp) * vstar_p(i,j,k)                        &
                         +      interp  * vstar_p(i,j,k+1)
+        call raise_fatal( "calc_conv_incs", "Terminated after interpolating first set of fields." )
       end do
     end do
   end do
