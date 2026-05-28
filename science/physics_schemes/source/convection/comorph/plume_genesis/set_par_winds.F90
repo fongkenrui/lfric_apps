@@ -132,12 +132,13 @@ end do
 
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
-call raise_fatal(routinename, "Terminate before setting core winds")
 call raise_warning(routinename, &
-  "Set core winds")
+  "Set core winds, n_fields_tot = "//trim(adjustl(str(n_fields_tot)))&
+  //", i_wind_w = "//trim(adjustl(str(i_wind_w)))// ", i_wind_u = "//trim(adjustl(str(i_wind_u))))
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
   do ic = 1, n_points
+    call raise_fatal(routinename, "Terminate before setting core winds")
     par_gen_core(ic,i_field) = fields_k(ic,i_field)                            &
                              + factor * turb_pert_k(ic,i_field)
   end do
