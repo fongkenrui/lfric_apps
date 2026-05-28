@@ -272,8 +272,9 @@ case (i_call_save_before_conv)
         write(10, *) "Denominator is" , denom
         write(10, *) "Numerator is" , num
         flush(10)
-        interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
-               / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
+        !interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
+        !       / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
+        interp = num / denom
 
         write(10, *) "interp: ", interp
         write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
