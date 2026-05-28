@@ -132,17 +132,17 @@ end do
 
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
-call raise_warning(routinename, &
+write(10, *) &
   "Set core winds, n_fields_tot = "//trim(adjustl(str(n_fields_tot)))&
-  //", i_wind_w = "//trim(adjustl(str(i_wind_w)))// ", i_wind_u = "//trim(adjustl(str(i_wind_u))))
+  //", i_wind_w = "//trim(adjustl(str(i_wind_w)))// ", i_wind_u = "//trim(adjustl(str(i_wind_u)))
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
   do ic = 1, n_points
     ! Write to PET channel
     write(10, *) &
-      "par_gen_core shape: "//trim(adjustl(str(shape(par_gen_core))))//", fields_k shape: "//trim(adjustl(str(shape(fields_k))))&
-      //", turb_pert_k shape: "//trim(adjustl(str(shape(turb_pert_k))))
-    write(10, *) "turb_pert_k_l_bound_2="//trim(adjustl(str(lbound(turb_pert_k,2))))//", turb_pert_k_u_bound="//trim(adjustl(str(ubound(turb_pert_k,2))))
+      "par_gen_core shape: ", (shape(par_gen_core)), ", fields_k shape: ", shape(fields_k), &
+      ", turb_pert_k shape: ", shape(turb_pert_k)
+    write(10, *) "turb_pert_k_l_bound_2=", lbound(turb_pert_k,2), ", turb_pert_k_u_bound=", ubound(turb_pert_k,2)
     call flush(10) ! Flush out PET channel
     
     par_gen_core(ic,i_field) = fields_k(ic,i_field)                            &
