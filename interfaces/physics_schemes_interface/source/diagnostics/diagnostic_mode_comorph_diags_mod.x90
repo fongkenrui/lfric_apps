@@ -333,19 +333,18 @@ contains
     ! hardcoded, to avoid having to modify the metadata parser. This isn't a good
     ! long-term solution however...
 
-    ! conv_face (TWOD, WTHETA)
+    ! conv_face (TWOD, W3)
     ! While these are integer outputs in xios diagnostics, they are regular
     ! fields in the comorph kernel type definition...
-    call init_coarse_field(lowest_cv_base_coarse, conv_mesh, WTHETA, TWOD)
-    call init_coarse_field(lowest_cv_top_coarse, conv_mesh, WTHETA, TWOD)
+    call init_coarse_field(lowest_cv_base_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(lowest_cv_top_coarse, conv_mesh, W3, TWOD)
     
-    ! conv_face (TWOD, WTHETA) real
-    call init_coarse_field(pres_cv_base_coarse, conv_mesh, WTHETA, TWOD)
-    call init_coarse_field(pres_cv_top_coarse, conv_mesh, WTHETA, TWOD)
-    call init_coarse_field(pres_lowest_cv_base_coarse, conv_mesh, WTHETA, TWOD)
-    call init_coarse_field(pres_lowest_cv_top_coarse, conv_mesh, WTHETA, TWOD)
-    call init_coarse_field(lowest_cca_2d_coarse, conv_mesh, WTHETA, TWOD)
-
+    ! conv_face (TWOD, W3) real
+    call init_coarse_field(pres_cv_base_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(pres_cv_top_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(pres_lowest_cv_base_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(pres_lowest_cv_top_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(lowest_cca_2d_coarse, conv_mesh, W3, TWOD)
     ! conv_full_level_face_grid (3D, WTHETA) real
     call init_coarse_field(entrain_up_coarse, conv_mesh, WTHETA)
     call init_coarse_field(entrain_down_coarse, conv_mesh, WTHETA)
