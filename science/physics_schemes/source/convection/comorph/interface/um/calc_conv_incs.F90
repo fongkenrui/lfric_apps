@@ -258,8 +258,8 @@ case (i_call_save_before_conv)
         if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
           call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )
         end if
-        ! write(10, *) "Denominator is" , z_rho(i,j,k+1) - z_rho(i,j,k)
-        write(10, *) "Numerator is" , z_theta(i,j,k) - z_rho(i,j,k)
+        write(10, *) "Denominator is" , z_rho(i,j,k+1) - z_rho(i,j,k)
+        !write(10, *) "Numerator is" , z_theta(i,j,k) - z_rho(i,j,k)
         interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
                / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
 
