@@ -267,11 +267,12 @@ case (i_call_save_before_conv)
                         +      interp  * ustar_p(i,j,k+1)
         v_th_np1(i,j,k) = (1.0-interp) * vstar_p(i,j,k)                        &
                         +      interp  * vstar_p(i,j,k+1)
-        call raise_fatal( "calc_conv_incs", "Terminated after interpolating first set of fields." )
       end do
     end do
   end do
 !$OMP end do NOWAIT
+
+  call raise_fatal( "calc_conv_incs", "Terminated after completing interpolation loop." )
 
   if ( l_conv_inc_w ) then
 
