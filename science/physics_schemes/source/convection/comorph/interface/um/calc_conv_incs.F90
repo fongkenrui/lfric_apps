@@ -249,6 +249,7 @@ case (i_call_save_before_conv)
         write(10, *) "z_theta: ", z_theta(i,j,k), z_theta(i,j,k+1)
         write(10, *) "z_rho: ", z_rho(i,j,k), z_rho(i,j,k+1)
         write(10, *) "z_rho shape: ", size(z_rho, 1), size(z_rho, 2), size(z_rho, 3)
+        write(10, *) "z_theta shape: ", size(z_theta, 1), size(z_theta, 2), size(z_theta, 3)
         flush(10)
         if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
           call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )
