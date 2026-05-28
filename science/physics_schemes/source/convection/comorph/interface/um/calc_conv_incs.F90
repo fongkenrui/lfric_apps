@@ -214,8 +214,11 @@ real(kind=real_umphys) :: interp
 ! Loop counters
 integer :: i, j, k
 
+! Temporary debug variables
+real(kind=real_umphys) :: num, denom
 
-!$OMP PARALLEL DEFAULT(none) private( i, j, k, interp )                        &
+
+!$OMP PARALLEL DEFAULT(none) private( i, j, k, interp, num, denom )                        &
 !$OMP SHARED( i_call, tdims, wdims, pdims, z_theta, z_rho,                     &
 !$OMP         u_th_n, u_p, v_th_n, v_p, u_th_np1, ustar_p, v_th_np1, vstar_p,  &
 !$OMP         l_conv_inc_w, r_w, w, w_work, theta_inc, theta_star,             &
@@ -255,11 +258,19 @@ case (i_call_save_before_conv)
         write(10, *) "z_theta lbounds:", lbound(z_theta, 1), lbound(z_theta, 2), lbound(z_theta, 3)
         write(10, *) "z_theta ubounds:", ubound(z_theta, 1), ubound(z_theta, 2), ubound(z_theta, 3)
         flush(10)
-        if ( z_rho(i,j,k+1) == z_rho(i,j,k) ) then
-          call raise_fatal( "calc_conv_incs", "ZeroDivisionError" )
+        write(10, *) "z_rho kind: ", kind(z_rho(i,j,k))
+        write(10, *) "z_theta kind: ", kind(z_theta(i,j,k))
+        if ( ieee_is_nan(z_rho(i,j,k+1) - z_rho(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "z_rho_k+1 - z_rho is nan" )
         end if
-        write(10, *) "Denominator is" , z_rho(i,j,k+1) - z_rho(i,j,k)
-        !write(10, *) "Numerator is" , z_theta(i,j,k) - z_rho(i,j,k)
+        if ( ieee_is_nan(z_theta(i,j,k) - z_rho(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "z_theta - z_rho is nan" )
+        end if
+        num = z_theta(i,j,k) - z_rho(i,j,k)
+        denom = z_rho(i,j,k+1) - z_rho(i,j,k)
+        write(10, *) "Denominator is" , denom
+        write(10, *) "Numerator is" , num
+        flush(10)
         interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
                / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
 
