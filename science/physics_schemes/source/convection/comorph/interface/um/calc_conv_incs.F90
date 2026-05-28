@@ -40,6 +40,7 @@ use cloud_inputs_mod, only: i_cld_vn
 use pc2_constants_mod, only: i_cld_pc2
 use timestep_mod, only: recip_timestep
 use raise_error_mod, only: raise_fatal
+use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 
 implicit none
 
