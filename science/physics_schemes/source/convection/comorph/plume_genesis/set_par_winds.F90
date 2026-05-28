@@ -34,7 +34,6 @@ use cmpr_type_mod, only: cmpr_type
 
 use calc_virt_temp_mod, only: calc_virt_temp
 use check_bad_values_mod, only: check_bad_values_cmpr
-use raise_error_mod, only: raise_warning, raise_fatal
 
 implicit none
 
@@ -94,19 +93,11 @@ integer :: ic, i_field
 
 character(len=*), parameter :: routinename = "SET_PAR_WINDS"
 
-call raise_warning(routinename, &
- "Start set_par_winds, n_points = "//trim(adjustl(str(n_points)))//", n_par = "//trim(adjustl(str(n_par))))
-call raise_warning(routinename, &
- "Parcel radius copy: i_radius = "//trim(adjustl(str(i_radius))))
-write(*,*) 'Test write statement'
-
 do ic = 1, n_points
   ! Copy parcel radius into the parcel
   par_gen_par(ic,i_radius) = par_radius_k(ic)
 end do
 
-call raise_warning(routinename, &
- "Call write virt temp")
 ! Set initial edge virtual temperature to the environment value at k
 call calc_virt_temp( n_points, n_points_super,                                 &
                      fields_k(:,i_temperature),                                &
@@ -120,8 +111,7 @@ if ( l_down ) then
 else
   factor = one
 end if
-call raise_warning(routinename, &
-  "Set in-parcel mean winds")
+
 ! Set in-parcel mean winds
 do i_field = i_wind_u, i_wind_w
   do ic = 1, n_points
@@ -132,31 +122,19 @@ end do
 
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
-write(10, *) &
-  "Set core winds, n_fields_tot = "//trim(adjustl(str(n_fields_tot)))&
-  //", i_wind_w = "//trim(adjustl(str(i_wind_w)))// ", i_wind_u = "//trim(adjustl(str(i_wind_u)))
+
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
-  do ic = 1, n_points
-    ! Write to PET channel
-    write(10, *) &
-      "par_gen_core shape: ", (shape(par_gen_core)), ", fields_k shape: ", shape(fields_k), &
-      ", turb_pert_k shape: ", shape(turb_pert_k)
-    write(10, *) "turb_pert_k_l_bound_2=", lbound(turb_pert_k,2), ", turb_pert_k_u_bound=", ubound(turb_pert_k,2)
-    call flush(10) ! This doesn't quite seem to work
-    call raise_fatal(routinename, "Debug write statements for par_gen_core")    
+  do ic = 1, n_points 
     par_gen_core(ic,i_field) = fields_k(ic,i_field)                            &
                              + factor * turb_pert_k(ic,i_field)
   end do
 end do
-call raise_warning(routinename, &
-  "Copy tracer values")
+
 ! For now, copy grid-mean tracer values into the parcel
 ! (planning to add a turbulence-based perturbation to the
 !  tracer fields if l_turb_par_gen, but not yet implemented).
 if ( l_tracer .and. n_tracers > 0 ) then
-  call raise_warning(routinename, &
-   "Copy tracer values into parcel, n_tracers = "//trim(adjustl(str(n_tracers))))
   do i_field = i_tracers(1), i_tracers(n_tracers)
     do ic = 1, n_points
       par_gen_mean(ic,i_field) = fields_k(ic,i_field)
@@ -173,7 +151,6 @@ end if
 
 if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   ! Check outputs for bad values (NaN, Inf etc).
-  call raise_warning(routinename, "name_length assigned to call_string is "//trim(adjustl(str(name_length))))
   if ( l_down ) then
     call_string = "On output from set_par_winds; dndraft"
   else
@@ -181,13 +158,11 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   end if
   
   do i_field = i_wind_u, i_wind_w
-    call raise_warning(routinename, "Check parcel mean winds")
     field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
     call check_bad_values_cmpr( cmpr_init, k, par_gen_mean(:,i_field),         &
                                 call_string, field_name,                       &
                                 field_positive(i_field) )
     if ( l_par_core ) then
-      call raise_warning(routinename, "Check core winds")
       field_name = "par_gen_core_" // trim(adjustl(field_names(i_field)))
       call check_bad_values_cmpr( cmpr_init, k, par_gen_core(:,i_field),       &
                                   call_string, field_name,                     &
@@ -195,7 +170,6 @@ if ( i_check_bad_values_cmpr > i_check_bad_none ) then
     end if
   end do
   if ( l_tracer .and. n_tracers > 0 ) then
-    call raise_warning(routinename, 'Check tracer values')
     do i_field = i_tracers(1), i_tracers(n_tracers)
       field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
       call check_bad_values_cmpr( cmpr_init, k, par_gen_mean(:,i_field),       &
@@ -215,16 +189,5 @@ end if  ! ( i_check_bad_values_cmpr > i_check_bad_none )
 
 return
 end subroutine set_par_winds
-
-! Helper function for casting integers to string
-pure function str(i) result(s)
-    integer, intent(in) :: i
-    character(:), allocatable :: s
-
-    character(32) :: tmp
-
-    write(tmp, '(I0)') i
-    s = trim(tmp)
-end function
 
 end module set_par_winds_mod
