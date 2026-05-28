@@ -138,6 +138,9 @@ call raise_warning(routinename, &
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
   do ic = 1, n_points
+    call raise_warning(routinename, &
+      "par_gen_core shape: "//trim(adjustl(str(shape(par_gen_core))))//", fields_k shape: "//trim(adjustl(str(shape(fields_k))))&
+      //", turb_pert_k shape: "//trim(adjustl(str(shape(turb_pert_k))))))
     call raise_fatal(routinename, "Terminate before setting core winds")
     par_gen_core(ic,i_field) = fields_k(ic,i_field)                            &
                              + factor * turb_pert_k(ic,i_field)
