@@ -272,8 +272,6 @@ case (i_call_save_before_conv)
   end do
 !$OMP end do NOWAIT
 
-  call raise_fatal( "calc_conv_incs", "Terminated after completing interpolation loop." )
-
   if ( l_conv_inc_w ) then
 
     ! Convert increment r_w to field of w with increment so far added on
@@ -286,6 +284,8 @@ case (i_call_save_before_conv)
       end do
     end do
 !$OMP end do NOWAIT
+
+    call raise_fatal( "calc_conv_incs", "Terminated after completing l_conv_inc_w branch." )
 
   else
 
@@ -300,6 +300,8 @@ case (i_call_save_before_conv)
       end do
     end do
 !$OMP end do NOWAIT
+
+    call raise_fatal( "calc_conv_incs", "Terminated after completing l_conv_inc_w else branch." )
 
   end if
 
