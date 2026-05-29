@@ -719,13 +719,13 @@ contains
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
     write(log_scratch_space, *) "Checking mesh names of velocity fields..."
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "u_in_w3 mesh: ", u_in_w3%mesh%get_name()
+    write(log_scratch_space,*) "u_in_w3 mesh: ", u_in_w3%get_mesh_name()
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "v_in_w3 mesh: ", v_in_w3%mesh%get_name()
+    write(log_scratch_space,*) "v_in_w3 mesh: ", v_in_w3%get_mesh_name()
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "u_in_w3_star mesh: ", u_in_w3_star%mesh%get_name()
+    write(log_scratch_space,*) "u_in_w3_star mesh: ", u_in_w3_star%get_mesh_name()
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "v_in_w3_star mesh: ", v_in_w3_star%mesh%get_name()
+    write(log_scratch_space,*) "v_in_w3_star mesh: ", v_in_w3_star%get_mesh_name()
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
 
     call init_coarse_field_from(zh_coarse, zh, conv_mesh)

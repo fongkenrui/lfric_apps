@@ -1228,6 +1228,14 @@ contains
     
     write(10, *) "Profile fields sized to (row_length, rows, nlayers)", row_length, rows, nlayers
     flush(10)
+    write(10, *) "Segment length=", seg_len, " ndf_wth=", ndf_wth, " ndf_w3=", ndf_w3
+    flush(10)
+    do j = 1, seg_len
+      do i = 1, ndf_w3
+        write(10, *) "i=", i, " j=", j, " map_w3=", map_w3(i,j)
+      end do
+    end do
+    flush(10)
     
     do i = 1, row_length
       do k = 0, nlayers
