@@ -722,10 +722,10 @@ contains
     u_star_fs = u_star_proxy%vspace%which()
     v_star_fs = v_star_proxy%vspace%which()
     
-    u_mesh_name = u_proxy%vspace%get_mesh()%get_mesh_name()
-    v_mesh_name = v_proxy%vspace%get_mesh()%get_mesh_name()
-    u_star_mesh_name = u_star_proxy%vspace%get_mesh()%get_mesh_name()
-    v_star_mesh_name = v_star_proxy%vspace%get_mesh()%get_mesh_name()
+    u_mesh = u_proxy%vspace%get_mesh()
+    v_mesh = v_proxy%vspace%get_mesh()
+    u_star_mesh = u_star_proxy%vspace%get_mesh()
+    v_star_mesh = v_star_proxy%vspace%get_mesh()
     
     write(log_scratch_space,*) "Checking function spaces of velocity fields..."
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
@@ -739,13 +739,13 @@ contains
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
     write(log_scratch_space, *) "Checking mesh names of velocity fields..."
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "u_in_w3 mesh: ", trim(u_mesh_name)
+    write(log_scratch_space,*) "u_in_w3 mesh: ", trim(u_mesh%get_mesh_name())
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "v_in_w3 mesh: ", trim(v_mesh_name)
+    write(log_scratch_space,*) "v_in_w3 mesh: ", trim(v_mesh%get_mesh_name())
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "u_in_w3_star mesh: ", trim(u_star_mesh_name)
+    write(log_scratch_space,*) "u_in_w3_star mesh: ", trim(u_star_mesh%get_mesh_name())
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    write(log_scratch_space,*) "v_in_w3_star mesh: ", trim(v_star_mesh_name)
+    write(log_scratch_space,*) "v_in_w3_star mesh: ", trim(v_star_mesh%get_mesh_name())
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
 
     call init_coarse_field_from(zh_coarse, zh, conv_mesh)
