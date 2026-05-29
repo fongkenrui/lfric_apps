@@ -305,12 +305,16 @@ case (i_call_save_before_conv)
         
         write(10, *) "Accessing u_p indices at ", i, j, k
         temp1 = u_p(i,j,k)
+        write(10, *) "Value is", temp1
         write(10, *) "Accessing v_p indices at ", i, j, k
         temp1 = v_p(i,j,k)
+        write(10, *) "Value is", temp1
         write(10, *) "Accessing u_p indices at ", i, j, k+1
         temp2 = u_p(i,j,k+1)
+        write(10, *) "Value is", temp2
         write(10, *) "Accessing v_p indices at ", i, j, k+1
         temp2 = v_p(i,j,k+1)
+        write(10, *) "Value is", temp2
         write(10, *) "u_p kind: ", kind(u_p(i,j,k))
         write(10, *) "v_p kind: ", kind(v_p(i,j,k))
         write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))

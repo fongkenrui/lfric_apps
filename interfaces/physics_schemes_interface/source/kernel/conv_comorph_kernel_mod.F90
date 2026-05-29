@@ -21,6 +21,7 @@ module conv_comorph_kernel_mod
   use kernel_mod,              only : kernel_type
   use timestepping_config_mod, only : outer_iterations
   use microphysics_config_mod, only : prog_tnuc, microphysics_casim
+  use raise_error_mod,     only : raise_fatal
   use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
 
   implicit none
@@ -1371,6 +1372,12 @@ contains
           if (.not. ieee_is_finite(v_conv(i,1,k))) then
             write(10, *) "Invalid value in v_conv at i=", i, " k=", k, " value=", v_conv(i,1,k)
           end if  
+          ! Print out the values for checking
+          write(10, *) "u_p(", i, ",1,", k, ") = ", u_p(i,1,k)
+          write(10, *) "v_p(", i, ",1,", k, ") = ", v_p(i,1,k)
+          write(10, *) "u_conv(", i, ",", k, ") = ", u_conv(i,1,k)
+          write(10, *)  "v_conv(", i, ",", k, ") = ", v_conv(i,1,k)
+          flush(10)
         end do ! k
       end do
     end if
@@ -1989,6 +1996,45 @@ contains
     ! set r_w to zero. The predictor for w is not good, so better to use
     ! start of timestep value for w
     r_w = 0.0_r_def
+
+    ! Check all the arguments to calc_conv_incs if they are associated
+    if (.not. associated(z_theta)) then
+      call raise_fatal('z_theta is not associated')
+    end if
+    if (.not. associated(z_rho)) then
+      call raise_fatal('z_rho is not associated')
+    end if
+    if (.not. associated(u_p)) then
+      call raise_fatal('u_p is not associated')
+    end if
+    if (.not. associated(v_p)) then
+      call raise_fatal('v_p is not associated')
+    end if
+    if (.not. associated(u_conv)) then  
+      call raise_fatal('u_conv is not associated')
+    end if 
+    if (.not. associated(v_conv)) then
+      call raise_fatal('v_conv is not associated')
+    end if
+    if (.not. associated(w)) then
+      call raise_fatal('w is not associated')
+    end if
+    if (.not. associated(w_work)) then
+      call raise_fatal('w_work is not associated')
+    end if
+    if (.not. associated(u_th_n)) then
+      call raise_fatal('u_th_n is not associated')
+    end if
+    if (.not. associated(v_th_n)) then
+      call raise_fatal('v_th_n is not associated')
+    end if
+    if (.not. associated(u_th_np1)) then 
+      call raise_fatal('u_th_np1 is not associated')
+    end if
+    if (.not. associated(v_th_np1)) then  
+      call raise_fatal('v_th_np1 is not associated')
+    end if
+    write(10, *) "Passed the association checks"
 
     call calc_conv_incs  ( i_call_save_before_conv,                            &
                            l_conv_inc_w, z_theta, z_rho,                       &
