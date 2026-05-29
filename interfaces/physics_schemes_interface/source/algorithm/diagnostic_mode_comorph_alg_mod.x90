@@ -475,11 +475,11 @@ contains
     type(field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
 
     ! Nullify the mesh pointers
-    call nullify( conv_mesh )
-    call nullify( u_mesh )
-    call nullify( v_mesh )
-    call nullify( u_star_mesh )
-    call nullify( v_star_mesh )
+    nullify( conv_mesh )
+    nullify( u_mesh )
+    nullify( v_mesh )
+    nullify( u_star_mesh )
+    nullify( v_star_mesh )
 
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
