@@ -1359,16 +1359,16 @@ contains
           u_conv(i,1,k) = u_in_w3_star(map_w3(1,i) + k-1)
           v_conv(i,1,k) = v_in_w3_star(map_w3(1,i) + k-1)
           ! Check that valid values are being written out
-          if (.not. ieee_is_finite()(u_p(i,1,k))) then
+          if (.not. ieee_is_finite(u_p(i,1,k))) then
             write(10, *) "Invalid value in u_p at i=", i, " k=", k, " value=", u_p(i,1,k)
           end if
-          if (.not. ieee_is_finite()(v_p(i,1,k))) then
+          if (.not. ieee_is_finite(v_p(i,1,k))) then
             write(10, *) "Invalid value in v_p at i=", i, " k=", k, " value=", v_p(i,1,k)
           end if 
-          if (.not. ieee_is_finite()(u_conv(i,1,k))) then
+          if (.not. ieee_is_finite(u_conv(i,1,k))) then
             write(10, *) "Invalid value in u_conv at i=", i, " k=", k, " value=", u_conv(i,1,k)
           end if
-          if (.not. ieee_is_finite()(v_conv(i,1,k))) then
+          if (.not. ieee_is_finite(v_conv(i,1,k))) then
             write(10, *) "Invalid value in v_conv at i=", i, " k=", k, " value=", v_conv(i,1,k)
           end if  
         end do ! k
