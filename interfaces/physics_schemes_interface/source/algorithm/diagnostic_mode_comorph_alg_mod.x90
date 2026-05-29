@@ -696,16 +696,19 @@ contains
     call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
 
     ! Model prognostics
+    call log_event( 'Initializing coarse fields for model prognostics', LOG_LEVEL_DEBUG )
     call init_coarse_field_from(rho_coarse, rho, conv_mesh)
     call init_coarse_field_from(exner_coarse, exner, conv_mesh)
     call init_coarse_field_from(theta_coarse, theta, conv_mesh)
     ! Mixing ratios - need special handling
+    call log_event( 'Initializing coarse fields for mixing ratios', LOG_LEVEL_DEBUG )
     do i_mr=1, nummr
       call init_coarse_field_from(mr_coarse(i_mr), mr(i_mr), conv_mesh)
       call init_coarse_field_from(mr_n_coarse(i_mr), mr_n(i_mr), conv_mesh)
     end do
 
     ! Derived fields/packed fields
+    call log_event( 'Initializing coarse fields for derived/packed fields', LOG_LEVEL_DEBUG )
     call init_coarse_field_from(exner_in_wth_coarse, exner_in_wth, conv_mesh)
     call init_coarse_field_from(rho_in_wth_coarse, rho_in_wth, conv_mesh)
     call init_coarse_field_from(wetrho_in_wth_coarse, wetrho_in_wth, conv_mesh)
@@ -720,19 +723,34 @@ contains
     ! Runtime checks of the function space of u and v variables
     ! Checks the name of the function spaces of u_in_w3, v_in_w3, 
     ! u_in_w3_star, v_in_w3_star to ensure they are on the expected function space (e.g., W3)
+    call log_event( 'Checking function spaces and meshes of velocity fields', LOG_LEVEL_DEBUG )
+    call log_event( 'u_in_w3_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     u_proxy = u_in_w3_coarse%get_proxy()
+    call log_event( 'v_in_w3_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     v_proxy = v_in_w3_coarse%get_proxy()
+    call log_event( 'u_in_w3_star_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     u_star_proxy = u_in_w3_star_coarse%get_proxy()
+    call log_event( 'v_in_w3_star_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     v_star_proxy = v_in_w3_star_coarse%get_proxy()
     
+    call log_event( 'Retrieving function space identifiers', LOG_LEVEL_DEBUG )
+    call log_event( 'u_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
     u_fs = u_proxy%vspace%which()
+    call log_event( 'v_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
     v_fs = v_proxy%vspace%which()
+    call log_event( 'u_star_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
     u_star_fs = u_star_proxy%vspace%which()
+    call log_event( 'v_star_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
     v_star_fs = v_star_proxy%vspace%which()
     
+    call log_event( 'Retrieving mesh pointers from proxies', LOG_LEVEL_DEBUG )
+    call log_event( 'u_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     u_mesh = u_proxy%vspace%get_mesh()
+    call log_event( 'v_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     v_mesh = v_proxy%vspace%get_mesh()
+    call log_event( 'u_star_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     u_star_mesh = u_star_proxy%vspace%get_mesh()
+    call log_event( 'v_star_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     v_star_mesh = v_star_proxy%vspace%get_mesh()
     
     write(log_scratch_space,*) "Checking function spaces of velocity fields..."
