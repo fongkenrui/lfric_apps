@@ -216,7 +216,7 @@ real(kind=real_umphys) :: interp
 integer :: i, j, k
 
 ! Temporary debug variables
-real(kind=real_umphys) :: num, denom
+real(kind=real_umphys) :: num, denom, temp1, temp2
 
 
 !!$OMP PARALLEL DEFAULT(none) private( i, j, k, interp, num, denom )                        &
@@ -296,28 +296,53 @@ case (i_call_save_before_conv)
         write(10, *) "ustar_p ubounds:", ubound(ustar_p, 1), ubound(ustar_p, 2), ubound(ustar_p, 3) 
         write(10, *) "vstar_p ubounds:", ubound(vstar_p, 1), ubound(vstar_p, 2), ubound(vstar_p, 3)
         flush(10)
-        write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
-        write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
-        flush(10)
-        write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
-        write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
+        !write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
+        !write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
+        !flush(10)
+        !write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
+        !write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
+        !flush(10)
+
+        temp1 = (1.0-interp) * u_p(i,j,k) + interp * u_p(i,j,k+1)
+        temp2 = (1.0-interp) * v_p(i,j,k) + interp * v_p(i,j,k+1)
+        write(10, *) "temp1: ", temp1
+        write(10, *) "temp2: ", temp2
         flush(10)
 
-        u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
-                      +      interp  * u_p(i,j,k+1)
-        v_th_n(i,j,k) = (1.0-interp) * v_p(i,j,k)                              &
-                      +      interp  * v_p(i,j,k+1)
+        !u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
+        !              +      interp  * u_p(i,j,k+1)
+        !v_th_n(i,j,k) = (1.0-interp) * v_p(i,j,k)                              &
+        !              +      interp  * v_p(i,j,k+1)
 
-        u_th_np1(i,j,k) = (1.0-interp) * ustar_p(i,j,k)                        &
-                        +      interp  * ustar_p(i,j,k+1)
-        v_th_np1(i,j,k) = (1.0-interp) * vstar_p(i,j,k)                        &
-                        +      interp  * vstar_p(i,j,k+1)
+        u_th_n(i,j,k) = temp1
+        v_th_n(i,j,k) = temp2
+        write(10, *) "Assigned values to u_th_n and v_th_n"
+        flush(10)
+
+        temp1 = (1.0-interp) * ustar_p(i,j,k) + interp * ustar_p(i,j,k+1)
+        temp2 = (1.0-interp) * vstar_p(i,j,k) + interp * vstar_p(i,j,k+1)
+
+        write(10, *) "temp1: ", temp1
+        write(10, *) "temp2: ", temp2
+        flush(10)
+
+        !u_th_np1(i,j,k) = (1.0-interp) * ustar_p(i,j,k)                        &
+        !                +      interp  * ustar_p(i,j,k+1)
+        !v_th_np1(i,j,k) = (1.0-interp) * vstar_p(i,j,k)                        &
+        !                +      interp  * vstar_p(i,j,k+1)
+
+        u_th_np1(i,j,k) = temp1
+        v_th_np1(i,j,k) = temp2
+        write(10, *) "Assigned values to u_th_np1 and v_th_np1"
+        flush(10)
       end do
     end do
   end do
 !!$OMP end do NOWAIT
 
   if ( l_conv_inc_w ) then
+    write(10, *) "Entering l_conv_inc_w block"
+    flush(10)
 
     ! Convert increment r_w to field of w with increment so far added on
 !!$OMP do SCHEDULE(STATIC)
