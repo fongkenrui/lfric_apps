@@ -40,7 +40,7 @@ use cloud_inputs_mod, only: i_cld_vn
 use pc2_constants_mod, only: i_cld_pc2
 use timestep_mod, only: recip_timestep
 use raise_error_mod, only: raise_fatal
-use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
+use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
 
 implicit none
 
@@ -261,11 +261,11 @@ case (i_call_save_before_conv)
         flush(10)
         write(10, *) "z_rho kind: ", kind(z_rho(i,j,k))
         write(10, *) "z_theta kind: ", kind(z_theta(i,j,k))
-        if ( ieee_is_nan(z_rho(i,j,k+1) - z_rho(i,j,k)) ) then
-          call raise_fatal( "calc_conv_incs", "z_rho_k+1 - z_rho is nan" )
+        if ( .not. ieee_is_finite(z_rho(i,j,k+1) - z_rho(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "z_rho_k+1 - z_rho is not finite" )
         end if
-        if ( ieee_is_nan(z_theta(i,j,k) - z_rho(i,j,k)) ) then
-          call raise_fatal( "calc_conv_incs", "z_theta - z_rho is nan" )
+        if ( .not. ieee_is_finite(z_theta(i,j,k) - z_rho(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "z_theta - z_rho is not finite" )
         end if
         num = z_theta(i,j,k) - z_rho(i,j,k)
         denom = z_rho(i,j,k+1) - z_rho(i,j,k)
@@ -302,7 +302,41 @@ case (i_call_save_before_conv)
         !write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
         !write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
         !flush(10)
+        write(10, *) "u_p kind: ", kind(u_p(i,j,k))
+        write(10, *) "v_p kind: ", kind(v_p(i,j,k))
+        write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
+        write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
+        ! Guard against NaNs/infs
+        if ( .not. ieee_is_finite(u_p(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "u_p is not finite" )
+        end if
+        if ( .not. ieee_is_finite(v_p(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "v_p is not finite" )
+        end if
+        if ( .not. ieee_is_finite(ustar_p(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "ustar_p is not finite" )
+        end if
+        if ( .not. ieee_is_finite(vstar_p(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "vstar_p is not finite" )
+        end if
+        flush(10)
 
+        write(10, *) "ieee_is_finite checks passed"
+        write(10, *) "Accessing u_p indices at ", i, j, k
+        temp1 = u_p(i,j,k)
+        write(10, *) "Accessing v_p indices at ", i, j, k
+        temp1 = v_p(i,j,k)
+        write(10, *) "Accessing u_p indices at ", i, j, k+1
+        temp2 = u_p(i,j,k+1)
+        write(10, *) "Accessing v_p indices at ", i, j, k+1
+        temp2 = v_p(i,j,k+1)
+        write(10, *) "No issues with accessing indices for u_p and v_p."
+        flush(10)
+        write(10, *) "Performing 1.0-interp arithmetic subtraction"
+        temp1 = 1.0-interp
+        write(10, *) "1.0-interp:", temp1
+        write(10, *) "Performing interp arithmetic"
+        flush(10)
         temp1 = (1.0-interp) * u_p(i,j,k) + interp * u_p(i,j,k+1)
         temp2 = (1.0-interp) * v_p(i,j,k) + interp * v_p(i,j,k+1)
         write(10, *) "temp1: ", temp1
