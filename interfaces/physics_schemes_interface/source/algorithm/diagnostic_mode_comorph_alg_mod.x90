@@ -8,7 +8,7 @@
 module diagnostic_mode_comorph_alg_mod
 
   use constants_mod,        only: i_def, r_def, str_def
-  use field_mod,            only: field_type
+  use field_mod,            only: field_type, field_proxy_type
   use integer_field_mod,    only: integer_field_type
   use field_collection_mod, only: field_collection_type
   use mr_indices_mod,       only: nummr, imr_v, imr_cl, imr_ci, imr_r, imr_g,&
@@ -471,6 +471,7 @@ contains
     ! Temporary variables for logging velocity field properties
     integer(i_def) :: u_fs, v_fs, u_star_fs, v_star_fs
     character(str_def) :: u_mesh_name, v_mesh_name, u_star_mesh_name, v_star_mesh_name
+    type(field_proxy_type) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
 
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
@@ -711,15 +712,20 @@ contains
     ! Runtime checks of the function space of u and v variables
     ! Checks the name of the function spaces of u_in_w3, v_in_w3, 
     ! u_in_w3_star, v_in_w3_star to ensure they are on the expected function space (e.g., W3)
-    u_fs = u_in_w3_coarse%get_proxy()%vspace%which()
-    v_fs = v_in_w3_coarse%get_proxy()%vspace%which()
-    u_star_fs = u_in_w3_star_coarse%get_proxy()%vspace%which()
-    v_star_fs = v_in_w3_star_coarse%get_proxy()%vspace%which()
+    u_proxy = u_in_w3_coarse%get_proxy()
+    v_proxy = v_in_w3_coarse%get_proxy()
+    u_star_proxy = u_in_w3_star_coarse%get_proxy()
+    v_star_proxy = v_in_w3_star_coarse%get_proxy()
     
-    u_mesh_name = u_in_w3_coarse%get_proxy()%vspace%get_mesh()%get_mesh_name()
-    v_mesh_name = v_in_w3_coarse%get_proxy()%vspace%get_mesh()%get_mesh_name()
-    u_star_mesh_name = u_in_w3_star_coarse%get_proxy()%vspace%get_mesh()%get_mesh_name()
-    v_star_mesh_name = v_in_w3_star_coarse%get_proxy()%vspace%get_mesh()%get_mesh_name()
+    u_fs = u_proxy%vspace%which()
+    v_fs = v_proxy%vspace%which()
+    u_star_fs = u_star_proxy%vspace%which()
+    v_star_fs = v_star_proxy%vspace%which()
+    
+    u_mesh_name = u_proxy%vspace%get_mesh()%get_mesh_name()
+    v_mesh_name = v_proxy%vspace%get_mesh()%get_mesh_name()
+    u_star_mesh_name = u_star_proxy%vspace%get_mesh()%get_mesh_name()
+    v_star_mesh_name = v_star_proxy%vspace%get_mesh()%get_mesh_name()
     
     write(log_scratch_space,*) "Checking function spaces of velocity fields..."
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
