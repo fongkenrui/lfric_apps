@@ -1997,45 +1997,6 @@ contains
     ! start of timestep value for w
     r_w = 0.0_r_def
 
-    ! Check all the arguments to calc_conv_incs if they are associated
-    if (.not. associated(z_theta)) then
-      call raise_fatal('z_theta is not associated')
-    end if
-    if (.not. associated(z_rho)) then
-      call raise_fatal('z_rho is not associated')
-    end if
-    if (.not. associated(u_p)) then
-      call raise_fatal('u_p is not associated')
-    end if
-    if (.not. associated(v_p)) then
-      call raise_fatal('v_p is not associated')
-    end if
-    if (.not. associated(u_conv)) then  
-      call raise_fatal('u_conv is not associated')
-    end if 
-    if (.not. associated(v_conv)) then
-      call raise_fatal('v_conv is not associated')
-    end if
-    if (.not. associated(w)) then
-      call raise_fatal('w is not associated')
-    end if
-    if (.not. associated(w_work)) then
-      call raise_fatal('w_work is not associated')
-    end if
-    if (.not. associated(u_th_n)) then
-      call raise_fatal('u_th_n is not associated')
-    end if
-    if (.not. associated(v_th_n)) then
-      call raise_fatal('v_th_n is not associated')
-    end if
-    if (.not. associated(u_th_np1)) then 
-      call raise_fatal('u_th_np1 is not associated')
-    end if
-    if (.not. associated(v_th_np1)) then  
-      call raise_fatal('v_th_np1 is not associated')
-    end if
-    write(10, *) "Passed the association checks"
-
     call calc_conv_incs  ( i_call_save_before_conv,                            &
                            l_conv_inc_w, z_theta, z_rho,                       &
                            u_p, v_p, u_conv, v_conv, w, w_work,                &
