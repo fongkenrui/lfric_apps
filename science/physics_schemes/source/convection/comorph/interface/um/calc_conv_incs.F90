@@ -302,10 +302,6 @@ case (i_call_save_before_conv)
         !write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
         !write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
         !flush(10)
-        write(10, *) "u_p kind: ", kind(u_p(i,j,k))
-        write(10, *) "v_p kind: ", kind(v_p(i,j,k))
-        write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
-        write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
         
         write(10, *) "Accessing u_p indices at ", i, j, k
         temp1 = u_p(i,j,k)
@@ -315,6 +311,10 @@ case (i_call_save_before_conv)
         temp2 = u_p(i,j,k+1)
         write(10, *) "Accessing v_p indices at ", i, j, k+1
         temp2 = v_p(i,j,k+1)
+        write(10, *) "u_p kind: ", kind(u_p(i,j,k))
+        write(10, *) "v_p kind: ", kind(v_p(i,j,k))
+        write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
+        write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
         write(10, *) "No issues with accessing indices for u_p and v_p."
         flush(10)
         write(10, *) "Performing 1.0-interp arithmetic subtraction"
