@@ -21,6 +21,7 @@ module conv_comorph_kernel_mod
   use kernel_mod,              only : kernel_type
   use timestepping_config_mod, only : outer_iterations
   use microphysics_config_mod, only : prog_tnuc, microphysics_casim
+  use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
 
   implicit none
 
@@ -1357,6 +1358,19 @@ contains
           v_p(i,1,k) = v_in_w3(map_w3(1,i) + k-1)
           u_conv(i,1,k) = u_in_w3_star(map_w3(1,i) + k-1)
           v_conv(i,1,k) = v_in_w3_star(map_w3(1,i) + k-1)
+          ! Check that valid values are being written out
+          if (.not. ieee_is_finite()(u_p(i,1,k))) then
+            write(10, *) "Invalid value in u_p at i=", i, " k=", k, " value=", u_p(i,1,k)
+          end if
+          if (.not. ieee_is_finite()(v_p(i,1,k))) then
+            write(10, *) "Invalid value in v_p at i=", i, " k=", k, " value=", v_p(i,1,k)
+          end if 
+          if (.not. ieee_is_finite()(u_conv(i,1,k))) then
+            write(10, *) "Invalid value in u_conv at i=", i, " k=", k, " value=", u_conv(i,1,k)
+          end if
+          if (.not. ieee_is_finite()(v_conv(i,1,k))) then
+            write(10, *) "Invalid value in v_conv at i=", i, " k=", k, " value=", v_conv(i,1,k)
+          end if  
         end do ! k
       end do
     end if
