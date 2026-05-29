@@ -1019,7 +1019,7 @@ contains
     ! Local variables for the kernel
     !-----------------------------------------------------------------------
     ! loop counters etc
-    integer(i_def) :: k, i, n
+    integer(i_def) :: k, i, j, n
 
     ! local switches and scalars
     integer(i_um) :: segments, n_conv_levels, ntra_fld
