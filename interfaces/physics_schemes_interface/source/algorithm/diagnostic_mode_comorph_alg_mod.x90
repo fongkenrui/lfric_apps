@@ -472,7 +472,7 @@ contains
     integer(i_def) :: u_fs, v_fs, u_star_fs, v_star_fs
     !character(str_def) :: u_mesh_name, v_mesh_name, u_star_mesh_name, v_star_mesh_name
     type( mesh_type ), pointer :: u_mesh, v_mesh, u_star_mesh, v_star_mesh
-    type(field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
+    type( field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
 
     ! Nullify the mesh pointers
     nullify( conv_mesh )
@@ -732,17 +732,7 @@ contains
     u_star_proxy = u_in_w3_star_coarse%get_proxy()
     call log_event( 'v_in_w3_star_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     v_star_proxy = v_in_w3_star_coarse%get_proxy()
-    
-    call log_event( 'Retrieving function space identifiers', LOG_LEVEL_DEBUG )
-    call log_event( 'u_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
-    u_fs = u_proxy%vspace%which()
-    call log_event( 'v_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
-    v_fs = v_proxy%vspace%which()
-    call log_event( 'u_star_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
-    u_star_fs = u_star_proxy%vspace%which()
-    call log_event( 'v_star_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
-    v_star_fs = v_star_proxy%vspace%which()
-    
+
     call log_event( 'Retrieving mesh pointers from proxies', LOG_LEVEL_DEBUG )
     call log_event( 'u_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     u_mesh = u_proxy%vspace%get_mesh()
@@ -752,6 +742,17 @@ contains
     u_star_mesh = u_star_proxy%vspace%get_mesh()
     call log_event( 'v_star_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     v_star_mesh = v_star_proxy%vspace%get_mesh()
+
+    call log_event( 'Retrieving function space identifiers', LOG_LEVEL_DEBUG )
+    ! Currently this is the failure point; no vspace associated?
+    call log_event( 'u_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
+    u_fs = u_proxy%vspace%which()
+    call log_event( 'v_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
+    v_fs = v_proxy%vspace%which()
+    call log_event( 'u_star_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
+    u_star_fs = u_star_proxy%vspace%which()
+    call log_event( 'v_star_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
+    v_star_fs = v_star_proxy%vspace%which()
     
     write(log_scratch_space,*) "Checking function spaces of velocity fields..."
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
