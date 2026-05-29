@@ -470,8 +470,16 @@ contains
 
     ! Temporary variables for logging velocity field properties
     integer(i_def) :: u_fs, v_fs, u_star_fs, v_star_fs
-    character(str_def) :: u_mesh_name, v_mesh_name, u_star_mesh_name, v_star_mesh_name
-    type(field_proxy_type) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
+    !character(str_def) :: u_mesh_name, v_mesh_name, u_star_mesh_name, v_star_mesh_name
+    type( mesh_type ), pointer :: u_mesh, v_mesh, u_star_mesh, v_star_mesh
+    type(field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
+
+    ! Nullify the mesh pointers
+    call nullify( conv_mesh )
+    call nullify( u_mesh )
+    call nullify( v_mesh )
+    call nullify( u_star_mesh )
+    call nullify( v_star_mesh )
 
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
@@ -964,6 +972,15 @@ contains
     call map_scalar_field(theta_star_coarse, theta_star)
     call map_scalar_field(u_in_w3_star_coarse, u_in_w3_star)
     call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
+
+    ! Check coarse velocity fields
+    call log_event( 'Checking coarse velocity fields after mapping', LOG_LEVEL_INFO )
+    call print_field_stats_alg(u_in_w3_coarse, LOG_LEVEL_INFO, name='u_in_w3_coarse after mapping')
+    call print_field_stats_alg(v_in_w3_coarse, LOG_LEVEL_INFO, name='v_in_w3_coarse after mapping')
+    call print_field_stats_alg(w_in_wth_coarse, LOG_LEVEL_INFO, name='w_in_wth_coarse after mapping')
+    call print_field_stats_alg(theta_star_coarse, LOG_LEVEL_INFO, name='theta_star_coarse after mapping')
+    call print_field_stats_alg(u_in_w3_star_coarse, LOG_LEVEL_INFO, name='u_in_w3_star_coarse after mapping')
+    call print_field_stats_alg(v_in_w3_star_coarse, LOG_LEVEL_INFO, name='v_in_w3_star_coarse after mapping')
     ! Boundary layer fields; these are 2D fields
     call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
     call map_scalar_field(zh_coarse, zh)
@@ -976,6 +993,13 @@ contains
     ! that all of them are not Type 7 BL.
     call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
     call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
+    ! Check 2D boundary layer fields
+    call log_event( 'Checking 2D boundary layer fields after mapping', LOG_LEVEL_INFO )
+    call print_field_stats_alg(zh_coarse, LOG_LEVEL_INFO, name='zh_coarse after mapping')
+    call print_field_stats_alg(zh_nonloc_coarse, LOG_LEVEL_INFO, name='zh_nonloc_coarse after mapping')
+    call print_field_stats_alg(zhsc_coarse, LOG_LEVEL_INFO, name='zhsc_coarse after mapping')
+    call print_field_stats_alg(inv_depth_coarse, LOG_LEVEL_INFO, name='inv_depth_coarse after mapping') 
+    ! bl_type_ind is an integer field so we can't use print_field_stats_alg
     ! Boundary layer fields
     call map_scalar_field(tke_bl_coarse, tke_bl)
     call map_scalar_field(wvar_coarse, wvar)
@@ -984,6 +1008,15 @@ contains
     call map_scalar_field(heat_flux_coarse, heat_flux)
     call map_scalar_field(taux_coarse, taux)
     call map_scalar_field(tauy_coarse, tauy)
+    ! Check boundary layer fields after mapping
+    call log_event( 'Checking boundary layer fields after mapping', LOG_LEVEL_INFO )
+    call print_field_stats_alg(tke_bl_coarse, LOG_LEVEL_INFO, name='tke_bl_coarse after mapping')
+    call print_field_stats_alg(wvar_coarse, LOG_LEVEL_INFO, name='wvar_coarse after mapping')
+    call print_field_stats_alg(rhokm_bl_coarse, LOG_LEVEL_INFO, name='rhokm_bl_coarse after mapping')
+    call print_field_stats_alg(moist_flux_coarse, LOG_LEVEL_INFO, name='moist_flux_coarse after mapping')
+    call print_field_stats_alg(heat_flux_coarse, LOG_LEVEL_INFO, name='heat_flux_coarse after mapping')
+    call print_field_stats_alg(taux_coarse, LOG_LEVEL_INFO, name='taux_coarse after mapping')
+    call print_field_stats_alg(tauy_coarse, LOG_LEVEL_INFO, name='tauy_coarse after mapping')
     ! Surface fields; does map_scalar_field work for 2D fields?
     call map_scalar_field(surf_interp_coarse, surf_interp)
     call map_scalar_field(ustar_coarse, ustar)
