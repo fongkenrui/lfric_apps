@@ -1044,12 +1044,52 @@ contains
     call print_field_stats_alg(theta_star_coarse, LOG_LEVEL_INFO, name='theta_star_coarse after mapping')
     call print_field_stats_alg(u_in_w3_star_coarse, LOG_LEVEL_INFO, name='u_in_w3_star_coarse after mapping')
     call print_field_stats_alg(v_in_w3_star_coarse, LOG_LEVEL_INFO, name='v_in_w3_star_coarse after mapping')
+  
+    
+    ! Do NaN-checking of inv_depth before mapping
+    call log_event( 'Checking inv_depth for NaNs', LOG_LEVEL_INFO )
+    call log_event( 'inv_depth%get_proxy() called', LOG_LEVEL_DEBUG )
+    temp_field_proxy = inv_depth%get_proxy()
+    call log_event( 'Successfully retrived proxy for inv_depth', LOG_LEVEL_DEBUG )
+    ! Check that %data pointer is associated
+    if ( .not. associated(temp_field_proxy%data) ) then
+      call log_event( 'ERROR: inv_depth proxy data pointer is not associated', LOG_LEVEL_ERROR )
+    else
+      call log_event( 'inv_depth proxy data pointer is associated', LOG_LEVEL_DEBUG )
+    end if
+    ! Attempt to access and print a data to ensure its not an access issue
+    write(log_scratch_space,*) "inv_depth data sample value: ", temp_field_proxy%data(1)
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    call log_event ( 'Successfully accessed data of inv_depth proxy', LOG_LEVEL_DEBUG )
+    ! Check kind and precision
+    call log_event( 'Checking kind and precision of inv_depth', LOG_LEVEL_INFO )
+    k = kind(temp_field_proxy%data(1))
+    p10 = precision(temp_field_proxy%data(1))
+    write(log_scratch_space,*) "inv_depth data kind: ", k, " precision: ", p10
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+    ! Loop over all data points and do checks for non-finite values
+    call ieee_get_halting_mode(IEEE_INVALID, halt_invalid)
+    call ieee_set_halting_mode(IEEE_INVALID, .false.)
+
+    do idx = 1, size(temp_field_proxy%data)
+      if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
+        write(log_scratch_space,*) 'First non-finite inv_depth value at ', idx, ': ', temp_field_proxy%data(idx)
+        call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+        exit
+      end if
+    end do
+    
+    call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
+    call log_event( 'Completed checks for inv_depth field before mapping', LOG_LEVEL_INFO )
+    
     ! Boundary layer fields; these are 2D fields
     call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
     call map_scalar_field(zh_coarse, zh)
     call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
     call map_scalar_field(zhsc_coarse, zhsc)
     call map_scalar_field(inv_depth_coarse, inv_depth)
+    
     ! bl_type_ind is an integer field; TODO: use majority vote mapping
     ! For now we just set all indicators to zero since the kernel only
     ! cares whether or not it is a Type 7 BL; this is equivalent to saying
@@ -1095,43 +1135,6 @@ contains
 
     call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
 
-    ! Now we do a similar check but with the original fine field data instead
-    call log_event( 'Checking inv_depth for NaNs', LOG_LEVEL_INFO )
-    call log_event( 'inv_depth%get_proxy() called', LOG_LEVEL_DEBUG )
-    temp_field_proxy = inv_depth%get_proxy()
-    call log_event( 'Successfully retrived proxy for inv_depth', LOG_LEVEL_DEBUG )
-    ! Check that %data pointer is associated
-    if ( .not. associated(temp_field_proxy%data) ) then
-      call log_event( 'ERROR: inv_depth proxy data pointer is not associated', LOG_LEVEL_ERROR )
-    else
-      call log_event( 'inv_depth proxy data pointer is associated', LOG_LEVEL_DEBUG )
-    end if
-    ! Attempt to access and print a data to ensure its not an access issue
-    write(log_scratch_space,*) "inv_depth data sample value: ", temp_field_proxy%data(1)
-    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    call log_event ( 'Successfully accessed data of inv_depth proxy', LOG_LEVEL_DEBUG )
-    ! Check kind and precision
-    call log_event( 'Checking kind and precision of inv_depth', LOG_LEVEL_INFO )
-    k = kind(temp_field_proxy%data(1))
-    p10 = precision(temp_field_proxy%data(1))
-    write(log_scratch_space,*) "inv_depth data kind: ", k, " precision: ", p10
-    call log_event( log_scratch_space, LOG_LEVEL_INFO )
-
-    ! Loop over all data points and do checks for non-finite values
-    call ieee_get_halting_mode(IEEE_INVALID, halt_invalid)
-    call ieee_set_halting_mode(IEEE_INVALID, .false.)
-
-    do idx = 1, size(temp_field_proxy%data)
-      if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
-        write(log_scratch_space,*) 'First non-finite inv_depth value at ', idx, ': ', temp_field_proxy%data(idx)
-        call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
-        exit
-      end if
-    end do
-    
-    call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
-    call log_event( 'Completed checks for inv_depth field before mapping', LOG_LEVEL_INFO )
-
     ! Now check for NaNs and non-finite values in inv_depth_coarse
     !if ( any(ieee_is_nan(temp_field_proxy%data)) ) then
     !  call log_event( 'ERROR: inv_depth_coarse contains NaNs after mapping', LOG_LEVEL_ERROR )
@@ -1147,7 +1150,8 @@ contains
     call print_field_stats_alg(zh_coarse, LOG_LEVEL_INFO, name='zh_coarse after mapping')
     call print_field_stats_alg(zh_nonloc_coarse, LOG_LEVEL_INFO, name='zh_nonloc_coarse after mapping')
     call print_field_stats_alg(zhsc_coarse, LOG_LEVEL_INFO, name='zhsc_coarse after mapping')
-    call print_field_stats_alg(inv_depth_coarse, LOG_LEVEL_INFO, name='inv_depth_coarse after mapping') 
+    ! Specifically skip inv_depth_coarse given the NaN signalling values
+    ! call print_field_stats_alg(inv_depth_coarse, LOG_LEVEL_INFO, name='inv_depth_coarse after mapping') 
     ! bl_type_ind is an integer field so we can't use print_field_stats_alg
     ! Boundary layer fields
     call map_scalar_field(tke_bl_coarse, tke_bl)
