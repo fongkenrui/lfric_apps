@@ -1205,28 +1205,28 @@ contains
     call map_scalar_field(tauy_coarse, tauy)
 
 
-    !!! Do the same for rho_km_bl_coarse
+    !!! Do the same for rhokm_bl_coarse
     ! Check for nans
-    call log_event( 'Checking rho_km_bl_coarse for NaNs', LOG_LEVEL_INFO )
-    ! Get the proxy and data for rho_km_bl_coarse to check for NaNs and non-finite values
-    call log_event( 'rho_km_bl_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
-    temp_field_proxy = rho_km_bl_coarse%get_proxy()
-    call log_event( 'Successfully retrived proxy for rho_km_bl_coarse', LOG_LEVEL_DEBUG )
+    call log_event( 'Checking rhokm_bl_coarse for NaNs', LOG_LEVEL_INFO )
+    ! Get the proxy and data for rhokm_bl_coarse to check for NaNs and non-finite values
+    call log_event( 'rhokm_bl_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
+    temp_field_proxy = rhokm_bl_coarse%get_proxy()
+    call log_event( 'Successfully retrived proxy for rhokm_bl_coarse', LOG_LEVEL_DEBUG )
     ! Check that %data pointer is associated
     if ( .not. associated(temp_field_proxy%data) ) then
-      call log_event( 'ERROR: rho_km_bl_coarse proxy data pointer is not associated', LOG_LEVEL_ERROR )
+      call log_event( 'ERROR: rhokm_bl_coarse proxy data pointer is not associated', LOG_LEVEL_ERROR )
     else
-      call log_event( 'rho_km_bl_coarse proxy data pointer is associated', LOG_LEVEL_DEBUG )
+      call log_event( 'rhokm_bl_coarse proxy data pointer is associated', LOG_LEVEL_DEBUG )
     end if
     ! Attempt to access and print a data to ensure its not an access issue
-    write(log_scratch_space,*) "rho_km_bl_coarse data sample value: ", temp_field_proxy%data(1)
+    write(log_scratch_space,*) "rhokm_bl_coarse data sample value: ", temp_field_proxy%data(1)
     call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
-    call log_event ( 'Successfully accessed data of rho_km_bl_coarse proxy', LOG_LEVEL_DEBUG )
+    call log_event ( 'Successfully accessed data of rhokm_bl_coarse proxy', LOG_LEVEL_DEBUG )
     ! Check kind and precision
-    call log_event( 'Checking kind and precision of rho_km_bl_coarse', LOG_LEVEL_INFO )
+    call log_event( 'Checking kind and precision of rhokm_bl_coarse', LOG_LEVEL_INFO )
     k = kind(temp_field_proxy%data(1))
     p10 = precision(temp_field_proxy%data(1))
-    write(log_scratch_space,*) "rho_km_bl_coarse data kind: ", k, " precision: ", p10
+    write(log_scratch_space,*) "rhokm_bl_coarse data kind: ", k, " precision: ", p10
     call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
     ! Loop over all data points and do checks for non-finite values
@@ -1234,10 +1234,10 @@ contains
     call ieee_set_halting_mode(IEEE_INVALID, .false.)
 
     do idx = 1, size(temp_field_proxy%data)
-      write(log_scratch_space,*) 'Checking rho_km_bl_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
+      write(log_scratch_space,*) 'Checking rhokm_bl_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
       call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
       if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
-        write(log_scratch_space,*) 'First non-finite rho_km_bl_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
+        write(log_scratch_space,*) 'First non-finite rhokm_bl_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
         call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
         exit
       end if
