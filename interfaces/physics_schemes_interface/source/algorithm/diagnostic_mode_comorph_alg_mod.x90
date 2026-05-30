@@ -1059,6 +1059,17 @@ contains
     ! Get the proxy and data for inv_depth_coarse to check for NaNs and non-finite values
     call log_event( 'inv_depth_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     temp_field_proxy = inv_depth_coarse%get_proxy()
+    call log_event( 'Successfully retrived proxy for inv_depth_coarse', LOG_LEVEL_DEBUG )
+    ! Check that %data pointer is associated
+    if ( .not. associated(temp_field_proxy%data) ) then
+      call log_event( 'ERROR: inv_depth_coarse proxy data pointer is not associated', LOG_LEVEL_ERROR )
+    else
+      call log_event( 'inv_depth_coarse proxy data pointer is associated', LOG_LEVEL_DEBUG )
+    end if
+    ! Attempt to access and print a data to ensure its not an access issue
+    write(log_scratch_space,*) "inv_depth_coarse data sample value: ", temp_field_proxy%data(1)
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    call log_event ( 'Successfully accessed data of inv_depth_coarse proxy', LOG_LEVEL_DEBUG )
     if ( any(ieee_is_nan(temp_field_proxy%data)) ) then
       call log_event( 'ERROR: inv_depth_coarse contains NaNs after mapping', LOG_LEVEL_ERROR )
     else if ( any(.not. ieee_is_finite(temp_field_proxy%data)) ) then
