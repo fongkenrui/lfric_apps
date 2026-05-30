@@ -1088,13 +1088,49 @@ contains
     do idx = 1, size(temp_field_proxy%data)
       if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
         write(log_scratch_space,*) 'First non-finite inv_depth_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
-        call log_event(log_scratch_space, LOG_LEVEL_ERROR)
+        call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
         exit
       end if
     end do
 
     call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
 
+    ! Now we do a similar check but with the original fine field data instead
+    call log_event( 'Checking inv_depth for NaNs', LOG_LEVEL_INFO )
+    call log_event( 'inv_depth%get_proxy() called', LOG_LEVEL_DEBUG )
+    temp_field_proxy = inv_depth%get_proxy()
+    call log_event( 'Successfully retrived proxy for inv_depth', LOG_LEVEL_DEBUG )
+    ! Check that %data pointer is associated
+    if ( .not. associated(temp_field_proxy%data) ) then
+      call log_event( 'ERROR: inv_depth proxy data pointer is not associated', LOG_LEVEL_ERROR )
+    else
+      call log_event( 'inv_depth proxy data pointer is associated', LOG_LEVEL_DEBUG )
+    end if
+    ! Attempt to access and print a data to ensure its not an access issue
+    write(log_scratch_space,*) "inv_depth data sample value: ", temp_field_proxy%data(1)
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    call log_event ( 'Successfully accessed data of inv_depth proxy', LOG_LEVEL_DEBUG )
+    ! Check kind and precision
+    call log_event( 'Checking kind and precision of inv_depth', LOG_LEVEL_INFO )
+    k = kind(temp_field_proxy%data(1))
+    p10 = precision(temp_field_proxy%data(1))
+    write(log_scratch_space,*) "inv_depth data kind: ", k, " precision: ", p10
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+    ! Loop over all data points and do checks for non-finite values
+    call ieee_get_halting_mode(IEEE_INVALID, halt_invalid)
+    call ieee_set_halting_mode(IEEE_INVALID, .false.)
+
+    do idx = 1, size(temp_field_proxy%data)
+      if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
+        write(log_scratch_space,*) 'First non-finite inv_depth value at ', idx, ': ', temp_field_proxy%data(idx)
+        call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+        exit
+      end if
+    end do
+    
+    call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
+    call log_event( 'Completed checks for inv_depth field before mapping', LOG_LEVEL_INFO )
 
     ! Now check for NaNs and non-finite values in inv_depth_coarse
     !if ( any(ieee_is_nan(temp_field_proxy%data)) ) then
