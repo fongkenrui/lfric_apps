@@ -1069,7 +1069,7 @@ contains
     ! Check kind and precision
     call log_event( 'Checking kind and precision of inv_depth_coarse', LOG_LEVEL_INFO )
     k = kind(temp_field_proxy%data(1))
-    p10 = precision(temp_field_proxy%data(1), 10)
+    p10 = precision(temp_field_proxy%data(1))
     write(log_scratch_space,*) "inv_depth_coarse data kind: ", k, " precision: ", p10
     call log_event( log_scratch_space, LOG_LEVEL_INFO )
     !!!
