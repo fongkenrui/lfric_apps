@@ -30,7 +30,7 @@ module diagnostic_mode_comorph_alg_mod
 
   ! Logging
   use print_field_stats_alg_mod, only: print_field_stats_alg
-  use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
+  use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite, IEEE_INVALID
   use, intrinsic :: ieee_exceptions, only: ieee_get_halting_mode, ieee_set_halting_mode
 
   implicit none
