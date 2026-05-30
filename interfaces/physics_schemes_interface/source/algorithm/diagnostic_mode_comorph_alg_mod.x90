@@ -474,7 +474,7 @@ contains
     integer :: k, p10
     !character(str_def) :: u_mesh_name, v_mesh_name, u_star_mesh_name, v_star_mesh_name
     type( mesh_type ), pointer :: u_mesh, v_mesh, u_star_mesh, v_star_mesh
-    type( field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, temp_field_proxy
+    type( field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy, temp_field_proxy
 
     ! Nullify the mesh pointers
     nullify( conv_mesh )
