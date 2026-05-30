@@ -1045,6 +1045,46 @@ contains
     call print_field_stats_alg(u_in_w3_star_coarse, LOG_LEVEL_INFO, name='u_in_w3_star_coarse after mapping')
     call print_field_stats_alg(v_in_w3_star_coarse, LOG_LEVEL_INFO, name='v_in_w3_star_coarse after mapping')
   
+    ! Check how u_in_w3 looks like
+    !!! Specific checks of u_in_w3_coarse values
+    ! Check for nans
+    call log_event( 'Checking u_in_w3_coarse for NaNs', LOG_LEVEL_INFO )
+    ! Get the proxy and data for u_in_w3_coarse to check for NaNs and non-finite values
+    call log_event( 'u_in_w3_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
+    temp_field_proxy = u_in_w3_coarse%get_proxy()
+    call log_event( 'Successfully retrived proxy for u_in_w3_coarse', LOG_LEVEL_DEBUG )
+    ! Check that %data pointer is associated
+    if ( .not. associated(temp_field_proxy%data) ) then
+      call log_event( 'ERROR: u_in_w3_coarse proxy data pointer is not associated', LOG_LEVEL_ERROR )
+    else
+      call log_event( 'u_in_w3_coarse proxy data pointer is associated', LOG_LEVEL_DEBUG )
+    end if
+    ! Attempt to access and print a data to ensure its not an access issue
+    write(log_scratch_space,*) "u_in_w3_coarse data sample value: ", temp_field_proxy%data(1)
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    call log_event ( 'Successfully accessed data of u_in_w3_coarse proxy', LOG_LEVEL_DEBUG )
+    ! Check kind and precision
+    call log_event( 'Checking kind and precision of u_in_w3_coarse', LOG_LEVEL_INFO )
+    k = kind(temp_field_proxy%data(1))
+    p10 = precision(temp_field_proxy%data(1))
+    write(log_scratch_space,*) "u_in_w3_coarse data kind: ", k, " precision: ", p10
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+    ! Loop over all data points and do checks for non-finite values
+    call ieee_get_halting_mode(IEEE_INVALID, halt_invalid)
+    call ieee_set_halting_mode(IEEE_INVALID, .false.)
+
+    do idx = 1, size(temp_field_proxy%data)
+      write(log_scratch_space,*) 'Checking u_in_w3_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
+      call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+      if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
+        write(log_scratch_space,*) 'First non-finite u_in_w3_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
+        call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+        exit
+      end if
+    end do
+
+    call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
     
     ! Do NaN-checking of inv_depth before mapping
     call log_event( 'Checking inv_depth for NaNs', LOG_LEVEL_INFO )
@@ -1163,6 +1203,48 @@ contains
     call map_scalar_field(heat_flux_coarse, heat_flux)
     call map_scalar_field(taux_coarse, taux)
     call map_scalar_field(tauy_coarse, tauy)
+
+
+    !!! Do the same for rho_km_bl_coarse
+    ! Check for nans
+    call log_event( 'Checking rho_km_bl_coarse for NaNs', LOG_LEVEL_INFO )
+    ! Get the proxy and data for rho_km_bl_coarse to check for NaNs and non-finite values
+    call log_event( 'rho_km_bl_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
+    temp_field_proxy = rho_km_bl_coarse%get_proxy()
+    call log_event( 'Successfully retrived proxy for rho_km_bl_coarse', LOG_LEVEL_DEBUG )
+    ! Check that %data pointer is associated
+    if ( .not. associated(temp_field_proxy%data) ) then
+      call log_event( 'ERROR: rho_km_bl_coarse proxy data pointer is not associated', LOG_LEVEL_ERROR )
+    else
+      call log_event( 'rho_km_bl_coarse proxy data pointer is associated', LOG_LEVEL_DEBUG )
+    end if
+    ! Attempt to access and print a data to ensure its not an access issue
+    write(log_scratch_space,*) "rho_km_bl_coarse data sample value: ", temp_field_proxy%data(1)
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    call log_event ( 'Successfully accessed data of rho_km_bl_coarse proxy', LOG_LEVEL_DEBUG )
+    ! Check kind and precision
+    call log_event( 'Checking kind and precision of rho_km_bl_coarse', LOG_LEVEL_INFO )
+    k = kind(temp_field_proxy%data(1))
+    p10 = precision(temp_field_proxy%data(1))
+    write(log_scratch_space,*) "rho_km_bl_coarse data kind: ", k, " precision: ", p10
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+    ! Loop over all data points and do checks for non-finite values
+    call ieee_get_halting_mode(IEEE_INVALID, halt_invalid)
+    call ieee_set_halting_mode(IEEE_INVALID, .false.)
+
+    do idx = 1, size(temp_field_proxy%data)
+      write(log_scratch_space,*) 'Checking rho_km_bl_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
+      call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+      if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
+        write(log_scratch_space,*) 'First non-finite rho_km_bl_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
+        call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+        exit
+      end if
+    end do
+
+    call ieee_set_halting_mode(IEEE_INVALID, halt_invalid)
+
     ! Check boundary layer fields after mapping
     call log_event( 'Checking boundary layer fields after mapping', LOG_LEVEL_INFO )
     call print_field_stats_alg(tke_bl_coarse, LOG_LEVEL_INFO, name='tke_bl_coarse after mapping')
@@ -1170,8 +1252,8 @@ contains
     !call print_field_stats_alg(rhokm_bl_coarse, LOG_LEVEL_INFO, name='rhokm_bl_coarse after mapping')
     call print_field_stats_alg(moist_flux_coarse, LOG_LEVEL_INFO, name='moist_flux_coarse after mapping')
     call print_field_stats_alg(heat_flux_coarse, LOG_LEVEL_INFO, name='heat_flux_coarse after mapping')
-    call print_field_stats_alg(taux_coarse, LOG_LEVEL_INFO, name='taux_coarse after mapping')
-    call print_field_stats_alg(tauy_coarse, LOG_LEVEL_INFO, name='tauy_coarse after mapping')
+    !call print_field_stats_alg(taux_coarse, LOG_LEVEL_INFO, name='taux_coarse after mapping')
+    !call print_field_stats_alg(tauy_coarse, LOG_LEVEL_INFO, name='tauy_coarse after mapping')
     ! Surface fields; does map_scalar_field work for 2D fields?
     call map_scalar_field(surf_interp_coarse, surf_interp)
     call map_scalar_field(ustar_coarse, ustar)
