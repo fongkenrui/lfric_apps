@@ -30,6 +30,7 @@ module diagnostic_mode_comorph_alg_mod
 
   ! Logging
   use print_field_stats_alg_mod, only: print_field_stats_alg
+  use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
 
   implicit none
 
@@ -470,9 +471,10 @@ contains
 
     ! Temporary variables for logging velocity field properties
     integer(i_def) :: u_fs, v_fs, u_star_fs, v_star_fs
+    integer :: k, p10
     !character(str_def) :: u_mesh_name, v_mesh_name, u_star_mesh_name, v_star_mesh_name
     type( mesh_type ), pointer :: u_mesh, v_mesh, u_star_mesh, v_star_mesh
-    type( field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, v_star_proxy
+    type( field_proxy_type ) :: u_proxy, v_proxy, u_star_proxy, temp_field_proxy
 
     ! Nullify the mesh pointers
     nullify( conv_mesh )
@@ -1050,6 +1052,28 @@ contains
     ! that all of them are not Type 7 BL.
     call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
     call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
+
+    !!! Specific checks of inv_depth_coarse values
+    ! Check for nans
+    call log_event( 'Checking inv_depth_coarse for NaNs', LOG_LEVEL_INFO )
+    ! Get the proxy and data for inv_depth_coarse to check for NaNs and non-finite values
+    call log_event( 'inv_depth_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
+    temp_field_proxy = inv_depth_coarse%get_proxy()
+    if ( any(ieee_is_nan(temp_field_proxy%data)) ) then
+      call log_event( 'ERROR: inv_depth_coarse contains NaNs after mapping', LOG_LEVEL_ERROR )
+    else if ( any(.not. ieee_is_finite(temp_field_proxy%data)) ) then
+      call log_event( 'ERROR: inv_depth_coarse contains non-finite values after mapping', LOG_LEVEL_ERROR )
+    else
+      call log_event( 'inv_depth_coarse contains no NaNs or non-finite values after mapping', LOG_LEVEL_INFO )
+    end if
+    ! Check kind and precision
+    call log_event( 'Checking kind and precision of inv_depth_coarse', LOG_LEVEL_INFO )
+    k = kind(temp_field_proxy%data(1))
+    p10 = precision(temp_field_proxy%data(1), 10)
+    write(log_scratch_space,*) "inv_depth_coarse data kind: ", k, " precision: ", p10
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+    !!!
+
     ! Check 2D boundary layer fields
     call log_event( 'Checking 2D boundary layer fields after mapping', LOG_LEVEL_INFO )
     call print_field_stats_alg(zh_coarse, LOG_LEVEL_INFO, name='zh_coarse after mapping')
