@@ -8,7 +8,7 @@
 module diagnostic_mode_comorph_diags_mod
 
   use constants_mod,       only: l_def
-  use field_mod,           only: field_type
+  use field_mod,           only: field_type, field_proxy_type
   use integer_field_mod,    only: integer_field_type
   use field_collection_mod, only: field_collection_type
   use log_mod,              only: log_event, log_scratch_space, &
@@ -83,18 +83,44 @@ contains
     type(mesh_type), pointer           :: target_mesh => null()
     type(function_space_type), pointer :: vs_conv => null()
     procedure(write_interface), pointer :: write_diag_behaviour => null()
+    ! Field proxy for debugging purposes
+    type(field_proxy_type)             :: field_proxy 
+
+    ! Name logging
+    write(log_scratch_space, * ) 'init_coarse_field_from: ', &
+                                'Initialising coarse field from reference field: ', &
+                                trim(ref_field%get_name())
+    call log_event(log_scratch_space, LOG_LEVEL_INFO)
+
+    if ( .not. ref_field%is_initialised() ) then
+      call log_event('Reference field passed is not initialised!', LOG_LEVEL_ERROR)
+    end if
     
     ! Retrieve the function space type
     fs = ref_field%which_function_space()
+
+    ! Log the parent field function space for debugging purposes
+    write(log_scratch_space, * ) 'Reference field function space type: ', fs
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
 
     ! Should be lowest order, but this is for safety 
     element_order_h = ref_field%get_element_order_h()
     element_order_v = ref_field%get_element_order_v()
 
+    ! Print the element orders for debugging purposes
+    write(log_scratch_space, * ) 'Reference field element orders - horizontal: ', &
+                                element_order_h, ' vertical: ', element_order_v
+
     ! Need to be able to handle 2D fields correctly; otherwise will try to
     ! map 2D fine fields to 3D coarse fields and fail.
     ref_mesh => ref_field%get_mesh()
     ref_extrusion_id = ref_mesh%get_extrusion_id()
+
+    ! Print out the mesh extrusion ids for debugging purposes
+    write(log_scratch_space, * ) 'Reference mesh extrusion id: ', ref_extrusion_id
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    write(log_scratch_space, * ) 'Convection mesh extrusion id: ', conv_mesh%get_extrusion_id()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
 
     if ( ref_extrusion_id == conv_mesh%get_extrusion_id() ) then
       target_mesh => conv_mesh
@@ -108,11 +134,35 @@ contains
       call log_event('No equivalent extrusion for conv_mesh found', LOG_LEVEL_ERROR)
     end if
 
+    ! Log the target mesh
+    write(log_scratch_space, *) 'Target mesh name for coarse field: ', target_mesh%get_mesh_name()
+    write(log_scratch_space, * ) 'Target mesh id for coarse field: ', target_mesh%get_id()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+
     ! Create the convection grid vector space
     vs_conv => function_space_collection%get_fs( target_mesh,      &
                                                  element_order_h,  &
                                                  element_order_v,  &
                                                  fs )
+
+    ! CHeck if vector space is associated correctly
+    if ( .not. associated(vs_conv) ) then
+      call log_event('Failed to retrieve function space for coarse field', LOG_LEVEL_ERROR)
+    end if
+
+    ! Print out the vector space details for debugging purposes
+    write(log_scratch_space, * ) 'Vector space id for coarse field: ', vs_conv%get_id()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Check if vector space is readonly
+    write(log_scratch_space, * ) 'Is vector space for coarse field readonly? ', vs_conv%is_readonly()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Check if vector space writable
+    write(log_scratch_space, * ) 'Is vector space for coarse field writable? ', vs_conv%is_writable()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Check dimension of vector space
+    write(log_scratch_space, * ) 'Dimension of vector space for coarse field: ', vs_conv%get_dim_space()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+
     ! Initialise the coarse convection grid field
     if ( present(xios_id) ) then 
       ! Assign the corresponding xios id
@@ -120,9 +170,33 @@ contains
     else
       call field%initialise(vector_space = vs_conv)
     end if
-  ! Set write behaviour
-  write_diag_behaviour => write_field_generic
-  call field%set_write_behaviour(write_diag_behaviour)
+    ! Set write behaviour
+
+    ! Check that field is initialised and associated correctly
+    if ( .not. field%is_initialised() ) then
+      call log_event('Failed to initialise coarse field', LOG_LEVEL_ERROR)
+    end if
+
+    ! Try to access the field proxy of the field
+    field_proxy = field%get_proxy()
+    if ( .not. associated(field_proxy%vspace) ) then
+      call log_event('Field proxy not associated with vector space', LOG_LEVEL_ERROR)
+    end if
+    ! Get the vspace identity
+    write(log_scratch_space, * ) 'Vector space id from field proxy: ', field_proxy%vspace%which()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Get the cell count
+    write(log_scratch_space, *) 'Cell count from field proxy: ', field_proxy%vspace%get_ncell()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Get the number of layers
+    write(log_scratch_space, *) 'Number of layers from field proxy: ', field_proxy%vspace%get_nlayers()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Get the associated mesh id
+    write(log_scratch_space, *) 'Mesh id from field proxy: ', field_proxy%vspace%get_mesh_id()
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+
+    write_diag_behaviour => write_field_generic
+    call field%set_write_behaviour(write_diag_behaviour)
   end subroutine init_coarse_field_from
 
   !> @brief Initialise a integer_field type coarse field from a given reference fine field.
