@@ -191,6 +191,10 @@ contains
     ! Get the number of layers
     write(log_scratch_space, *) 'Number of layers from field proxy: ', field_proxy%vspace%get_nlayers()
     call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+    ! Check that the vspace has an associated mesh
+    if ( .not. associated(field_proxy%vspace%get_mesh()) ) then
+      call log_event('Vector space in field proxy not associated with mesh', LOG_LEVEL_ERROR)
+    end if
     ! Get the associated mesh id
     write(log_scratch_space, *) 'Mesh id from field proxy: ', field_proxy%vspace%get_mesh_id()
     call log_event(log_scratch_space, LOG_LEVEL_DEBUG)

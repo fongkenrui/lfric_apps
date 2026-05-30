@@ -733,6 +733,31 @@ contains
     call log_event( 'v_in_w3_star_coarse%get_proxy() called', LOG_LEVEL_DEBUG )
     v_star_proxy = v_in_w3_star_coarse%get_proxy()
 
+    ! Check that the proxy vspace are all associated
+    if ( .not. associated(u_proxy%vspace) ) then
+      call log_event( 'ERROR: u_in_w3_coarse proxy vspace is not associated', LOG_LEVEL_ERROR )
+    end if
+    if ( .not. associated(v_proxy%vspace) ) then
+      call log_event( 'ERROR: v_in_w3_coarse proxy vspace is not associated', LOG_LEVEL_ERROR )
+    end if
+    if ( .not. associated(u_star_proxy%vspace) ) then
+      call log_event( 'ERROR: u_in_w3_star_coarse proxy vspace is not associated', LOG_LEVEL_ERROR )
+    end if
+    if ( .not. associated(v_star_proxy%vspace) ) then
+      call log_event( 'ERROR: v_in_w3_star_coarse proxy vspace is not associated', LOG_LEVEL_ERROR )
+    end if
+
+    ! Print out field proxy inforation for debugging
+    call log_event( 'Logging proxy mesh information for velocity fields', LOG_LEVEL_DEBUG )
+    write(log_scratch_space,*) "u_in_w3_coarse proxy mesh id: ", u_proxy%vspace%get_mesh_id()
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    write(log_scratch_space,*) "v_in_w3_coarse proxy mesh id: ", v_proxy%vspace%get_mesh_id()
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    write(log_scratch_space,*) "u_in_w3_star_coarse proxy mesh id: ", u_star_proxy%vspace%get_mesh_id()
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )
+    write(log_scratch_space,*) "v_in_w3_star_coarse proxy mesh id: ", v_star_proxy%vspace%get_mesh_id()
+    call log_event( log_scratch_space, LOG_LEVEL_DEBUG )  
+
     call log_event( 'Retrieving mesh pointers from proxies', LOG_LEVEL_DEBUG )
     call log_event( 'u_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
     u_mesh = u_proxy%vspace%get_mesh()
@@ -744,7 +769,6 @@ contains
     v_star_mesh = v_star_proxy%vspace%get_mesh()
 
     call log_event( 'Retrieving function space identifiers', LOG_LEVEL_DEBUG )
-    ! Currently this is the failure point; no vspace associated?
     call log_event( 'u_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
     u_fs = u_proxy%vspace%which()
     call log_event( 'v_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
