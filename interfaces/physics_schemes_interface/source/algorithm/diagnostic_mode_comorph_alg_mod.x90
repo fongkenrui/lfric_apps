@@ -760,13 +760,27 @@ contains
 
     call log_event( 'Retrieving mesh pointers from proxies', LOG_LEVEL_DEBUG )
     call log_event( 'u_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
-    u_mesh = u_proxy%vspace%get_mesh()
+    u_mesh => u_proxy%vspace%get_mesh()
     call log_event( 'v_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
-    v_mesh = v_proxy%vspace%get_mesh()
+    v_mesh => v_proxy%vspace%get_mesh()
     call log_event( 'u_star_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
-    u_star_mesh = u_star_proxy%vspace%get_mesh()
+    u_star_mesh => u_star_proxy%vspace%get_mesh()
     call log_event( 'v_star_proxy%vspace%get_mesh() called', LOG_LEVEL_DEBUG )
-    v_star_mesh = v_star_proxy%vspace%get_mesh()
+    v_star_mesh => v_star_proxy%vspace%get_mesh()
+
+    ! Check that all mesh pointers are associated
+    if ( .not. associated(u_mesh) ) then
+      call log_event( 'ERROR: u_in_w3_coarse proxy mesh is not associated', LOG_LEVEL_ERROR )
+    end if
+    if ( .not. associated(v_mesh) ) then
+      call log_event( 'ERROR: v_in_w3_coarse proxy mesh is not associated', LOG_LEVEL_ERROR )
+    end if
+    if ( .not. associated(u_star_mesh) ) then
+      call log_event( 'ERROR: u_in_w3_star_coarse proxy mesh is not associated', LOG_LEVEL_ERROR )
+    end if
+    if ( .not. associated(v_star_mesh) ) then
+      call log_event( 'ERROR: v_in_w3_star_coarse proxy mesh is not associated', LOG_LEVEL_ERROR )
+    end if
 
     call log_event( 'Retrieving function space identifiers', LOG_LEVEL_DEBUG )
     call log_event( 'u_proxy%vspace%which() called', LOG_LEVEL_DEBUG )
