@@ -1590,6 +1590,8 @@ contains
 
   nullify( conv_mesh )
 
+  !!! It's alive !!!
+
   end subroutine diagnostic_mode_comorph_alg
 
 end module diagnostic_mode_comorph_alg_mod
