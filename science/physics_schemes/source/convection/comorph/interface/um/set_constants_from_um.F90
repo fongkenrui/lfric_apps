@@ -205,7 +205,9 @@ else
 end if
 
 ! Set list of flags for whether tracers are allowed to go negative
-if associated(tracer_positive) deallocate( tracer_positive )
+if (associated(tracer_positive)) then
+  deallocate( tracer_positive )
+end if
 
 allocate( tracer_positive(n_tracers) )
 ! Nearly all UM tracers are not allowed to have negative values:
