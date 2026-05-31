@@ -1978,15 +1978,17 @@ contains
     !----------------------------------------------------------------
 
     ! Set stuff in the CoMorph constants module, if not already set:
-    if ( .not. l_init_constants ) then
+    !if ( .not. l_init_constants ) then
       ! Comorph sets l_init_constants to true the first time it is called,
       ! so this block of code will only be entered before the first
       ! call to comorph, i.e. on the first timestep.
 
       ! Call routine to set comorph's switches and constants
-      call set_constants_from_um( n_conv_levels, ntra_fld, 1 )
+    
+    !!! MOD: Always reset comorph constants for each call 
+    call set_constants_from_um( n_conv_levels, ntra_fld, 1 )
 
-    end if
+    !end if
 
     !----------------------------------------------------------------
     ! 2) Save values of fields before convection, for use in
