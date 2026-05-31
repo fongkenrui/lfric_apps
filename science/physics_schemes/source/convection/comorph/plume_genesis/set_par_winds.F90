@@ -117,7 +117,9 @@ write(10, *) "Copying parcel radius into par_gen_par(:,i_radius)"
 do ic = 1, n_points
   ! Defensive checks
   if ( ic > n_par ) then
-    call raise_fatal( routinename, "Number of points exceeds n_par" )
+    write(10, *) "Warning in ", routinename, ": number of points (", ic, ") exceeds n_par (", n_par, ")."
+    flush(10)
+    call raise_warning( routinename, "Number of points exceeds n_par" )
   end if
   ! Copy parcel radius into the parcel
   par_gen_par(ic,i_radius) = par_radius_k(ic)
@@ -148,7 +150,7 @@ end do
 ! Parcel core has perturbations scaled up by par_gen_core_fac
 factor = factor * par_gen_core_fac
 
-call raise_fatal( routinename, "Terminate run before setting parcel core winds." )
+!call raise_warning( routinename, "Terminate run before setting parcel core winds." )
 
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
