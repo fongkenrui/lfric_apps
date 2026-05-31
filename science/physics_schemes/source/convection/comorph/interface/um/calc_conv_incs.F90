@@ -244,11 +244,13 @@ case (i_call_save_before_conv)
   ! to be colocated with the other fields.  So make copies
   ! interpolated to theta-levels
 !!$OMP do SCHEDULE(STATIC)
+  write(10, *) "tdims: ", tdims%i_start, tdims%i_end, tdims%j_start, tdims%j_end, tdims%k_end
+  flush(10)
   do k = 1, tdims%k_end-1
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end
         ! Stack trace suggests culprit is somewhere here
-        write(10, *) "Processing i,j,k: ", i, j, k
+        !write(10, *) "Processing i,j,k: ", i, j, k
         !write(10, *) "tdims: ", tdims%i_start, tdims%i_end, tdims%j_start, tdims%j_end, tdims%k_end
         !write(10, *) "z_theta: ", z_theta(i,j,k), z_theta(i,j,k+1)
         !write(10, *) "z_rho: ", z_rho(i,j,k), z_rho(i,j,k+1)
@@ -379,6 +381,9 @@ case (i_call_save_before_conv)
   end do
 !!$OMP end do NOWAIT
 
+  write(10, *) "Finished interpolating winds to theta levels"
+  flush(10)
+
   if ( l_conv_inc_w ) then
     write(10, *) "Entering l_conv_inc_w block"
     flush(10)
@@ -399,6 +404,8 @@ case (i_call_save_before_conv)
     ! Make a separate work array for w if we don't want convection
     ! to actually modify the UM's w-field.
 !!$OMP do SCHEDULE(STATIC)
+    write(10, *) "Entering else block for l_conv_inc_w"
+    flush(10)
     do k = 1, wdims%k_end
       do j = wdims%j_start, wdims%j_end
         do i = wdims%i_start, wdims%i_end
@@ -412,7 +419,8 @@ case (i_call_save_before_conv)
 
   ! Save values of temperature and moisture fields before convection
   ! in the increment arrays...
-
+  write(10, *) "Saving values of temperature and moisture fields before convection" 
+  flush(10)
 !!$OMP do SCHEDULE(STATIC)
   do k = 1, tdims%k_end
     do j = tdims%j_start, tdims%j_end
@@ -425,9 +433,14 @@ case (i_call_save_before_conv)
     end do
   end do
 !!$OMP end do NOWAIT
+  
+  write(10, *) "Finished saving temperature and moisture fields before convection"
+  flush(10)
 
   if ( l_mcr_qcf2 ) then
 !!$OMP do SCHEDULE(STATIC)
+    write(10, *) "Saving qcf2 values before convection"
+    flush(10)
     do k = 1, tdims%k_end
       do j = tdims%j_start, tdims%j_end
         do i = tdims%i_start, tdims%i_end
@@ -439,6 +452,8 @@ case (i_call_save_before_conv)
   end if
   if ( l_mcr_qrain ) then
 !!$OMP do SCHEDULE(STATIC)
+    write(10, *) "Saving qrain values before convection"
+    flush(10)
     do k = 1, tdims%k_end
       do j = tdims%j_start, tdims%j_end
         do i = tdims%i_start, tdims%i_end
@@ -450,6 +465,8 @@ case (i_call_save_before_conv)
   end if
   if ( l_mcr_qgraup ) then
 !!$OMP do SCHEDULE(STATIC)
+    write(10, *) "Saving qgraup values before convection"
+    flush(10) 
     do k = 1, tdims%k_end
       do j = tdims%j_start, tdims%j_end
         do i = tdims%i_start, tdims%i_end
@@ -462,6 +479,8 @@ case (i_call_save_before_conv)
 
   if ( i_cld_vn == i_cld_pc2 ) then
 !!$OMP do SCHEDULE(STATIC)
+    write(10, *) "Saving pc2 cloud fraction values before convection"
+    flush(10)
     do k = 1, tdims%k_end
       do j = tdims%j_start, tdims%j_end
         do i = tdims%i_start, tdims%i_end
@@ -479,6 +498,7 @@ case (i_call_diff_to_get_incs)
 
   ! Convert final u,v to convection u,v increments on theta-levels
 !!$OMP do SCHEDULE(STATIC)
+  write(10, *) "Second increment call: calculating u,v increments on theta levels"
   do k = 1, tdims%k_end-1
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end

@@ -1081,8 +1081,8 @@ contains
     call ieee_set_halting_mode(IEEE_INVALID, .false.)
 
     do idx = 1, size(temp_field_proxy%data)
-      write(log_scratch_space,*) 'Checking u_in_w3_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
-      call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+      !write(log_scratch_space,*) 'Checking u_in_w3_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
+      !call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
       if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
         write(log_scratch_space,*) 'First non-finite u_in_w3_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
         call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
@@ -1243,8 +1243,8 @@ contains
     call ieee_set_halting_mode(IEEE_INVALID, .false.)
 
     do idx = 1, size(temp_field_proxy%data)
-      write(log_scratch_space,*) 'Checking rhokm_bl_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
-      call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+      !write(log_scratch_space,*) 'Checking rhokm_bl_coarse value at index ', idx, ': ', temp_field_proxy%data(idx)
+      !call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
       if (.not. ieee_is_finite(temp_field_proxy%data(idx))) then
         write(log_scratch_space,*) 'First non-finite rhokm_bl_coarse value at ', idx, ': ', temp_field_proxy%data(idx)
         call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
