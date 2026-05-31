@@ -1235,7 +1235,6 @@ contains
     !    write(10, *) "i=", i, " j=", j, " map_w3=", map_w3(i,j)
     !  end do
     !end do
-    flush(10)
     
     do i = 1, row_length
       do k = 0, nlayers

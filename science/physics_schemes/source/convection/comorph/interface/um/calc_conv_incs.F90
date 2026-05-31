@@ -232,8 +232,8 @@ real(kind=real_umphys) :: num, denom, temp1, temp2
 !!$OMP         dubydt_pout, dvbydt_pout, recip_timestep )
 
 ! Which call to this routine are we in?
-!write(10, *) "i_call: ", i_call
-!flush(10)
+write(10, *) "i_call: ", i_call
+flush(10)
 
 select case (i_call)
 
@@ -248,7 +248,7 @@ case (i_call_save_before_conv)
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end
         ! Stack trace suggests culprit is somewhere here
-        !write(10, *) "Processing i,j,k: ", i, j, k
+        write(10, *) "Processing i,j,k: ", i, j, k
         !write(10, *) "tdims: ", tdims%i_start, tdims%i_end, tdims%j_start, tdims%j_end, tdims%k_end
         !write(10, *) "z_theta: ", z_theta(i,j,k), z_theta(i,j,k+1)
         !write(10, *) "z_rho: ", z_rho(i,j,k), z_rho(i,j,k+1)
@@ -261,19 +261,19 @@ case (i_call_save_before_conv)
         !flush(10)
         !write(10, *) "z_rho kind: ", kind(z_rho(i,j,k))
         !write(10, *) "z_theta kind: ", kind(z_theta(i,j,k))
-        !if ( .not. ieee_is_finite(z_rho(i,j,k+1) - z_rho(i,j,k)) ) then
-        !  call raise_fatal( "calc_conv_incs", "z_rho_k+1 - z_rho is not finite" )
-        !end if
-        !if ( .not. ieee_is_finite(z_theta(i,j,k) - z_rho(i,j,k)) ) then
-        !  call raise_fatal( "calc_conv_incs", "z_theta - z_rho is not finite" )
-        !end if
+        if ( .not. ieee_is_finite(z_rho(i,j,k+1) - z_rho(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "z_rho_k+1 - z_rho is not finite" )
+        end if
+        if ( .not. ieee_is_finite(z_theta(i,j,k) - z_rho(i,j,k)) ) then
+          call raise_fatal( "calc_conv_incs", "z_theta - z_rho is not finite" )
+        end if
         !num = z_theta(i,j,k) - z_rho(i,j,k)
         !denom = z_rho(i,j,k+1) - z_rho(i,j,k)
         !write(10, *) "Denominator is" , denom
         !write(10, *) "Numerator is" , num
         !flush(10)
-        !!interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
-        !!       / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
+        interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
+               / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
         !interp = num / denom
         !write(10, *) "interp: ", interp
         !flush(10)
@@ -355,7 +355,7 @@ case (i_call_save_before_conv)
 
         !u_th_n(i,j,k) = temp1
         !v_th_n(i,j,k) = temp2
-        !write(10, *) "Assigned values to u_th_n and v_th_n"
+        write(10, *) "Assigned values to u_th_n and v_th_n"
         flush(10)
 
         temp1 = (1.0-interp) * ustar_p(i,j,k) + interp * ustar_p(i,j,k+1)
@@ -372,16 +372,16 @@ case (i_call_save_before_conv)
 
         !u_th_np1(i,j,k) = temp1
         !v_th_np1(i,j,k) = temp2
-        !write(10, *) "Assigned values to u_th_np1 and v_th_np1"
-        !flush(10)
+        write(10, *) "Assigned values to u_th_np1 and v_th_np1"
+        flush(10)
       end do
     end do
   end do
 !!$OMP end do NOWAIT
 
   if ( l_conv_inc_w ) then
-    !write(10, *) "Entering l_conv_inc_w block"
-    !flush(10)
+    write(10, *) "Entering l_conv_inc_w block"
+    flush(10)
 
     ! Convert increment r_w to field of w with increment so far added on
 !!$OMP do SCHEDULE(STATIC)
