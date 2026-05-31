@@ -1406,154 +1406,154 @@ contains
     call map_scalar_field(ls_rain_coarse, ls_rain)
     call map_scalar_field(ls_snow_coarse, ls_snow)
 
-    call log_event( 'Calling conv_comorph_kernel', LOG_LEVEL_INFO )
-    ! call the scheme
-    call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
-                          wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
-                          delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
-                          theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
-                          height_w3, height_wth,                                                                        &
-                          dt_conv_coarse, dmv_conv_coarse, dmcl_conv_coarse,                                            &
-                          dms_conv_coarse, du_conv_coarse, dv_conv_coarse,                                              &
-                          conv_prog_dtheta_coarse, conv_prog_dmv_coarse,                                                &
-                          mr_n_coarse(imr_v), mr_n_coarse(imr_cl), mr_n_coarse(imr_ci),                                 &
-                          mr_n_coarse(imr_r), mr_n_coarse(imr_g), mr_n_coarse(imr_s),                                   &
-                          mr_coarse(imr_v), mr_coarse(imr_cl), mr_coarse(imr_ci),                                       &
-                          mr_coarse(imr_r), mr_coarse(imr_g), mr_coarse(imr_s),                                         &
-                          cf_fro_coarse, cf_liq_coarse, cf_bulk_coarse, cca_coarse, ccw_coarse, precfrac_coarse,        &
-                          cf_liq_n_coarse, cf_fro_n_coarse, cf_bulk_n_coarse,                                           &
-                          cape_diluted_coarse, cca_2d_coarse,                                                           &
-                          dd_mf_cb_coarse, massflux_up_coarse, massflux_down_coarse, tke_bl_coarse,                     &
-                          pressure_inc_env_coarse,                                                                      &
-                          zh_coarse, zh_nonloc_coarse, inv_depth_coarse, zhsc_coarse, bl_type_ind_coarse,               &
-                          wvar_coarse, rhokm_bl_coarse, moist_flux_coarse, heat_flux_coarse, taux_coarse, tauy_coarse,  &
-                          surf_interp_coarse, ustar_coarse, ls_rain_coarse, ls_snow_coarse,                             &
-                          dcfl_conv_coarse, dcff_conv_coarse, dbcf_conv_coarse,                                         &
-                          o3p_coarse,                                                                                   &
-                          o1d_coarse,                                                                                   &
-                          o3_coarse,                                                                                    &
-                          n_coarse,                                                                                     &
-                          no_coarse,                                                                                    &
-                          no3_coarse,                                                                                   &
-                          lumped_n_coarse,                                                                              &
-                          n2o5_coarse,                                                                                  &
-                          ho2no2_coarse,                                                                                &
-                          hono2_coarse,                                                                                 &
-                          h2o2_coarse,                                                                                  &
-                          ch4_coarse,                                                                                   &
-                          co_coarse,                                                                                    &
-                          hcho_coarse,                                                                                  &
-                          meoo_coarse,                                                                                  &
-                          meooh_coarse,                                                                                 &
-                          h_coarse,                                                                                     &
-                          oh_coarse,                                                                                    &
-                          ho2_coarse,                                                                                   &
-                          cl_coarse,                                                                                    &
-                          cl2o2_coarse,                                                                                 &
-                          clo_coarse,                                                                                   &
-                          oclo_coarse,                                                                                  &
-                          br_coarse,                                                                                    &
-                          lumped_br_coarse,                                                                             &
-                          brcl_coarse,                                                                                  &
-                          brono2_coarse,                                                                                &
-                          n2o_coarse,                                                                                   &
-                          lumped_cl_coarse,                                                                             &
-                          hocl_coarse,                                                                                  &
-                          hbr_coarse,                                                                                   &
-                          hobr_coarse,                                                                                  &
-                          clono2_coarse,                                                                                &
-                          cfcl3_coarse,                                                                                 &
-                          cf2cl2_coarse,                                                                                &
-                          mebr_coarse,                                                                                  &
-                          hono_coarse,                                                                                  &
-                          c2h6_coarse,                                                                                  &
-                          etoo_coarse,                                                                                  &
-                          etooh_coarse,                                                                                 &
-                          mecho_coarse,                                                                                 &
-                          meco3_coarse,                                                                                 &
-                          pan_coarse,                                                                                   &
-                          c3h8_coarse,                                                                                  &
-                          n_proo_coarse,                                                                                &
-                          i_proo_coarse,                                                                                &
-                          n_prooh_coarse,                                                                               &
-                          i_prooh_coarse,                                                                               &
-                          etcho_coarse,                                                                                 &
-                          etco3_coarse,                                                                                 &
-                          me2co_coarse,                                                                                 &
-                          mecoch2oo_coarse,                                                                             &
-                          mecoch2ooh_coarse,                                                                            &
-                          ppan_coarse,                                                                                  &
-                          meono2_coarse,                                                                                &
-                          c5h8_coarse,                                                                                  &
-                          iso2_coarse,                                                                                  &
-                          isooh_coarse,                                                                                 &
-                          ison_coarse,                                                                                  &
-                          macr_coarse,                                                                                  &
-                          macro2_coarse,                                                                                &
-                          macrooh_coarse,                                                                               &
-                          mpan_coarse,                                                                                  &
-                          hacet_coarse,                                                                                 &
-                          mgly_coarse,                                                                                  &
-                          nald_coarse,                                                                                  &
-                          hcooh_coarse,                                                                                 &
-                          meco3h_coarse,                                                                                &
-                          meco2h_coarse,                                                                                &
-                          h2_coarse,                                                                                    &
-                          meoh_coarse,                                                                                  &
-                          msa_coarse,                                                                                   &
-                          nh3_coarse,                                                                                   &
-                          cs2_coarse,                                                                                   &
-                          csul_coarse,                                                                                  &
-                          h2s_coarse,                                                                                   &
-                          so3_coarse,                                                                                   &
-                          passive_o3_coarse,                                                                            &
-                          age_of_air_coarse,                                                                            &
-                          dms_coarse,                                                                                   &
-                          so2_coarse,                                                                                   &
-                          h2so4_coarse,                                                                                 &
-                          dmso_coarse,                                                                                  &
-                          monoterpene_coarse,                                                                           &
-                          secondary_organic_coarse,                                                                     &
-                          n_nuc_sol_coarse,                                                                             &
-                          nuc_sol_su_coarse,                                                                            &
-                          nuc_sol_om_coarse,                                                                            &
-                          n_ait_sol_coarse,                                                                             &
-                          ait_sol_su_coarse,                                                                            &
-                          ait_sol_bc_coarse,                                                                            &
-                          ait_sol_om_coarse,                                                                            &
-                          n_acc_sol_coarse,                                                                             &
-                          acc_sol_su_coarse,                                                                            &
-                          acc_sol_bc_coarse,                                                                            &
-                          acc_sol_om_coarse,                                                                            &
-                          acc_sol_ss_coarse,                                                                            &
-                          n_cor_sol_coarse,                                                                             &
-                          cor_sol_su_coarse,                                                                            &
-                          cor_sol_bc_coarse,                                                                            &
-                          cor_sol_om_coarse,                                                                            &
-                          cor_sol_ss_coarse,                                                                            &
-                          n_ait_ins_coarse,                                                                             &
-                          ait_ins_bc_coarse,                                                                            &
-                          ait_ins_om_coarse,                                                                            &
-                          n_acc_ins_coarse,                                                                             &
-                          acc_ins_du_coarse,                                                                            &
-                          n_cor_ins_coarse,                                                                             &
-                          cor_ins_du_coarse,                                                                            &
-                          tnuc_coarse,                                                                                  &
-                          lowest_cv_base_coarse,                                                                        &
-                          lowest_cv_top_coarse,                                                                         &
-                          cv_base_coarse,                                                                               &
-                          cv_top_coarse,                                                                                &
-                          pres_cv_base_coarse,                                                                          &
-                          pres_cv_top_coarse,                                                                           &
-                          pres_lowest_cv_base_coarse,                                                                   &
-                          pres_lowest_cv_top_coarse,                                                                    &
-                          lowest_cca_2d_coarse,                                                                         &
-                          entrain_up_coarse,                                                                            &
-                          entrain_down_coarse,                                                                          &
-                          detrain_up_coarse,                                                                            &
-                          detrain_down_coarse,                                                                          &
-                          massflux_up_half_coarse)                                                                      &
-                                               ) ! end of invoke
+    !call log_event( 'Calling conv_comorph_kernel', LOG_LEVEL_INFO )
+    !! call the scheme
+    !call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
+    !                      wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
+    !                      delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
+    !                      theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
+    !                      height_w3, height_wth,                                                                        &
+    !                      dt_conv_coarse, dmv_conv_coarse, dmcl_conv_coarse,                                            &
+    !                      dms_conv_coarse, du_conv_coarse, dv_conv_coarse,                                              &
+    !                      conv_prog_dtheta_coarse, conv_prog_dmv_coarse,                                                &
+    !                      mr_n_coarse(imr_v), mr_n_coarse(imr_cl), mr_n_coarse(imr_ci),                                 &
+    !                      mr_n_coarse(imr_r), mr_n_coarse(imr_g), mr_n_coarse(imr_s),                                   &
+    !                      mr_coarse(imr_v), mr_coarse(imr_cl), mr_coarse(imr_ci),                                       &
+    !                      mr_coarse(imr_r), mr_coarse(imr_g), mr_coarse(imr_s),                                         &
+    !                      cf_fro_coarse, cf_liq_coarse, cf_bulk_coarse, cca_coarse, ccw_coarse, precfrac_coarse,        &
+    !                      cf_liq_n_coarse, cf_fro_n_coarse, cf_bulk_n_coarse,                                           &
+    !                      cape_diluted_coarse, cca_2d_coarse,                                                           &
+    !                      dd_mf_cb_coarse, massflux_up_coarse, massflux_down_coarse, tke_bl_coarse,                     &
+    !                      pressure_inc_env_coarse,                                                                      &
+    !                      zh_coarse, zh_nonloc_coarse, inv_depth_coarse, zhsc_coarse, bl_type_ind_coarse,               &
+    !                      wvar_coarse, rhokm_bl_coarse, moist_flux_coarse, heat_flux_coarse, taux_coarse, tauy_coarse,  &
+    !                      surf_interp_coarse, ustar_coarse, ls_rain_coarse, ls_snow_coarse,                             &
+    !                      dcfl_conv_coarse, dcff_conv_coarse, dbcf_conv_coarse,                                         &
+    !                      o3p_coarse,                                                                                   &
+    !                      o1d_coarse,                                                                                   &
+    !                      o3_coarse,                                                                                    &
+    !                      n_coarse,                                                                                     &
+    !                      no_coarse,                                                                                    &
+    !                      no3_coarse,                                                                                   &
+    !                      lumped_n_coarse,                                                                              &
+    !                      n2o5_coarse,                                                                                  &
+    !                      ho2no2_coarse,                                                                                &
+    !                      hono2_coarse,                                                                                 &
+    !                      h2o2_coarse,                                                                                  &
+    !                      ch4_coarse,                                                                                   &
+    !                      co_coarse,                                                                                    &
+    !                      hcho_coarse,                                                                                  &
+    !                      meoo_coarse,                                                                                  &
+    !                      meooh_coarse,                                                                                 &
+    !                      h_coarse,                                                                                     &
+    !                      oh_coarse,                                                                                    &
+    !                      ho2_coarse,                                                                                   &
+    !                      cl_coarse,                                                                                    &
+    !                      cl2o2_coarse,                                                                                 &
+    !                      clo_coarse,                                                                                   &
+    !                      oclo_coarse,                                                                                  &
+    !                      br_coarse,                                                                                    &
+    !                      lumped_br_coarse,                                                                             &
+    !                      brcl_coarse,                                                                                  &
+    !                      brono2_coarse,                                                                                &
+    !                      n2o_coarse,                                                                                   &
+    !                      lumped_cl_coarse,                                                                             &
+    !                      hocl_coarse,                                                                                  &
+    !                      hbr_coarse,                                                                                   &
+    !                      hobr_coarse,                                                                                  &
+    !                      clono2_coarse,                                                                                &
+    !                      cfcl3_coarse,                                                                                 &
+    !                      cf2cl2_coarse,                                                                                &
+    !                      mebr_coarse,                                                                                  &
+    !                      hono_coarse,                                                                                  &
+    !                      c2h6_coarse,                                                                                  &
+    !                      etoo_coarse,                                                                                  &
+    !                      etooh_coarse,                                                                                 &
+    !                      mecho_coarse,                                                                                 &
+    !                      meco3_coarse,                                                                                 &
+    !                      pan_coarse,                                                                                   &
+    !                      c3h8_coarse,                                                                                  &
+    !                      n_proo_coarse,                                                                                &
+    !                      i_proo_coarse,                                                                                &
+    !                      n_prooh_coarse,                                                                               &
+    !                      i_prooh_coarse,                                                                               &
+    !                      etcho_coarse,                                                                                 &
+    !                      etco3_coarse,                                                                                 &
+    !                      me2co_coarse,                                                                                 &
+    !                      mecoch2oo_coarse,                                                                             &
+    !                      mecoch2ooh_coarse,                                                                            &
+    !                      ppan_coarse,                                                                                  &
+    !                      meono2_coarse,                                                                                &
+    !                      c5h8_coarse,                                                                                  &
+    !                      iso2_coarse,                                                                                  &
+    !                      isooh_coarse,                                                                                 &
+    !                      ison_coarse,                                                                                  &
+    !                      macr_coarse,                                                                                  &
+    !                      macro2_coarse,                                                                                &
+    !                      macrooh_coarse,                                                                               &
+    !                      mpan_coarse,                                                                                  &
+    !                      hacet_coarse,                                                                                 &
+    !                      mgly_coarse,                                                                                  &
+    !                      nald_coarse,                                                                                  &
+    !                      hcooh_coarse,                                                                                 &
+    !                      meco3h_coarse,                                                                                &
+    !                      meco2h_coarse,                                                                                &
+    !                      h2_coarse,                                                                                    &
+    !                      meoh_coarse,                                                                                  &
+    !                      msa_coarse,                                                                                   &
+    !                      nh3_coarse,                                                                                   &
+    !                      cs2_coarse,                                                                                   &
+    !                      csul_coarse,                                                                                  &
+    !                      h2s_coarse,                                                                                   &
+    !                      so3_coarse,                                                                                   &
+    !                      passive_o3_coarse,                                                                            &
+    !                      age_of_air_coarse,                                                                            &
+    !                      dms_coarse,                                                                                   &
+    !                      so2_coarse,                                                                                   &
+    !                      h2so4_coarse,                                                                                 &
+    !                      dmso_coarse,                                                                                  &
+    !                      monoterpene_coarse,                                                                           &
+    !                      secondary_organic_coarse,                                                                     &
+    !                      n_nuc_sol_coarse,                                                                             &
+    !                      nuc_sol_su_coarse,                                                                            &
+    !                      nuc_sol_om_coarse,                                                                            &
+    !                      n_ait_sol_coarse,                                                                             &
+    !                      ait_sol_su_coarse,                                                                            &
+    !                      ait_sol_bc_coarse,                                                                            &
+    !                      ait_sol_om_coarse,                                                                            &
+    !                      n_acc_sol_coarse,                                                                             &
+    !                      acc_sol_su_coarse,                                                                            &
+    !                      acc_sol_bc_coarse,                                                                            &
+    !                      acc_sol_om_coarse,                                                                            &
+    !                      acc_sol_ss_coarse,                                                                            &
+    !                      n_cor_sol_coarse,                                                                             &
+    !                      cor_sol_su_coarse,                                                                            &
+    !                      cor_sol_bc_coarse,                                                                            &
+    !                      cor_sol_om_coarse,                                                                            &
+    !                      cor_sol_ss_coarse,                                                                            &
+    !                      n_ait_ins_coarse,                                                                             &
+    !                      ait_ins_bc_coarse,                                                                            &
+    !                      ait_ins_om_coarse,                                                                            &
+    !                      n_acc_ins_coarse,                                                                             &
+    !                      acc_ins_du_coarse,                                                                            &
+    !                      n_cor_ins_coarse,                                                                             &
+    !                      cor_ins_du_coarse,                                                                            &
+    !                      tnuc_coarse,                                                                                  &
+    !                      lowest_cv_base_coarse,                                                                        &
+    !                      lowest_cv_top_coarse,                                                                         &
+    !                      cv_base_coarse,                                                                               &
+    !                      cv_top_coarse,                                                                                &
+    !                      pres_cv_base_coarse,                                                                          &
+    !                      pres_cv_top_coarse,                                                                           &
+    !                      pres_lowest_cv_base_coarse,                                                                   &
+    !                      pres_lowest_cv_top_coarse,                                                                    &
+    !                      lowest_cca_2d_coarse,                                                                         &
+    !                      entrain_up_coarse,                                                                            &
+    !                      entrain_down_coarse,                                                                          &
+    !                      detrain_up_coarse,                                                                            &
+    !                      detrain_down_coarse,                                                                          &
+    !                      massflux_up_half_coarse)                                                                      &
+    !                                           ) ! end of invoke
     
     call um_sizes_init(1_i_def)
 
