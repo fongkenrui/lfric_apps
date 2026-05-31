@@ -2018,6 +2018,8 @@ contains
                            qcf2_inc, qrain_inc, qgraup_inc,                    &
                            cf_liquid_inc, cf_frozen_inc, bulk_cf_inc )
 
+    write(10,*) 'Finished calculating convective increments'
+    flush(10)
     !----------------------------------------------------------------
     ! 3) Conversions of input fields
     !----------------------------------------------------------------
@@ -2030,6 +2032,8 @@ contains
                         * exner_theta_levels(i,1,k)
       end do
     end do
+    write(10, *) "Finished converting potential temperature to actual temperature"
+    flush(10)
 
     ! Values of ccw0 input are (as treated by the UM) in-cloud
     ! convective cloud-water = grid-mean q_cl_conv / cca.
@@ -2041,6 +2045,8 @@ contains
         ccw_3d(i,1,k) = ccw(map_wth(1,i) + k) * cca(map_wth(1,i) + k)
       end do
     end do
+    write(10, *) "Finished converting ccw0 to grid-mean ccw"
+    flush(10)
 
     ! The "latest" (_star) fields used by convection are values
     ! interpolated to departure points by SL advection.
@@ -2060,10 +2066,15 @@ contains
         precfrac_star(i,1,k) = precfrac(map_wth(1,i)+k)
       end do
     end do
+    write(10, *) "Finished extracting precfrac_star"
+    write(10, *) "Calling fracs_consistency..."
+    flush(10)
     CALL fracs_consistency  ( qcl_conv, qcf_conv, qcf2_conv,                   &
                               qrain_conv, qgraup_conv,                         &
                               cf_liquid_conv, cf_frozen_conv, bulk_cf_conv,    &
                               precfrac_star )
+    write(10, *) "Finished fracs_consistency"
+    flush(10)
 
     ! Note: if not using PC2, the cloud-fraction _star fields do exist
     ! but are just set to values after slow_physics
@@ -2075,9 +2086,13 @@ contains
       ! Allocate array to store precip mixing ratio before convection
       allocate( q_prec_b4(row_length, rows, nlayers))
       ! Save precip mass before convection, for use in updating precfrac later
+      write(10, *) "Calling conv_update_precfrac..."
+      flush(10)
       call conv_update_precfrac( i_call_save_before_conv,                      &
                                  qrain_conv, qgraup_conv,                      &
                                  frac_bulk_conv, q_prec_b4, precfrac_star )
+      write(10, *) "Finished conv_update_precfrac"
+      flush(10)
     end if
 
     ! For conservation purposes on theta-levels, the bottom rho-level
@@ -2095,6 +2110,8 @@ contains
     ! Set an "effective" boundary-layer height, below-which comorph's
     ! increments are modified to avoid double-counting the boundary-layer
     ! scheme's non-local fluxes
+    write(10, *) "Calculating effective BL height"
+    flush(10)
     do i = 1, row_length
       ! Top height of surface-driven mixing is the surface-driven non-local
       ! BL-top height zhnl plus the inversion thickness dzh
@@ -2116,6 +2133,8 @@ contains
     ! If using turbulence-based parcel perturbations, need to convert
     ! the turbulence fields into the required units, and interpolate
     ! some of them onto rho-levels
+    write(10, *) "Calculating turbulence-based parcel perturbations"
+    flush(10)
     if ( l_turb_par_gen ) then
 
       ! Allocate arrays for momentum diffusivities and fluxes
@@ -2124,7 +2143,8 @@ contains
       allocate( fu_rh    ( row_length, rows, 1:bl_levels ) )
       allocate( fv_rh    ( row_length, rows, 1:bl_levels ) )
       allocate( turb_len ( row_length, rows, 1:bl_levels ) )
-
+      write(10, *) "Converting wvar, rhokm_bl, heat_flux, moist_flux, taux and tauy to um fields"
+      flush(10)
       do i = 1, row_length
         do k = 1, bl_levels
           ! level indexing here is confusing but I think correct
@@ -2138,6 +2158,8 @@ contains
           tauy_p(i,1,k-1) = tauy(map_w3(1,i)+k-1)
         end do
       end do
+      write(10, *) "Surface buoyancy flux conversion"
+      flush(10)
       do i = 1, row_length
         ! Element 6 of this super array set in jules_exp_kernel contains the
         ! surface buoyancy flux
@@ -2147,12 +2169,15 @@ contains
         ls_snow(i,1) = ls_snow_2d(map_2d(1,i))
         delta_x(i,1) = delta(map_wth(1,i))
       end do
-
+      write(10, *) "Interpolating turbulence fields"
+      flush(10)
       ! Interpolate momentum diffusivity and fluxes onto rho-levels
       call interp_turb( z_rho, z_theta,                                        &
                     bl_w_var, fb_surf, zh, u_s, taux_p, tauy_p,                &
                     w_var_rh, fu_rh, fv_rh )
-
+      
+      write(10, *) "Converting turbulence fields to required units"
+      flush(10)
       do k = 1, bl_levels
         do i = 1, row_length
           ! Convert wind stresses -rho <w'u'> / N m-2
@@ -2171,7 +2196,9 @@ contains
           ! rather than specific humidity
         end do
       end do
-
+      
+      write(10, *) "Calculating turbulence lengthscale and parcel radius scaling factor"
+      flush(10)
       ! Calculate turb_len and a scaling factor applied to parcel initial radius
       call calc_turb_len( zh_eff, z_theta, z_rho, rho_wet_tq, qv_n,            &
                           rhokm, bl_w_var, ls_rain, ls_snow, w,                &
@@ -2181,6 +2208,8 @@ contains
       ! Check for instances of fluxes too big relative to the turbulent
       ! w-variance (causes excessive parcel perturbations);
       ! increase the w-variance where needed to avoid the problem
+      write(10, *) "Checking for excessively large turbulence-based parcel perturbations"
+      flush(10)
       call limit_turb_perts( z_theta, z_rho, p_theta_levels, theta_conv,       &
                              ftl, fqw, fu_rh, fv_rh, w_var_rh )
 
@@ -2194,6 +2223,8 @@ contains
     ! switched off in comorph, since in this case comorph will not
     ! transport them consistently (e.g. qcf2 needs to be transported
     ! along with cf_frozen if it is used).
+    write(10, *) "Checking for consistency between UM and comorph switches for condensed water species"
+    flush(10)
     if ( ( .not. l_cv_cf ) .or.                                                &
          ! Ice-cloud is always on in the UM, so must be on in comorph
          ( l_mcr_qcf2 .and. ( .not. ( l_cv_cf  .and. l_cv_snow ) ) ) .or.      &
@@ -2245,6 +2276,8 @@ contains
     ! but we pass them in via pointers contained in the derived-type
     ! structures grid, turb, cloudfracs, fields_n, fields_np1.
     ! This routine assigns the pointers to the arrays.
+    write(10, *) "Assigning pointers to fields to pass into CoMorph"
+    flush(10)
     CALL assign_fields  ( z_theta, z_rho, p_theta_levels, p_rho_levels,        &
                           r_theta_levels,                                      &
                           rho_dry_tq, w_var_rh, ftl, fqw, fu_rh, fv_rh,        &
@@ -2288,6 +2321,8 @@ contains
     ! since CAPE itself can be noisy / not representative
     ! (e.g. when most of the mass-flux is shallow, but there
     !  is a tiny mass-flux going deep with high CAPE).
+    write(10, *) "Setting requests for diagnostics to be calculated by CoMorph"
+    flush(10)
     comorph_diags % updraft_diags_2d % mfw_cape                                &
                                 % request % x_y = .true.
     comorph_diags % updraft_diags_2d % mfw_cape                                &
@@ -2349,6 +2384,8 @@ contains
     !----------------------------------------------------------------
 
     ! The moment you've been waiting for!
+    write(10, *) "Calling CoMorph from comorph_ctl..."
+    flush(10)
     call comorph_ctl( l_tracer, segments,                                      &
                   grid, turb, cloudfracs, fields_n, fields_np1,                &
                   comorph_diags )
@@ -2368,6 +2405,8 @@ contains
     !----------------------------------------------------------------
 
     ! Restore bottom level of z_rho, ready for whatever comes next...
+    write(10, *) "Converting outputs back into UM format"
+    flush(10)
     do i = 1, row_length
       z_rho(i,1,1) = r_rho_levels(i,1,1) - r_theta_levels(i,1,0)
     end do
@@ -3466,6 +3505,9 @@ contains
       end do
       deallocate(tot_tracer)
     end if  ! outer == outer_iterations .AND. l_tracer
+
+    write(10,*) 'End of conv_comorph_code'
+    flush(10)
 
   end subroutine conv_comorph_code
 
