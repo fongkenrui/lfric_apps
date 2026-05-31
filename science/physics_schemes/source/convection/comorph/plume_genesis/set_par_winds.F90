@@ -95,23 +95,23 @@ integer :: ic, i_field
 character(len=*), parameter :: routinename = "SET_PAR_WINDS"
 
 ! Write out all arguments for debugging purposes
-write(10, *) "In ", routinename, " with arguments:"
-write(10, *) "n_points: ", n_points
-write(10, *) "n_points_super: ", n_points_super
-write(10, *) "n_fields_tot: ", n_fields_tot
-write(10, *) "l_tracer: ", l_tracer
-write(10, *) "l_down: ", l_down
-write(10, *) "l_par_core: ", l_par_core
-write(10, *) "par_gen_core_fac: ", par_gen_core_fac
-write(10, *) "i_check_bad_values_cmpr: ", i_check_bad_values_cmpr
-write(10, *) "fields_k: ", fields_k(1:n_points_super,1:n_fields_tot)
-write(10, *) "turb_pert_k: ", turb_pert_k(1:n_points, i_wind_u:i_q_vap)
-write(10, *) "par_radius_k: ", par_radius_k(1:n_points)
-write(10, *) "par_gen_par (before): ", par_gen_par(1:n_points,1:n_par)
-write(10, *) "par_gen_mean (before): ", par_gen_mean(1:n_points,1:n_fields_tot)
-write(10, *) "par_gen_core (before): ", par_gen_core(1:n_points,1:n_fields_tot)
-write(10, *) "n_tracers: ", n_tracers
-flush(10)
+!write(10, *) "In ", routinename, " with arguments:"
+!write(10, *) "n_points: ", n_points
+!write(10, *) "n_points_super: ", n_points_super
+!write(10, *) "n_fields_tot: ", n_fields_tot
+!write(10, *) "l_tracer: ", l_tracer
+!write(10, *) "l_down: ", l_down
+!write(10, *) "l_par_core: ", l_par_core
+!write(10, *) "par_gen_core_fac: ", par_gen_core_fac
+!write(10, *) "i_check_bad_values_cmpr: ", i_check_bad_values_cmpr
+!write(10, *) "fields_k: ", fields_k(1:n_points_super,1:n_fields_tot)
+!write(10, *) "turb_pert_k: ", turb_pert_k(1:n_points, i_wind_u:i_q_vap)
+!write(10, *) "par_radius_k: ", par_radius_k(1:n_points)
+!write(10, *) "par_gen_par (before): ", par_gen_par(1:n_points,1:n_par)
+!write(10, *) "par_gen_mean (before): ", par_gen_mean(1:n_points,1:n_fields_tot)
+!write(10, *) "par_gen_core (before): ", par_gen_core(1:n_points,1:n_fields_tot)
+!write(10, *) "n_tracers: ", n_tracers
+!flush(10)
 
 write(10, *) "Copying parcel radius into par_gen_par(:,i_radius)"
 do ic = 1, n_points
