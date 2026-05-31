@@ -205,7 +205,7 @@ else
 end if
 
 ! Set list of flags for whether tracers are allowed to go negative
-if (associated(tracer_positive)) then
+if (allocated(tracer_positive)) then
   deallocate( tracer_positive )
 end if
 
