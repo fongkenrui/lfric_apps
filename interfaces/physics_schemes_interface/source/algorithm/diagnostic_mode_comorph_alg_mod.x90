@@ -487,6 +487,9 @@ contains
     nullify( u_star_mesh )
     nullify( v_star_mesh )
 
+    ! Disable final loop tracer advection
+    outer = 0_i_def
+
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
     write(log_scratch_space,*) "conv_mesh_name = ", conv_mesh_name
