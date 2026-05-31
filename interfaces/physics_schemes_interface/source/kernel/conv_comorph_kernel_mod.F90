@@ -1230,11 +1230,11 @@ contains
     flush(10)
     write(10, *) "Segment length=", seg_len, " ndf_wth=", ndf_wth, " ndf_w3=", ndf_w3
     flush(10)
-    do j = 1, seg_len
-      do i = 1, ndf_w3
-        write(10, *) "i=", i, " j=", j, " map_w3=", map_w3(i,j)
-      end do
-    end do
+    !do j = 1, seg_len
+    !  do i = 1, ndf_w3
+    !    write(10, *) "i=", i, " j=", j, " map_w3=", map_w3(i,j)
+    !  end do
+    !end do
     flush(10)
     
     do i = 1, row_length
@@ -1381,10 +1381,10 @@ contains
             write(10, *) "Invalid value in v_conv at i=", i, " k=", k, " value=", v_conv(i,1,k)
           end if  
           ! Print out the values for checking
-          write(10, *) "u_p(", i, ",1,", k, ") = ", u_p(i,1,k)
-          write(10, *) "v_p(", i, ",1,", k, ") = ", v_p(i,1,k)
-          write(10, *) "u_conv(", i, ",", k, ") = ", u_conv(i,1,k)
-          write(10, *)  "v_conv(", i, ",", k, ") = ", v_conv(i,1,k)
+          !write(10, *) "u_p(", i, ",1,", k, ") = ", u_p(i,1,k)
+          !write(10, *) "v_p(", i, ",1,", k, ") = ", v_p(i,1,k)
+          !write(10, *) "u_conv(", i, ",", k, ") = ", u_conv(i,1,k)
+          !write(10, *)  "v_conv(", i, ",", k, ") = ", v_conv(i,1,k)
           flush(10)
         end do ! k
       end do
