@@ -79,8 +79,10 @@ contains
     integer                            :: element_order_h
     integer                            :: element_order_v
     integer                            :: ref_extrusion_id
+    integer                            :: ndata
     type(mesh_type), pointer           :: ref_mesh => null()
     type(mesh_type), pointer           :: target_mesh => null()
+    type(function_space_type), pointer :: ref_vspace => null()
     type(function_space_type), pointer :: vs_conv => null()
     procedure(write_interface), pointer :: write_diag_behaviour => null()
     ! Field proxy for debugging purposes
@@ -139,11 +141,18 @@ contains
     write(log_scratch_space, * ) 'Target mesh id for coarse field: ', target_mesh%get_id()
     call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
 
-    ! Create the convection grid vector space
+    ! Extract ndata (multidata/multiplicity) from reference field's vector space
+    ! This preserves multidata fields like surf_interp during coarsening
+    ref_vspace => ref_field%get_function_space()
+    ndata = ref_vspace%get_ndata()
+    write(log_scratch_space, * ) 'Reference field ndata (multidata): ', ndata
+    call log_event(log_scratch_space, LOG_LEVEL_DEBUG)
+
+    ! Create the convection grid vector space with preserved ndata
     vs_conv => function_space_collection%get_fs( target_mesh,      &
                                                  element_order_h,  &
                                                  element_order_v,  &
-                                                 fs )
+                                                 fs, ndata )
 
     ! CHeck if vector space is associated correctly
     if ( .not. associated(vs_conv) ) then
