@@ -348,7 +348,7 @@ case (i_call_save_before_conv)
         end if
         flush(10)
 
-        write(10, *) "ieee_is_finite checks passed"
+        !write(10, *) "ieee_is_finite checks passed"
 
         u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
                       +      interp  * u_p(i,j,k+1)
@@ -357,8 +357,8 @@ case (i_call_save_before_conv)
 
         !u_th_n(i,j,k) = temp1
         !v_th_n(i,j,k) = temp2
-        write(10, *) "Assigned values to u_th_n and v_th_n"
-        flush(10)
+        !write(10, *) "Assigned values to u_th_n and v_th_n"
+        !flush(10)
 
         temp1 = (1.0-interp) * ustar_p(i,j,k) + interp * ustar_p(i,j,k+1)
         temp2 = (1.0-interp) * vstar_p(i,j,k) + interp * vstar_p(i,j,k+1)
@@ -374,8 +374,8 @@ case (i_call_save_before_conv)
 
         !u_th_np1(i,j,k) = temp1
         !v_th_np1(i,j,k) = temp2
-        write(10, *) "Assigned values to u_th_np1 and v_th_np1"
-        flush(10)
+        !write(10, *) "Assigned values to u_th_np1 and v_th_np1"
+        !flush(10)
       end do
     end do
   end do

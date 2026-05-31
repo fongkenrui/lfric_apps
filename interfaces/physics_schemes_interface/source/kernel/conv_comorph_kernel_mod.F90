@@ -2166,6 +2166,7 @@ contains
         write(10, *) "Current i=", i
         write(10, *) "surf_interp shape is ", shape(surf_interp)
         flush(10)
+        write(10, *) "map_surf(1,i) = ", map_surf(1,i)
         write(10, *) "surf_interp( map_surf(1,i)+6 ) = ", surf_interp(map_surf(1,i)+6)
 
         fb_surf(i,1) = surf_interp(map_surf(1,i)+6)
@@ -2174,6 +2175,7 @@ contains
         flush(10)
         write(10, *) "ustar shape is ", shape(ustar)
         flush(10)
+        write(10, *) "map_2d(1,i) = ", map_2d(1,i)
         write(10, *) "ustar( map_2d(1,i) ) = ", ustar(map_2d(1,i))
         flush(10)
         u_s(i,1) = ustar(map_2d(1,i))
@@ -2199,7 +2201,7 @@ contains
         write(10, *) "Assigned delta_x=", delta_x(i,1)
         flush(10)
       end do
-      
+
       write(10, *) "Interpolating turbulence fields"
       flush(10)
       ! Interpolate momentum diffusivity and fluxes onto rho-levels
