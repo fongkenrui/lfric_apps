@@ -2166,7 +2166,8 @@ contains
         write(10, *) "Current i=", i
         write(10, *) "surf_interp shape is ", shape(surf_interp)
         flush(10)
-        write(10, *) "map_surf(1,i) = ", map_surf(1,i)
+        write(10, *) "map_surf shape is ", shape(map_surf)
+        write(10, *) "map_surf(1,i)+6 = ", map_surf(1,i)+6  
         write(10, *) "surf_interp( map_surf(1,i)+6 ) = ", surf_interp(map_surf(1,i)+6)
 
         fb_surf(i,1) = surf_interp(map_surf(1,i)+6)
@@ -2175,6 +2176,7 @@ contains
         flush(10)
         write(10, *) "ustar shape is ", shape(ustar)
         flush(10)
+        write(10, *) "map_2d shape is ", shape(map_2d)
         write(10, *) "map_2d(1,i) = ", map_2d(1,i)
         write(10, *) "ustar( map_2d(1,i) ) = ", ustar(map_2d(1,i))
         flush(10)
