@@ -1260,6 +1260,8 @@ contains
         ! height of levels above surface
         z_rho(i,1,k) = r_rho_levels(i,1,k)-r_theta_levels(i,1,0)
         z_theta(i,1,k) = r_theta_levels(i,1,k)-r_theta_levels(i,1,0)
+        write(10, *) "z_rho(i,1,k)=", z_rho(i,1,k), " z_theta(i,1,k)=", z_theta(i,1,k)
+        flush(10)
       end do
       ! adjusted from what is initialised above to match what Comorph expects
       p_rho_levels(i,1,1) = p_theta_levels(i,1,0)
