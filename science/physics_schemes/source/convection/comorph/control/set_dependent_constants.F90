@@ -135,6 +135,10 @@ n_cond_species_ice = n_cond_species - n_cond_species_liq
 
 ! Allocate list of pointers to properties of each condensed
 ! water species, and assign pointers
+if ( allocated(cond_params) ) then
+  deallocate( cond_params )
+end if
+
 allocate( cond_params(n_cond_species) )
 cond_params(i_cond_cl)%pt => params_cl
 if ( l_cv_rain )  cond_params(i_cond_rain)%pt  => params_rain
