@@ -250,89 +250,89 @@ case (i_call_save_before_conv)
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end
         ! Stack trace suggests culprit is somewhere here
-        !write(10, *) "Processing i,j,k: ", i, j, k
-        !write(10, *) "tdims: ", tdims%i_start, tdims%i_end, tdims%j_start, tdims%j_end, tdims%k_end
-        !write(10, *) "z_theta: ", z_theta(i,j,k), z_theta(i,j,k+1)
-        !write(10, *) "z_rho: ", z_rho(i,j,k), z_rho(i,j,k+1)
-        !write(10, *) "z_rho shape: ", size(z_rho, 1), size(z_rho, 2), size(z_rho, 3)
-        !write(10, *) "z_theta shape: ", size(z_theta, 1), size(z_theta, 2), size(z_theta, 3)
-        !write(10, *) "z_rho lbounds:", lbound(z_rho, 1), lbound(z_rho, 2), lbound(z_rho, 3)
-        !write(10, *) "z_rho ubounds:", ubound(z_rho, 1), ubound(z_rho, 2), ubound(z_rho, 3)
-        !write(10, *) "z_theta lbounds:", lbound(z_theta, 1), lbound(z_theta, 2), lbound(z_theta, 3)
-        !write(10, *) "z_theta ubounds:", ubound(z_theta, 1), ubound(z_theta, 2), ubound(z_theta, 3)
-        !flush(10)
-        !write(10, *) "z_rho kind: ", kind(z_rho(i,j,k))
-        !write(10, *) "z_theta kind: ", kind(z_theta(i,j,k))
+        write(10, *) "Processing i,j,k: ", i, j, k
+        write(10, *) "tdims: ", tdims%i_start, tdims%i_end, tdims%j_start, tdims%j_end, tdims%k_end
+        write(10, *) "z_theta: ", z_theta(i,j,k), z_theta(i,j,k+1)
+        write(10, *) "z_rho: ", z_rho(i,j,k), z_rho(i,j,k+1)
+        write(10, *) "z_rho shape: ", size(z_rho, 1), size(z_rho, 2), size(z_rho, 3)
+        write(10, *) "z_theta shape: ", size(z_theta, 1), size(z_theta, 2), size(z_theta, 3)
+        write(10, *) "z_rho lbounds:", lbound(z_rho, 1), lbound(z_rho, 2), lbound(z_rho, 3)
+        write(10, *) "z_rho ubounds:", ubound(z_rho, 1), ubound(z_rho, 2), ubound(z_rho, 3)
+        write(10, *) "z_theta lbounds:", lbound(z_theta, 1), lbound(z_theta, 2), lbound(z_theta, 3)
+        write(10, *) "z_theta ubounds:", ubound(z_theta, 1), ubound(z_theta, 2), ubound(z_theta, 3)
+        flush(10)
+        write(10, *) "z_rho kind: ", kind(z_rho(i,j,k))
+        write(10, *) "z_theta kind: ", kind(z_theta(i,j,k))
         if ( .not. ieee_is_finite(z_rho(i,j,k+1) - z_rho(i,j,k)) ) then
           call raise_fatal( "calc_conv_incs", "z_rho_k+1 - z_rho is not finite" )
         end if
         if ( .not. ieee_is_finite(z_theta(i,j,k) - z_rho(i,j,k)) ) then
           call raise_fatal( "calc_conv_incs", "z_theta - z_rho is not finite" )
         end if
-        !num = z_theta(i,j,k) - z_rho(i,j,k)
-        !denom = z_rho(i,j,k+1) - z_rho(i,j,k)
-        !write(10, *) "Denominator is" , denom
-        !write(10, *) "Numerator is" , num
-        !flush(10)
-        interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
-               / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
-        !interp = num / denom
-        !write(10, *) "interp: ", interp
-        !flush(10)
-        !write(10, *) "u_p shape: ", size(u_p, 1), size(u_p, 2), size(u_p, 3)
-        !write(10, *) "v_p shape: ", size(v_p, 1), size(v_p, 2), size(v_p, 3)
-        !flush(10)
-        !write(10, *) "ustar_p shape: ", size(ustar_p, 1), size(ustar_p, 2), size(ustar_p, 3)
-        !write(10, *) "vstar_p shape: ", size(vstar_p, 1), size(vstar_p, 2), size(vstar_p, 3)
-        !flush(10)
-        !write(10, *) "u_p lbounds:", lbound(u_p, 1), lbound(u_p, 2), lbound(u_p, 3)
-        !write(10, *) "v_p lbounds:", lbound(v_p, 1), lbound(v_p, 2), lbound(v_p, 3)
-        !flush(10)
-        !write(10, *) "ustar_p lbounds:", lbound(ustar_p, 1), lbound(ustar_p, 2), lbound(ustar_p, 3)
-        !write(10, *) "vstar_p lbounds:", lbound(vstar_p, 1), lbound(vstar_p, 2), lbound(vstar_p, 3)
-        !flush(10)
-        !write(10, *) "u_p ubounds:", ubound(u_p, 1), ubound(u_p, 2), ubound(u_p, 3)
-        !write(10, *) "v_p ubounds:", ubound(v_p, 1), ubound(v_p, 2), ubound(v_p, 3)
-        !flush(10)
-        !write(10, *) "ustar_p ubounds:", ubound(ustar_p, 1), ubound(ustar_p, 2), ubound(ustar_p, 3) 
-        !write(10, *) "vstar_p ubounds:", ubound(vstar_p, 1), ubound(vstar_p, 2), ubound(vstar_p, 3)
-        !flush(10)
-        !write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
-        !write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
-        !flush(10)
-        !write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
-        !write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
-        !flush(10)
+        num = z_theta(i,j,k) - z_rho(i,j,k)
+        denom = z_rho(i,j,k+1) - z_rho(i,j,k)
+        write(10, *) "Denominator is" , denom
+        write(10, *) "Numerator is" , num
+        flush(10)
+        !interp = ( z_theta(i,j,k) - z_rho(i,j,k) )                             &
+        !       / ( z_rho(i,j,k+1) - z_rho(i,j,k) )
+        interp = num / denom
+        write(10, *) "interp: ", interp
+        flush(10)
+        write(10, *) "u_p shape: ", size(u_p, 1), size(u_p, 2), size(u_p, 3)
+        write(10, *) "v_p shape: ", size(v_p, 1), size(v_p, 2), size(v_p, 3)
+        flush(10)
+        write(10, *) "ustar_p shape: ", size(ustar_p, 1), size(ustar_p, 2), size(ustar_p, 3)
+        write(10, *) "vstar_p shape: ", size(vstar_p, 1), size(vstar_p, 2), size(vstar_p, 3)
+        flush(10)
+        write(10, *) "u_p lbounds:", lbound(u_p, 1), lbound(u_p, 2), lbound(u_p, 3)
+        write(10, *) "v_p lbounds:", lbound(v_p, 1), lbound(v_p, 2), lbound(v_p, 3)
+        flush(10)
+        write(10, *) "ustar_p lbounds:", lbound(ustar_p, 1), lbound(ustar_p, 2), lbound(ustar_p, 3)
+        write(10, *) "vstar_p lbounds:", lbound(vstar_p, 1), lbound(vstar_p, 2), lbound(vstar_p, 3)
+        flush(10)
+        write(10, *) "u_p ubounds:", ubound(u_p, 1), ubound(u_p, 2), ubound(u_p, 3)
+        write(10, *) "v_p ubounds:", ubound(v_p, 1), ubound(v_p, 2), ubound(v_p, 3)
+        flush(10)
+        write(10, *) "ustar_p ubounds:", ubound(ustar_p, 1), ubound(ustar_p, 2), ubound(ustar_p, 3) 
+        write(10, *) "vstar_p ubounds:", ubound(vstar_p, 1), ubound(vstar_p, 2), ubound(vstar_p, 3)
+        flush(10)
+        write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
+        write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
+        flush(10)
+        write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
+        write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
+        flush(10)
         
-        !write(10, *) "Accessing u_p indices at ", i, j, k
-        !temp1 = u_p(i,j,k)
-        !write(10, *) "Value is", temp1
-        !write(10, *) "Accessing v_p indices at ", i, j, k
-        !temp1 = v_p(i,j,k)
-        !write(10, *) "Value is", temp1
-        !write(10, *) "Accessing u_p indices at ", i, j, k+1
-        !temp2 = u_p(i,j,k+1)
-        !write(10, *) "Value is", temp2
-        !write(10, *) "Accessing v_p indices at ", i, j, k+1
-        !temp2 = v_p(i,j,k+1)
-        !write(10, *) "Value is", temp2
-        !write(10, *) "u_p kind: ", kind(u_p(i,j,k))
-        !write(10, *) "v_p kind: ", kind(v_p(i,j,k))
-        !write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
-        !write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
-        !write(10, *) "No issues with accessing indices for u_p and v_p."
-        !flush(10)
-        !write(10, *) "Performing 1.0-interp arithmetic subtraction"
-        !temp1 = 1.0-interp
-        !write(10, *) "1.0-interp:", temp1
-        !write(10, *) "Performing interp arithmetic"
-        !flush(10)
-        !temp1 = (1.0-interp) * u_p(i,j,k) + interp * u_p(i,j,k+1)
-        !temp2 = (1.0-interp) * v_p(i,j,k) + interp * v_p(i,j,k+1)
-        !write(10, *) "temp1: ", temp1
-        !write(10, *) "temp2: ", temp2
-        !flush(10)
-!
+        write(10, *) "Accessing u_p indices at ", i, j, k
+        temp1 = u_p(i,j,k)
+        write(10, *) "Value is", temp1
+        write(10, *) "Accessing v_p indices at ", i, j, k
+        temp1 = v_p(i,j,k)
+        write(10, *) "Value is", temp1
+        write(10, *) "Accessing u_p indices at ", i, j, k+1
+        temp2 = u_p(i,j,k+1)
+        write(10, *) "Value is", temp2
+        write(10, *) "Accessing v_p indices at ", i, j, k+1
+        temp2 = v_p(i,j,k+1)
+        write(10, *) "Value is", temp2
+        write(10, *) "u_p kind: ", kind(u_p(i,j,k))
+        write(10, *) "v_p kind: ", kind(v_p(i,j,k))
+        write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
+        write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
+        write(10, *) "No issues with accessing indices for u_p and v_p."
+        flush(10)
+        write(10, *) "Performing 1.0-interp arithmetic subtraction"
+        temp1 = 1.0-interp
+        write(10, *) "1.0-interp:", temp1
+        write(10, *) "Performing interp arithmetic"
+        flush(10)
+        temp1 = (1.0-interp) * u_p(i,j,k) + interp * u_p(i,j,k+1)
+        temp2 = (1.0-interp) * v_p(i,j,k) + interp * v_p(i,j,k+1)
+        write(10, *) "temp1: ", temp1
+        write(10, *) "temp2: ", temp2
+        flush(10)
+
         ! Guard against NaNs/infs
         if ( .not. ieee_is_finite(u_p(i,j,k)) ) then
           call raise_fatal( "calc_conv_incs", "u_p is not finite" )
@@ -348,34 +348,32 @@ case (i_call_save_before_conv)
         end if
         flush(10)
 
-        !write(10, *) "ieee_is_finite checks passed"
+        write(10, *) "ieee_is_finite checks passed"
 
-        u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
-                      +      interp  * u_p(i,j,k+1)
-        v_th_n(i,j,k) = (1.0-interp) * v_p(i,j,k)                              &
-                      +      interp  * v_p(i,j,k+1)
+        !u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
+        !              +      interp  * u_p(i,j,k+1)
+        !v_th_n(i,j,k) = (1.0-interp) * v_p(i,j,k)                              &
+        !              +      interp  * v_p(i,j,k+1)
 
-        !u_th_n(i,j,k) = temp1
-        !v_th_n(i,j,k) = temp2
-        !write(10, *) "Assigned values to u_th_n and v_th_n"
-        !flush(10)
-
+        u_th_n(i,j,k) = temp1
+        v_th_n(i,j,k) = temp2
+        write(10, *) "Assigned values to u_th_n and v_th_n"
+        flush(10)
         temp1 = (1.0-interp) * ustar_p(i,j,k) + interp * ustar_p(i,j,k+1)
         temp2 = (1.0-interp) * vstar_p(i,j,k) + interp * vstar_p(i,j,k+1)
 
-        !write(10, *) "temp1: ", temp1
-        !write(10, *) "temp2: ", temp2
-        !flush(10)
+        write(10, *) "temp1: ", temp1
+        write(10, *) "temp2: ", temp2
+        flush(10)
+        !u_th_np1(i,j,k) = (1.0-interp) * ustar_p(i,j,k)                        &
+        !                +      interp  * ustar_p(i,j,k+1)
+        !v_th_np1(i,j,k) = (1.0-interp) * vstar_p(i,j,k)                        &
+        !                +      interp  * vstar_p(i,j,k+1)
 
-        u_th_np1(i,j,k) = (1.0-interp) * ustar_p(i,j,k)                        &
-                        +      interp  * ustar_p(i,j,k+1)
-        v_th_np1(i,j,k) = (1.0-interp) * vstar_p(i,j,k)                        &
-                        +      interp  * vstar_p(i,j,k+1)
-
-        !u_th_np1(i,j,k) = temp1
-        !v_th_np1(i,j,k) = temp2
-        !write(10, *) "Assigned values to u_th_np1 and v_th_np1"
-        !flush(10)
+        u_th_np1(i,j,k) = temp1
+        v_th_np1(i,j,k) = temp2
+        write(10, *) "Assigned values to u_th_np1 and v_th_np1"
+        flush(10)
       end do
     end do
   end do
