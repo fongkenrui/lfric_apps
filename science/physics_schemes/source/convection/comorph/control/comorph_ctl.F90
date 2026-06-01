@@ -194,7 +194,9 @@ integer :: i_seg, i_field
 
 ! Set the values of constants that depend on other constants
 ! (if not already set)
-if ( .not. l_init_constants )  call set_dependent_constants()
+!if ( .not. l_init_constants )  call set_dependent_constants()
+!!! Mod: force it to run every call
+call set_dependent_constants()
 
 ! Set super-array addresses for primary fields
 ! (if not already set)
