@@ -468,6 +468,13 @@ contains
     ! Loop variable
     integer( kind=i_def ) :: i_mr
 
+    ! Outer variable override
+    integer( kind=i_def ) :: outer_0
+
+    ! Set an override outer loop counter
+    ! This forces the comorph kernel to skip outer loop tracer advection
+    outer_0 = 0_i_def
+
     if ( subroutine_timers ) call timer("conv_comorph_alg")
 
     write(log_scratch_space,*) "conv_mesh_name = ", conv_mesh_name
@@ -1093,7 +1100,7 @@ contains
     call map_scalar_field(ls_snow_coarse, ls_snow)
 
     ! call the scheme
-    call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
+    call invoke( conv_comorph_kernel_type( outer_0, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
                           delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
                           theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
