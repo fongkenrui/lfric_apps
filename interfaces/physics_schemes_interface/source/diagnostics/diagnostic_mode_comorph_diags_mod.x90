@@ -482,7 +482,7 @@ contains
                                       dv_conv_coarse,                        &
                                       massflux_up_coarse,                    &
                                       massflux_down_coarse,                  &  
-                                      cape_diluted_coarse,                   
+                                      cape_diluted_coarse                   
     
     ! Other important auxillary fields to output for diagnostics
     type( integer_field_type ), intent(in) :: bl_type_ind_coarse
