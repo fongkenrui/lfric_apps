@@ -438,7 +438,21 @@ contains
   end subroutine initialise_diags_for_diagnostic_mode_comorph
 
   !> @brief Output diagnostics from comorph_alg
-  subroutine output_diags_for_diagnostic_mode_comorph( lowest_cv_base_coarse,        &
+  subroutine output_diags_for_diagnostic_mode_comorph( cca_coarse,                   &
+                                                       dt_conv_coarse,               &
+                                                       dmv_conv_coarse,              &
+                                                       dmcl_conv_coarse,             &
+                                                       dms_conv_coarse,              &
+                                                       dcfl_conv_coarse,             &
+                                                       dcff_conv_coarse,             &
+                                                       dbcf_conv_coarse,             &
+                                                       du_conv_coarse,               &
+                                                       dv_conv_coarse,               &
+                                                       massflux_up_coarse,           &
+                                                       massflux_down_coarse,         &
+                                                       cape_diluted_coarse,          &
+                                                       bl_type_ind_coarse,           &
+                                                       lowest_cv_base_coarse,        &
                                                        lowest_cv_top_coarse,         &
                                                        cv_base_coarse,               &
                                                        cv_top_coarse,                &
@@ -454,6 +468,24 @@ contains
                                                        massflux_up_half_coarse)
 
     implicit none
+
+    ! Global coarsened fields to output
+    type( field_type ), intent(in) :: cca_coarse,                            &
+                                      dt_conv_coarse,                        &
+                                      dmv_conv_coarse,                       &
+                                      dmcl_conv_coarse,                      &
+                                      dms_conv_coarse,                       &
+                                      dcfl_conv_coarse,                      &
+                                      dcff_conv_coarse,                      &
+                                      dbcf_conv_coarse,                      &
+                                      du_conv_coarse,                        &
+                                      dv_conv_coarse,                        &
+                                      massflux_up_coarse,                    &
+                                      massflux_down_coarse,                  &  
+                                      cape_diluted_coarse,                   
+    
+    ! Other important auxillary fields to output for diagnostics
+    type( integer_field_type ), intent(in) :: bl_type_ind_coarse
 
     ! Local diagnostic fields to output
     type( field_type ), intent(in) :: lowest_cv_base_coarse,          &
@@ -473,6 +505,21 @@ contains
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
     ! Write the fields here
+    call cca_coarse%write_field('convection__cca_coarse')
+    call dt_conv_coarse%write_field('convection__dt_conv_coarse')
+    call dmv_conv_coarse%write_field('convection__dmv_conv_coarse')
+    call dmcl_conv_coarse%write_field('convection__dmcl_conv_coarse')
+    call dms_conv_coarse%write_field('convection__dms_conv_coarse')
+    call dcfl_conv_coarse%write_field('convection__dcfl_conv_coarse')
+    call dcff_conv_coarse%write_field('convection__dcff_conv_coarse')
+    call dbcf_conv_coarse%write_field('convection__dbcf_conv_coarse')
+    call du_conv_coarse%write_field('convection__du_conv_coarse')
+    call dv_conv_coarse%write_field('convection__dv_conv_coarse')
+    call massflux_up_coarse%write_field('convection__massflux_up_coarse')
+    call massflux_down_coarse%write_field('convection__massflux_down_coarse')
+    call cape_diluted_coarse%write_field('convection__cape_diluted_coarse')
+
+    call bl_type_ind_coarse%write_field('turbulence__bl_type_ind_coarse')
     
     call lowest_cv_base_coarse%write_field('convection__lowest_cv_base_coarse')
     call lowest_cv_top_coarse%write_field('convection__lowest_cv_top_coarse')

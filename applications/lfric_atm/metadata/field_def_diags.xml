@@ -412,6 +412,19 @@
   <field id="convection__detrain_up_coarse" name="detrain_up_coarse" long_name="convection_upward_detrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
   <field id="convection__detrain_down_coarse" name="detrain_down_coarse" long_name="convection_downward_detrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
   <field id="convection__massflux_up_half_coarse" name="massflux_up_half_coarse" long_name="conv_upward_massflux_half_levs_on_coarse_grid" unit="Pa s-1" grid_ref="conv_half_level_face_grid" />
+  <field id="convection__cca_coarse" name="cca_coarse" long_name="convective_cloud_amount_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dt_conv_coarse" name="dt_conv_coarse" long_name="temperature_increment_from_convection_on_coarse_grid" unit="K" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dmv_conv_coarse" name="dmv_conv_coarse" long_name="water_vapour_increment_from_convection_on_coarse_grid" unit="kg kg-1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dmcl_conv_coarse" name="dmcl_conv_coarse" long_name="cloud_liquid_water_increment_from_convection_on_coarse_grid" unit="kg kg-1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dms_conv_coarse" name="dms_conv_coarse" long_name="cloud_snow_water_increment_from_convection_on_coarse_grid" unit="kg kg-1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dbcf_conv_coarse" name="dbcf_conv_coarse" long_name="bulk_cloud_volume_increment_from_convection_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dcfl_conv_coarse" name="dcfl_conv_coarse" long_name="liquid_cloud_volume_increment_from_convection_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__dcff_conv_coarse" name="dcff_conv_coarse" long_name="frozen_cloud_volume_increment_from_convection_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__du_conv_coarse" name="du_conv_coarse" long_name="u_increment_from_convection_on_coarse_grid" unit="m s-2" grid_ref="conv_half_level_face_grid" />
+  <field id="convection__dv_conv_coarse" name="dv_conv_coarse" long_name="v_increment_from_convection_on_coarse_grid" unit="m s-2" grid_ref="conv_half_level_face_grid" />
+  <field id="convection__cape_diluted_coarse" name="cape_diluted_coarse" long_name="cape_diluted_on_coarse_grid" unit="J/kg" domain_ref="conv_face" />
+  <field id="convection__massflux_up_coarse" name="massflux_up_coarse" long_name="convection_upward_massflux_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__massflux_down_coarse" name="massflux_down_coarse" long_name="convection_downward_massflux_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
   <!-- microphysics diagnostics -->
   <field id="microphysics__dtheta_mphys" name="dtheta_mphys" long_name="potential_temperature_increment_due_to_microphysics" unit="K" grid_ref="full_level_face_grid" />
   <field id="microphysics__dt_mphys" name="dt_mphys" long_name="temperature_increment_due_to_microphysics" unit="K" grid_ref="full_level_face_grid" />
@@ -1008,6 +1021,8 @@
 <field_group id="diag_int4_fields" prec="4" operation="instant" enabled=".TRUE." >
   <field id="turbulence__cumulus" name="cumulus" long_name="cumulus_convection_indicator" unit="1" domain_ref="face" />
   <field id="turbulence__bl_type_ind" name="bl_type_ind" long_name="boundary_layer_type_indicator" unit="1" domain_ref="face" axis_ref="boundary_layer_types" />
+  <!-- Coarse version diagnostics -->
+  <field id="turbulence__bl_type_ind_coarse" name="bl_type_ind_coarse" long_name="boundary_layer_type_indicator_on_coarse_grid" unit="1" domain_ref="conv_face" axis_ref="boundary_layer_types" />
 </field_group>
 
 <!-- Short Integer diagnostic group -->
