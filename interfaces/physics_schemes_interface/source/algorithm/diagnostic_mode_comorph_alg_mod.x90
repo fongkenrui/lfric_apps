@@ -1585,6 +1585,11 @@ contains
                                   massflux_up_coarse,           &
                                   massflux_down_coarse,         &
                                   cape_diluted_coarse,          &
+                                  conv_rain_coarse,             &
+                                  conv_snow_coarse,             &
+                                  conv_rain_3d_coarse,          &
+                                  conv_snow_3d_coarse,          &
+                                  cca_2d_coarse,                &
                                   lowest_cv_base_coarse,        &
                                   lowest_cv_top_coarse,         &
                                   cv_base_coarse,               &

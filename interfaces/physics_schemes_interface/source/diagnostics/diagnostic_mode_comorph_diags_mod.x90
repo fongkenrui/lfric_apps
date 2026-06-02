@@ -529,8 +529,7 @@ contains
                                                        detrain_up_coarse,            &
                                                        detrain_down_coarse,          &
                                                        massflux_up_half_coarse,      &
-                                                       bl_type_ind_coarse
-                                                       )
+                                                       bl_type_ind_coarse)
 
     implicit none
 
