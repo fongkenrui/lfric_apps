@@ -1370,6 +1370,7 @@ contains
       write(10, *) "Shape of v_in_w3_star: ", shape(v_in_w3_star)
       do i = 1, row_length
         do k = 1, nlayers
+          write(10, *) "Mapping momentum for i=", i, " k=", k, " using map_w3 index ", map_w3(1,i) + k-1
           u_p(i,1,k) = u_in_w3(map_w3(1,i) + k-1)
           v_p(i,1,k) = v_in_w3(map_w3(1,i) + k-1)
           u_conv(i,1,k) = u_in_w3_star(map_w3(1,i) + k-1)
