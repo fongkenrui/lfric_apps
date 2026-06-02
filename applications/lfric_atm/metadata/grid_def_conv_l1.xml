@@ -14,4 +14,9 @@
   <grid id="conv_face">
     <domain domain_ref="multigrid_l1_face"/>
   </grid>
+  <!-- Special grid definitions -->
+  <grid id="conv_bl_ind_grid">
+    <domain domain_ref="multigrid_l1_face"/>
+    <axis axis_ref="boundary_layer_types"/>
+  </grid>
 </grid_definition>
