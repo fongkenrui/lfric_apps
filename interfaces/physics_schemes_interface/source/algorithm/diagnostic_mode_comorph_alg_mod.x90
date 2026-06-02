@@ -1260,15 +1260,14 @@ contains
                                   dmv_conv_coarse,              &
                                   dmcl_conv_coarse,             &
                                   dms_conv_coarse,              &
+                                  du_conv_coarse,               &
+                                  dv_conv_coarse,               &
                                   dcfl_conv_coarse,             &
                                   dcff_conv_coarse,             &
                                   dbcf_conv_coarse,             &
-                                  du_conv_coarse,               &
-                                  dv_conv_coarse,               &
                                   massflux_up_coarse,           &
                                   massflux_down_coarse,         &
                                   cape_diluted_coarse,          &
-                                  bl_type_ind_coarse,           &
                                   lowest_cv_base_coarse,        &
                                   lowest_cv_top_coarse,         &
                                   cv_base_coarse,               &
@@ -1282,7 +1281,8 @@ contains
                                   entrain_down_coarse,          &
                                   detrain_up_coarse,            &
                                   detrain_down_coarse,          &
-                                  massflux_up_half_coarse)
+                                  massflux_up_half_coarse,      &
+                                  bl_type_ind_coarse)
     end if
 
   nullify( conv_mesh )
