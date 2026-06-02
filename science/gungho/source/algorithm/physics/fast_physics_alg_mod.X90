@@ -247,6 +247,18 @@ contains
     !--------------------------------------------------------------------
     ! UM convection scheme
     !--------------------------------------------------------------------
+
+    ! Run CoMorph diagnostics ahead of the convection scheme call, since the
+    ! diagnostic call does not mutate the actual model fields and only passes
+    ! copies of it to the kernel.
+    if (diagnostic_mode_conv .and. outer == outer_iterations) then
+      call diagnostic_mode_comorph_alg(mr, mr_n, rho, exner, theta, derived_fields,&
+                         turbulence_fields, convection_fields,            &
+                         cloud_fields, surface_fields, chemistry_fields,  &
+                         aerosol_fields, microphysics_fields, outer)
+    end if
+
+    ! Actual convection scheme call
     if (convection == convection_um .and.                       &
         convection_placement == convection_placement_fast) then
       if ( cv_scheme == cv_scheme_lambert_lewis ) then
@@ -266,24 +278,12 @@ contains
                          cloud_fields, surface_fields, chemistry_fields,  &
                          aerosol_fields, microphysics_fields, outer)
       end if
-    end if
-
-    ! Interrupt the if block for diagnostic-mode comorph on the last iteration
-    if (diagnostic_mode_conv .and. outer == outer_iterations) then
-      call diagnostic_mode_comorph_alg(mr, mr_n, rho, exner, theta, derived_fields,&
-                         turbulence_fields, convection_fields,            &
-                         cloud_fields, surface_fields, chemistry_fields,  &
-                         aerosol_fields, microphysics_fields, outer)
-    end if
-
+      
      ! If using PC2 convection scheme, we need to update the cloud fields
      ! before the boundary layer scheme as they are needed in the BL scheme.
      ! This is only needed if using the PC2 scheme as the coupling is more
      ! two-way with the other UM schemes and so the convection schemes are
      ! responsible for updating the cloud fields themselves.
-    
-    if (convection == convection_um .and.                       &
-      convection_placement == convection_placement_fast) then
       if ( cloud == cloud_um .and. scheme == scheme_pc2 ) then
         ! Update the cloud fields if using PC2
         call pc2_conv_coupling_alg( mr, derived_fields,                  &
