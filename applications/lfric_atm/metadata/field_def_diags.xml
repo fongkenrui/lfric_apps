@@ -402,15 +402,15 @@
   <field id="convection__pres_cv_top" name="pres_cv_top" long_name="pressure_at_convective_cloud_top" unit="Pa" domain_ref="face" />
   <!-- Coarsened diagnostic-mode CoMorph diagnostics -->
   <!-- The following definitions are essential because the code uses the xios metadata defined here for initializing the fields -->
-  <field id="convection__pres_lowest_cv_base_coarse" name="pres_lowest_cv_base_coarse" long_name="pressure_at_lowest_convective_cloud_base_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
-  <field id="convection__pres_lowest_cv_top_coarse" name="pres_lowest_cv_top_coarse" long_name="pressure_at_lowest_convective_cloud_top_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
-  <field id="convection__pres_cv_base_coarse" name="pres_cv_base_coarse" long_name="pressure_at_convective_cloud_base_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
-  <field id="convection__pres_cv_top_coarse" name="pres_cv_top_coarse" long_name="pressure_at_convective_cloud_top_on_coarse_grid" unit="Pa" domain_ref="conv_face" />
-  <field id="convection__lowest_cca_2d_coarse" name="lowest_cca_2d_coarse" long_name="lowest_convective_cloud_amount_(2d)_with_no_anvil_on_coarse_grid" unit="1" domain_ref="conv_face" />
-  <field id="convection__entrain_up_coarse" name="entrain_up_coarse" long_name="convection_upward_entrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
-  <field id="convection__entrain_down_coarse" name="entrain_down_coarse" long_name="convection_downward_entrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
-  <field id="convection__detrain_up_coarse" name="detrain_up_coarse" long_name="convection_upward_detrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
-  <field id="convection__detrain_down_coarse" name="detrain_down_coarse" long_name="convection_downward_detrain_on_coarse_grid" unit="1" domain_ref="conv_full_level_face_grid" />
+  <field id="convection__pres_lowest_cv_base_coarse" name="pres_lowest_cv_base_coarse" long_name="pressure_at_lowest_convective_cloud_base_on_coarse_grid" unit="Pa" grid_ref="conv_face" />
+  <field id="convection__pres_lowest_cv_top_coarse" name="pres_lowest_cv_top_coarse" long_name="pressure_at_lowest_convective_cloud_top_on_coarse_grid" unit="Pa" grid_ref="conv_face" />
+  <field id="convection__pres_cv_base_coarse" name="pres_cv_base_coarse" long_name="pressure_at_convective_cloud_base_on_coarse_grid" unit="Pa" grid_ref="conv_face" />
+  <field id="convection__pres_cv_top_coarse" name="pres_cv_top_coarse" long_name="pressure_at_convective_cloud_top_on_coarse_grid" unit="Pa" grid_ref="conv_face" />
+  <field id="convection__lowest_cca_2d_coarse" name="lowest_cca_2d_coarse" long_name="lowest_convective_cloud_amount_(2d)_with_no_anvil_on_coarse_grid" unit="1" grid_ref="conv_face" />
+  <field id="convection__entrain_up_coarse" name="entrain_up_coarse" long_name="convection_upward_entrain_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__entrain_down_coarse" name="entrain_down_coarse" long_name="convection_downward_entrain_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__detrain_up_coarse" name="detrain_up_coarse" long_name="convection_upward_detrain_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__detrain_down_coarse" name="detrain_down_coarse" long_name="convection_downward_detrain_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__massflux_up_half_coarse" name="massflux_up_half_coarse" long_name="conv_upward_massflux_half_levs_on_coarse_grid" unit="Pa s-1" grid_ref="conv_half_level_face_grid" />
   <field id="convection__cca_coarse" name="cca_coarse" long_name="convective_cloud_amount_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__dt_conv_coarse" name="dt_conv_coarse" long_name="temperature_increment_from_convection_on_coarse_grid" unit="K" grid_ref="conv_full_level_face_grid" />
@@ -422,14 +422,14 @@
   <field id="convection__dcff_conv_coarse" name="dcff_conv_coarse" long_name="frozen_cloud_volume_increment_from_convection_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__du_conv_coarse" name="du_conv_coarse" long_name="u_increment_from_convection_on_coarse_grid" unit="m s-2" grid_ref="conv_half_level_face_grid" />
   <field id="convection__dv_conv_coarse" name="dv_conv_coarse" long_name="v_increment_from_convection_on_coarse_grid" unit="m s-2" grid_ref="conv_half_level_face_grid" />
-  <field id="convection__cape_diluted_coarse" name="cape_diluted_coarse" long_name="cape_diluted_on_coarse_grid" unit="J/kg" domain_ref="conv_face" />
+  <field id="convection__cape_diluted_coarse" name="cape_diluted_coarse" long_name="cape_diluted_on_coarse_grid" unit="J/kg" grid_ref="conv_face" />
   <field id="convection__massflux_up_coarse" name="massflux_up_coarse" long_name="convection_upward_massflux_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__massflux_down_coarse" name="massflux_down_coarse" long_name="convection_downward_massflux_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
-  <field id="convection__conv_rain_coarse" name="conv_rain_coarse" long_name="surface_convective_rainfall_rate_on_coarse_grid" unit="kg m-2 s-1" domain_ref="conv_face" />
-  <field id="convection__conv_snow_coarse" name="conv_snow_coarse" long_name="surface_convective_snowfall_rate_on_coarse_grid" unit="kg m-2 s-1" domain_ref="conv_face" />
+  <field id="convection__conv_rain_coarse" name="conv_rain_coarse" long_name="surface_convective_rainfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_face" />
+  <field id="convection__conv_snow_coarse" name="conv_snow_coarse" long_name="surface_convective_snowfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_face" />
   <field id="convection__conv_rain_3d_coarse" name="conv_rain_3d_coarse" long_name="convective_rainfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__conv_snow_3d_coarse" name="conv_snow_3d_coarse" long_name="convective_snowfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_full_level_face_grid" />
-  <field id="convection__cca_2d_coarse" name="cca_2d_coarse" long_name="convective_cloud_amount_(2d)_with_no_anvil_on_coarse_grid" unit="1" domain_ref="conv_face" />
+  <field id="convection__cca_2d_coarse" name="cca_2d_coarse" long_name="convective_cloud_amount_(2d)_with_no_anvil_on_coarse_grid" unit="1" grid_ref="conv_face" />
   <!-- microphysics diagnostics -->
   <field id="microphysics__dtheta_mphys" name="dtheta_mphys" long_name="potential_temperature_increment_due_to_microphysics" unit="K" grid_ref="full_level_face_grid" />
   <field id="microphysics__dt_mphys" name="dt_mphys" long_name="temperature_increment_due_to_microphysics" unit="K" grid_ref="full_level_face_grid" />
@@ -1027,7 +1027,7 @@
   <field id="turbulence__cumulus" name="cumulus" long_name="cumulus_convection_indicator" unit="1" domain_ref="face" />
   <field id="turbulence__bl_type_ind" name="bl_type_ind" long_name="boundary_layer_type_indicator" unit="1" domain_ref="face" axis_ref="boundary_layer_types" />
   <!-- Coarse version diagnostics -->
-  <field id="turbulence__bl_type_ind_coarse" name="bl_type_ind_coarse" long_name="boundary_layer_type_indicator_on_coarse_grid" unit="1" domain_ref="conv_face" axis_ref="boundary_layer_types" />
+  <field id="turbulence__bl_type_ind_coarse" name="bl_type_ind_coarse" long_name="boundary_layer_type_indicator_on_coarse_grid" unit="1" grid_ref="conv_bl_ind_grid" />
 </field_group>
 
 <!-- Short Integer diagnostic group -->
