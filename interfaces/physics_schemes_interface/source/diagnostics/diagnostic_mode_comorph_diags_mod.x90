@@ -451,6 +451,11 @@ contains
                                                        massflux_up_coarse,           &
                                                        massflux_down_coarse,         &
                                                        cape_diluted_coarse,          &
+                                                       conv_rain_coarse,             &
+                                                       conv_snow_coarse,             &
+                                                       conv_rain_3d_coarse,          &
+                                                       conv_snow_3d_coarse,          &
+                                                       cca_2d_coarse,                &
                                                        lowest_cv_base_coarse,        &
                                                        lowest_cv_top_coarse,         &
                                                        cv_base_coarse,               &
@@ -483,9 +488,15 @@ contains
                                       dv_conv_coarse,                        &
                                       massflux_up_coarse,                    &
                                       massflux_down_coarse,                  &  
-                                      cape_diluted_coarse                   
+                                      cape_diluted_coarse,                   &
+                                      conv_rain_coarse,                      &
+                                      conv_snow_coarse,                      &
+                                      conv_rain_3d_coarse,                   &
+                                      conv_snow_3d_coarse,                   &
+                                      cca_2d_coarse             
     
     ! Other important auxillary fields to output for diagnostics
+    ! These are not part of the usual set of internal CoMorph diagnostics
     type( integer_field_type ), intent(in) :: bl_type_ind_coarse
 
     ! Local diagnostic fields to output
@@ -519,6 +530,11 @@ contains
     call massflux_up_coarse%write_field('convection__massflux_up_coarse')
     call massflux_down_coarse%write_field('convection__massflux_down_coarse')
     call cape_diluted_coarse%write_field('convection__cape_diluted_coarse')
+    call conv_rain_coarse%write_field('convection__conv_rain_coarse')
+    call conv_snow_coarse%write_field('convection__conv_snow_coarse')
+    call conv_rain_3d_coarse%write_field('convection__conv_rain_3d_coarse')
+    call conv_snow_3d_coarse%write_field('convection__conv_snow_3d_coarse')
+    call cca_2d_coarse%write_field('convection__cca_2d_coarse')
 
     call bl_type_ind_coarse%write_field('turbulence__bl_type_ind_coarse')
     
