@@ -1100,7 +1100,7 @@ contains
     call map_scalar_field(ls_snow_coarse, ls_snow)
 
     ! call the scheme
-    call invoke( conv_comorph_kernel_type( outer_0, rho_coarse, rho_in_wth_coarse,                                        &
+    call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
                           delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
                           theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
