@@ -297,31 +297,31 @@ case (i_call_save_before_conv)
         write(10, *) "ustar_p ubounds:", ubound(ustar_p, 1), ubound(ustar_p, 2), ubound(ustar_p, 3) 
         write(10, *) "vstar_p ubounds:", ubound(vstar_p, 1), ubound(vstar_p, 2), ubound(vstar_p, 3)
         flush(10)
-        write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
-        write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
-        flush(10)
-        write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
-        write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
-        flush(10)
+        !write(10, *) "u_p: ", u_p(i,j,k), u_p(i,j,k+1)
+        !write(10, *) "v_p: ", v_p(i,j,k), v_p(i,j,k+1)
+        !flush(10)
+        !write(10, *) "ustar_p: ", ustar_p(i,j,k), ustar_p(i,j,k+1)
+        !write(10, *) "vstar_p: ", vstar_p(i,j,k), vstar_p(i,j,k+1)
+        !flush(10)
         
-        write(10, *) "Accessing u_p indices at ", i, j, k
+        !write(10, *) "Accessing u_p indices at ", i, j, k
         temp1 = u_p(i,j,k)
-        write(10, *) "Value is", temp1
-        write(10, *) "Accessing v_p indices at ", i, j, k
+        !write(10, *) "Value is", temp1
+        !write(10, *) "Accessing v_p indices at ", i, j, k
         temp1 = v_p(i,j,k)
-        write(10, *) "Value is", temp1
-        write(10, *) "Accessing u_p indices at ", i, j, k+1
+        !write(10, *) "Value is", temp1
+        !write(10, *) "Accessing u_p indices at ", i, j, k+1
         temp2 = u_p(i,j,k+1)
-        write(10, *) "Value is", temp2
-        write(10, *) "Accessing v_p indices at ", i, j, k+1
+        !write(10, *) "Value is", temp2
+        !write(10, *) "Accessing v_p indices at ", i, j, k+1
         temp2 = v_p(i,j,k+1)
-        write(10, *) "Value is", temp2
-        write(10, *) "u_p kind: ", kind(u_p(i,j,k))
-        write(10, *) "v_p kind: ", kind(v_p(i,j,k))
-        write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
-        write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
-        write(10, *) "No issues with accessing indices for u_p and v_p."
-        flush(10)
+        !write(10, *) "Value is", temp2
+        !write(10, *) "u_p kind: ", kind(u_p(i,j,k))
+        !write(10, *) "v_p kind: ", kind(v_p(i,j,k))
+        !write(10, *) "ustar_p kind: ", kind(ustar_p(i,j,k))
+        !write(10, *) "vstar_p kind: ", kind(vstar_p(i,j,k))
+        !write(10, *) "No issues with accessing indices for u_p and v_p."
+        !flush(10)
         write(10, *) "Performing 1.0-interp arithmetic subtraction"
         temp1 = 1.0-interp
         write(10, *) "1.0-interp:", temp1
@@ -329,8 +329,8 @@ case (i_call_save_before_conv)
         flush(10)
         temp1 = (1.0-interp) * u_p(i,j,k) + interp * u_p(i,j,k+1)
         temp2 = (1.0-interp) * v_p(i,j,k) + interp * v_p(i,j,k+1)
-        write(10, *) "temp1: ", temp1
-        write(10, *) "temp2: ", temp2
+        !write(10, *) "temp1: ", temp1
+        !write(10, *) "temp2: ", temp2
         flush(10)
 
         ! Guard against NaNs/infs
@@ -348,7 +348,7 @@ case (i_call_save_before_conv)
         end if
         flush(10)
 
-        write(10, *) "ieee_is_finite checks passed"
+        !write(10, *) "ieee_is_finite checks passed"
 
         !u_th_n(i,j,k) = (1.0-interp) * u_p(i,j,k)                              &
         !              +      interp  * u_p(i,j,k+1)
