@@ -1362,7 +1362,8 @@ contains
     end if
 
     write(10, *) "l_mom =", l_mom, " l_tracer=", l_tracer
-    if (l_mom) then
+    ! Force momentum fields to be mapped regardless of l_mom flag
+    if ( .true. ) then
       ! Check for the shape of u_in_w3 and v_in_w3
       write(10, *) "Mapping momentum fields using map_w3 with row_length=", row_length, " nlayers=", nlayers
       write(10, *) "Shape of u_in_w3: ", shape(u_in_w3)
@@ -1391,11 +1392,11 @@ contains
             write(10, *) "Invalid value in v_conv at i=", i, " k=", k, " value=", v_conv(i,1,k)
           end if  
           ! Print out the values for checking
-          write(10, *) "u_p(", i, ",1,", k, ") = ", u_p(i,1,k)
-          write(10, *) "v_p(", i, ",1,", k, ") = ", v_p(i,1,k)
-          write(10, *) "u_conv(", i, ",", k, ") = ", u_conv(i,1,k)
-          write(10, *)  "v_conv(", i, ",", k, ") = ", v_conv(i,1,k)
-          flush(10)
+          !write(10, *) "u_p(", i, ",1,", k, ") = ", u_p(i,1,k)
+          !write(10, *) "v_p(", i, ",1,", k, ") = ", v_p(i,1,k)
+          !write(10, *) "u_conv(", i, ",", k, ") = ", u_conv(i,1,k)
+          !write(10, *)  "v_conv(", i, ",", k, ") = ", v_conv(i,1,k)
+          !flush(10)
         end do ! k
       end do
     end if
