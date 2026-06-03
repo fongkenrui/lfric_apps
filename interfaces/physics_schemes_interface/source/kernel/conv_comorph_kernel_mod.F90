@@ -1361,6 +1361,7 @@ contains
       end do
     end if
 
+    write(10, *) "l_mom =", l_mom, " l_tracer=", l_tracer
     if (l_mom) then
       ! Check for the shape of u_in_w3 and v_in_w3
       write(10, *) "Mapping momentum fields using map_w3 with row_length=", row_length, " nlayers=", nlayers
@@ -1368,6 +1369,7 @@ contains
       write(10, *) "Shape of v_in_w3: ", shape(v_in_w3)
       write(10, *) "Shape of u_in_w3_star: ", shape(u_in_w3_star)
       write(10, *) "Shape of v_in_w3_star: ", shape(v_in_w3_star)
+      flush(10)
       do i = 1, row_length
         do k = 1, nlayers
           write(10, *) "Mapping momentum for i=", i, " k=", k, " using map_w3 index ", map_w3(1,i) + k-1
