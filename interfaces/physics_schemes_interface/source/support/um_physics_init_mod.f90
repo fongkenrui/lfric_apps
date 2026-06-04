@@ -139,7 +139,8 @@ module um_physics_init_mod
   use extrusion_config_mod,      only : domain_height, number_of_layers
 
   use formulation_config_mod,    only : moisture_formulation,    &
-                                        moisture_formulation_dry
+                                        moisture_formulation_dry, &
+                                        diagnostic_mode_conv
 
   use microphysics_config_mod,   only : a_ratio_exp_in => a_ratio_exp,       &
                                         a_ratio_fac_in => a_ratio_fac,       &
@@ -809,6 +810,82 @@ contains
     l_reset_neg_delthvu  = .true.
     l_cvdiag_ctop_qmax   = l_cvdiag_ctop_qmax_in
 
+    if ( diagnostic_mode_conv ) then
+      ! Option for running CoMorph in diagnostic mode.
+      ! We need to be careful to only toggle the switches
+      ! that are needed for CoMorph to run without altering
+      ! the behaviour of the other physics schemes that are
+      ! coupled to the model dynamics.
+
+      ! Specifically l_param_conv needs to be off, with the
+      ! convection option left as it were in the namelist.
+      write(log_scratch_space,'(A)')                                         &
+        "Running in diagnostic convection mode - only CoMorph options will be set"
+      call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+      fac_qsat     = 0.350_r_um
+      mparwtr      = 1.0000e-3_r_um
+      qlmin        = qlmin_in
+
+      ! CoMorph-specific options
+      i_convection_vn = i_cv_comorph
+
+      ! conv_diag options which are different when using Comorph
+      cape_bottom          = imdi
+      cape_top             = imdi
+      cldbase_opt_dp       = rmdi
+      cldbase_opt_sh       = rmdi
+      ent_fac_dp           = rmdi
+      iconv_congestus      = imdi
+      iconv_deep           = imdi
+      w_cape_limit         = rmdi
+      l_reset_neg_delthvu  = .false.
+
+      ! 6a conv options used in Comorph kernel
+      l_mom       = .true.
+      l_ccrad     = .true.
+      l_3d_cca    = .true.
+
+      ! main Comorph options
+      ass_min_radius = 500.0_r_um
+      autoc_opt = 2
+      cf_conv_fac = 2.0_r_um
+      coef_auto = 0.025_r_um
+      col_eff_coef = 1.0_r_um
+      core_ent_fac = 1.0_r_um
+      drag_coef_cond = 0.5_r_um
+      drag_coef_par = 0.5_r_um
+      dx_ref = dx_ref_in
+      ent_coef = 0.2_r_um
+      hetnuc_temp = 263.0_r_um
+      l_core_ent_cmr = .true.
+      l_resdep_precipramp = resdep_precipramp
+      n_dndraft_types = 1
+      overlap_power = 0.5_r_um
+      par_gen_core_fac = 3.0_r_um
+      par_gen_mass_fac = par_gen_mass_fac_in
+      par_gen_pert_fac = 0.333_r_um
+      par_gen_rhpert = par_gen_rhpert_in
+      par_radius_evol_method = 3
+      par_radius_init_method = 4
+      par_radius_knob = 0.45_r_um
+      par_radius_knob_max = 2.0_r_um
+      par_radius_ppn_max = par_radius_ppn_max_in
+      r_fac_tdep_n = 8.18_r_um
+      rain_area_min = 0.05_r_um
+      rho_rim = 600.0_r_um
+      vent_factor = 0.25_r_um
+      wind_w_buoy_fac = 1.0_r_um
+      wind_w_fac = 1.0_r_um
+
+      ! check the namelist
+      ! This only checks the above main comorph options
+      call check_run_comorph()
+
+
+
+    end if
+
     if ( convection == convection_um ) then
 
       ! Options needed by all convection schemes
@@ -995,6 +1072,7 @@ contains
     ! Flags for diagnostic output are set here
     call set_convection_output_flags( )
     ! Check the contents of the convection parameters module
+    ! Note that if l_param_conv is false the checks won't run
     call check_run_convection()
 
     ! ----------------------------------------------------------------
