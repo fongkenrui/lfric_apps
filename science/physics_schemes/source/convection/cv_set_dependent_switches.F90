@@ -205,7 +205,7 @@ end if
 !-------------------------------------------------------------------------------
 ! 3.0 - Settings for the CoMorph convection scheme
 !-------------------------------------------------------------------------------
-if ( i_convection_vn == i_cv_comorph ) then
+if ( i_convection_vn == i_cv_comorph .and. l_param_conv ) then
 
   ! CoMorph is written in mixing-ratios, so set flag for convection
   ! using mixing-ratios to true:
