@@ -139,7 +139,8 @@ module um_physics_init_mod
   use extrusion_config_mod,      only : domain_height, number_of_layers
 
   use formulation_config_mod,    only : moisture_formulation,    &
-                                        moisture_formulation_dry
+                                        moisture_formulation_dry, &
+                                        diagnostic_mode_conv
 
   use microphysics_config_mod,   only : a_ratio_exp_in => a_ratio_exp,       &
                                         a_ratio_fac_in => a_ratio_fac,       &
@@ -808,6 +809,17 @@ contains
     w_cape_limit         = 0.4_r_um
     l_reset_neg_delthvu  = .true.
     l_cvdiag_ctop_qmax   = l_cvdiag_ctop_qmax_in
+
+    if ( diagnostic_mode_conv ) then
+      ! Option for running CoMorph in diagnostic mode.
+      ! We need to be careful to only toggle the switches
+      ! that are needed for CoMorph to run without altering
+      ! the behaviour of the other physics schemes that are
+      ! coupled to the model dynamics.
+
+
+
+    end if
 
     if ( convection == convection_um ) then
 
