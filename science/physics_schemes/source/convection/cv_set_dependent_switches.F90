@@ -31,7 +31,7 @@ use cv_dependent_switch_mod, only:                                             &
 use cv_run_mod, only:                                                          &
   icvdiag, adapt, termconv,                                                    &
   i_convection_vn, i_convection_vn_6a, i_cv_comorph,                           &
-  l_cv_conserve_check, l_mr_conv, l_wvar_for_conv
+  l_cv_conserve_check, l_mr_conv, l_wvar_for_conv, l_param_conv
 
 use bl_option_mod, only: l_calc_tau_at_p
 
