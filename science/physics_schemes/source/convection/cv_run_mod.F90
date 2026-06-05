@@ -194,6 +194,9 @@ logical :: l_wvar_for_conv = .false.! Flag to calculate boundary-layer
                                     ! turbulent vertical velocity variance
                                     ! for use by the convection scheme.
 
+logical :: l_diag_comorph = .false. ! Flag for running CoMorph scheme diagnostically
+                                    ! with the necessary physics dependencies on.
+
 !===========================================================================
 ! Integer options set from GUI
 !===========================================================================
@@ -866,7 +869,7 @@ call  chk_var(i_convection_vn,'i_convection_vn',                               &
                i_cv_llcs, i_cv_betts, i_cv_comorph])
 
 !---------------------------------------------------------------------------
-! Check convective diagnosis options even when running without convection
+! Check convective diagnosis options even when running without convectionct
 !---------------------------------------------------------------------------
 
 call chk_var(icvdiag,'icvdiag','[1:8]')

@@ -399,7 +399,7 @@ contains
          tau_conv_prog_precip, tau_conv_prog_dtheta, tau_conv_prog_dq,     &
          prog_ent_grad, prog_ent_int, prog_ent_max, prog_ent_min,          &
          ent_fac_sh, c_mass_sh, orig_mdet_fac, i_cv_comorph,               &
-         l_cvdiag_ctop_qmax
+         l_cvdiag_ctop_qmax, l_diag_comorph
     use cv_param_mod, only: mtrig_ntml, md_pert_efrac
     use cv_stash_flg_mod, only: set_convection_output_flags
     use cv_set_dependent_switches_mod, only: cv_set_dependent_switches
@@ -823,12 +823,14 @@ contains
         "Running in diagnostic convection mode - only CoMorph options will be set"
       call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
+      l_diag_comorph = .true.
+
       fac_qsat     = 0.350_r_um
       mparwtr      = 1.0000e-3_r_um
       qlmin        = qlmin_in
 
-      ! CoMorph-specific options
-      i_convection_vn = i_cv_comorph
+      ! Leave i_convection_vn unset since many physics depend on this
+      ! i_convection_vn = i_cv_comorph
 
       ! conv_diag options which are different when using Comorph
       cape_bottom          = imdi
@@ -839,11 +841,19 @@ contains
       iconv_congestus      = imdi
       iconv_deep           = imdi
       w_cape_limit         = rmdi
+      ! Double check the dependencies of this flag!
+      ! This should be fine to set
       l_reset_neg_delthvu  = .false.
 
       ! 6a conv options used in Comorph kernel
       l_mom       = .true.
+      ! Double check the dependencies of this flag!
+      ! rad_input_mod has some indirect dependencies on l_ccrad
+      ! This shouldn't affect our purposes since its for experimental
+      ! rad schemes
       l_ccrad     = .true.
+      ! ukca_init_mod calls photol_setup that has l_3d_cca as an argument
+      ! Module variable is not imported from cv_run_mod.
       l_3d_cca    = .true.
 
       ! main Comorph options
@@ -878,11 +888,8 @@ contains
       wind_w_buoy_fac = 1.0_r_um
       wind_w_fac = 1.0_r_um
 
-      ! check the namelist
-      ! This only checks the above main comorph options
-      call check_run_comorph()
-
-
+      ! No point checking
+      ! call check_run_comorph()
 
     end if
 
@@ -1171,7 +1178,7 @@ contains
       case(scheme_pc2)
         i_cld_vn                     = i_cld_pc2
         dbsdtbs_turb_0               = real( dbsdtbs_turb_0_in, r_um )
-        if (cv_scheme == cv_scheme_comorph .and. l_param_conv) then
+        if (cv_scheme == cv_scheme_comorph) then
           forced_cu = forced_cu_cca
           i_pc2_homog_g_method = i_pc2_homog_g_width
           l_pc2_homog_conv_pressure = .true.
