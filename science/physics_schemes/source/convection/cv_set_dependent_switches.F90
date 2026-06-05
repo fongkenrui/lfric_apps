@@ -31,7 +31,7 @@ use cv_dependent_switch_mod, only:                                             &
 use cv_run_mod, only:                                                          &
   icvdiag, adapt, termconv,                                                    &
   i_convection_vn, i_convection_vn_6a, i_cv_comorph,                           &
-  l_cv_conserve_check, l_mr_conv, l_wvar_for_conv, l_param_conv
+  l_cv_conserve_check, l_mr_conv, l_wvar_for_conv, l_param_conv, l_diag_comorph
 
 use bl_option_mod, only: l_calc_tau_at_p
 
@@ -217,6 +217,12 @@ if ( i_convection_vn == i_cv_comorph ) then
   l_calc_tau_at_p = .true.
   l_wvar_for_conv = .true.
 
+end if
+
+if (l_diag_comorph) then
+  ! Not sure if this affects anything since I don't see any modules importing this
+  ! But just set it to be safe.
+  l_mr_conv = .true.
 end if
 
 !-------------------------------------------------------------------------------
