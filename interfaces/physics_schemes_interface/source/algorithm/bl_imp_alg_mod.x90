@@ -329,22 +329,21 @@ contains
 
     ! Map the convection wind increments into w2 space
     call u_physics%copy_field_properties(du_conv_w2)
-    if ( convection == convection_um ) then
-      if ( cv_scheme == cv_scheme_gregory_rowntree .or. &
-          cv_scheme == cv_scheme_comorph ) then
-        if ( subroutine_timers ) call timer("bl_imp_alg")
-        call theta%copy_field_properties(dw_conv)
-        call invoke(setval_c(dw_conv, 0.0_r_def) )
-        call set_wind(du_conv_w2, du_conv, dv_conv, dw_conv)
-        call dw_conv%field_final()
-        ! Set wind provides output in dynamics quantites, need to remove
-        ! dA scaling for physics
-        call invoke(inc_X_divideby_Y(du_conv_w2, dA) )
-        if ( subroutine_timers ) call timer("bl_imp_alg")
-      else
-        call invoke(setval_c(du_conv_w2, 0.0_r_def) )
-      end if
+    if ( cv_scheme == cv_scheme_gregory_rowntree .or. &
+        cv_scheme == cv_scheme_comorph ) then
+      if ( subroutine_timers ) call timer("bl_imp_alg")
+      call theta%copy_field_properties(dw_conv)
+      call invoke(setval_c(dw_conv, 0.0_r_def) )
+      call set_wind(du_conv_w2, du_conv, dv_conv, dw_conv)
+      call dw_conv%field_final()
+      ! Set wind provides output in dynamics quantites, need to remove
+      ! dA scaling for physics
+      call invoke(inc_X_divideby_Y(du_conv_w2, dA) )
+      if ( subroutine_timers ) call timer("bl_imp_alg")
+    else
+      call invoke(setval_c(du_conv_w2, 0.0_r_def) )
     end if
+
 
     ! Set up required variables in w2 space
     call u_physics%copy_field_properties(dissip)

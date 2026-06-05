@@ -1172,7 +1172,7 @@ contains
       case(scheme_pc2)
         i_cld_vn                     = i_cld_pc2
         dbsdtbs_turb_0               = real( dbsdtbs_turb_0_in, r_um )
-        if (cv_scheme == cv_scheme_comorph .and. l_param_conv) then
+        if (cv_scheme == cv_scheme_comorph) then
           forced_cu = forced_cu_cca
           i_pc2_homog_g_method = i_pc2_homog_g_width
           l_pc2_homog_conv_pressure = .true.
