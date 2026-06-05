@@ -1,0 +1,315 @@
+// Diagnostic-mode convection dependency graph (DOT format)
+// Nodes are variables or subroutines. This file focuses on modules
+// relevant to `lfric_atm` and excludes known convection-kernel
+// modules (CoMorph, gregory-rowntree, 6A) and the Lambert-Lewis scheme.
+
+digraph diagnostic_mode_conv {
+  // root switches
+  diagnostic_mode_conv;
+  convection;
+  cv_scheme;
+  l_param_conv;
+  i_convection_vn;
+
+  // All variables assigned inside the diagnostic_mode_conv block
+  fac_qsat; mparwtr; qlmin;
+  cape_bottom; cape_top;
+  cldbase_opt_dp; cldbase_opt_sh; ent_fac_dp;
+  iconv_congestus; iconv_deep; w_cape_limit;
+  l_reset_neg_delthvu;
+  l_mom; l_ccrad; l_3d_cca;
+  ass_min_radius; autoc_opt; cf_conv_fac; coef_auto; col_eff_coef;
+  core_ent_fac; drag_coef_cond; drag_coef_par; dx_ref; ent_coef;
+  hetnuc_temp; l_core_ent_cmr; l_resdep_precipramp; n_dndraft_types;
+  overlap_power; par_gen_core_fac; par_gen_mass_fac; par_gen_pert_fac;
+  par_gen_rhpert; par_radius_evol_method; par_radius_init_method;
+  par_radius_knob; par_radius_knob_max; par_radius_ppn_max; r_fac_tdep_n;
+  rain_area_min; rho_rim; vent_factor; wind_w_buoy_fac; wind_w_fac;
+
+  // Higher-level routines/modules called later which derive or consume switches
+  cv_set_dependent_switches;
+  set_convection_output_flags;
+  ukca_init;
+  aerosol_ukca_dust_only_init;
+
+  // Cloud/microphysics derived settings influenced by cv_scheme and l_param_conv
+  forced_cu; i_pc2_homog_g_method; l_pc2_homog_conv_pressure; i_pc2_init_method;
+
+  // Boundary-layer routines and modules (discovered with rigorous retrace)
+  kmkh_mod; kmkhz_9c_mod; bdy_expl2_mod; bl_exp_kernel_mod; bl_imp2_kernel_mod;
+  
+  // UKCA modules
+  ukca_scavenging_mod;
+  
+  // Convection-diagnostic modules
+  conv_diag_comp_mod;
+  
+  // PC2 coupling kernel
+  pc2_conv_coupling_kernel_mod;
+  
+  // Microphysics kernels
+  mphys_kernel_mod;
+
+  // Additional non-convection-kernel consumers discovered by manual retrace
+  slow_physics_alg_mod; create_physics_prognostics_mod;
+  tuning_segments_mod; electric_inputs_mod;
+  rad_cloud_alg_mod; atmos_physics2_save_restore_mod;
+  fast_physics_alg_mod; bl_imp_alg_mod; pc2_conv_coupling_alg_mod;
+  cv_stash_flg_mod;
+
+  // Primary edges: diagnostic mode sets many CoMorph variables
+  diagnostic_mode_conv -> fac_qsat;
+  diagnostic_mode_conv -> mparwtr;
+  diagnostic_mode_conv -> qlmin;
+  diagnostic_mode_conv -> i_convection_vn; // set to i_cv_comorph
+  diagnostic_mode_conv -> cape_bottom;
+  diagnostic_mode_conv -> cape_top;
+  diagnostic_mode_conv -> cldbase_opt_dp;
+  diagnostic_mode_conv -> cldbase_opt_sh;
+  diagnostic_mode_conv -> ent_fac_dp;
+  diagnostic_mode_conv -> iconv_congestus;
+  diagnostic_mode_conv -> iconv_deep;
+  diagnostic_mode_conv -> w_cape_limit;
+  diagnostic_mode_conv -> l_reset_neg_delthvu;
+  diagnostic_mode_conv -> l_mom;
+  diagnostic_mode_conv -> l_ccrad;
+  diagnostic_mode_conv -> l_3d_cca;
+  diagnostic_mode_conv -> ass_min_radius;
+  diagnostic_mode_conv -> autoc_opt;
+  diagnostic_mode_conv -> cf_conv_fac;
+  diagnostic_mode_conv -> coef_auto;
+  diagnostic_mode_conv -> col_eff_coef;
+  diagnostic_mode_conv -> core_ent_fac;
+  diagnostic_mode_conv -> drag_coef_cond;
+  diagnostic_mode_conv -> drag_coef_par;
+  diagnostic_mode_conv -> dx_ref;
+  diagnostic_mode_conv -> ent_coef;
+  diagnostic_mode_conv -> hetnuc_temp;
+  diagnostic_mode_conv -> l_core_ent_cmr;
+  diagnostic_mode_conv -> l_resdep_precipramp;
+  diagnostic_mode_conv -> n_dndraft_types;
+  diagnostic_mode_conv -> overlap_power;
+  diagnostic_mode_conv -> par_gen_core_fac;
+  diagnostic_mode_conv -> par_gen_mass_fac;
+  diagnostic_mode_conv -> par_gen_pert_fac;
+  diagnostic_mode_conv -> par_gen_rhpert;
+  diagnostic_mode_conv -> par_radius_evol_method;
+  diagnostic_mode_conv -> par_radius_init_method;
+  diagnostic_mode_conv -> par_radius_knob;
+  diagnostic_mode_conv -> par_radius_knob_max;
+  diagnostic_mode_conv -> par_radius_ppn_max;
+  diagnostic_mode_conv -> r_fac_tdep_n;
+  diagnostic_mode_conv -> rain_area_min;
+  diagnostic_mode_conv -> rho_rim;
+  diagnostic_mode_conv -> vent_factor;
+  diagnostic_mode_conv -> wind_w_buoy_fac;
+  diagnostic_mode_conv -> wind_w_fac;
+
+  // Derived-step calls (called after convection block in um_physics_init)
+  l_param_conv -> cv_set_dependent_switches;
+  cv_scheme -> cv_set_dependent_switches;
+  i_convection_vn -> cv_set_dependent_switches;
+  cv_scheme -> set_convection_output_flags;
+  i_convection_vn -> set_convection_output_flags;
+
+  // Cloud behaviour links
+  cv_scheme -> forced_cu;
+  l_param_conv -> forced_cu;
+  forced_cu -> i_pc2_homog_g_method;
+  forced_cu -> l_pc2_homog_conv_pressure;
+  pc2ini -> i_pc2_init_method;
+
+  // Second-order dependencies discovered (non-convection modules affected)
+  // UKCA: `l_3d_cca` is consulted by `ukca_init` and influences UKCA setup
+  l_3d_cca -> ukca_init;
+  // `l_param_conv` is passed into UKCA initialisation routines
+  l_param_conv -> ukca_init;
+  // `l_param_conv` also controls a dust-only initialisation path
+  l_param_conv -> aerosol_ukca_dust_only_init;
+
+  // Module consumers of convection variables (higher-order links)
+  // Convection-run switches are read by many non-convection modules:
+  i_convection_vn -> cv_set_dependent_switches;
+  l_param_conv -> cv_set_dependent_switches;
+
+  // Radiation reads convection flags (e.g. cloud-radiation coupling)
+  i_convection_vn -> rad_input_mod;
+  l_ccrad -> rad_input_mod;
+
+  // Diffusion/turbulence uses cloud-base closure option
+  cldbase_opt_sh -> turb_diff_mod;
+
+  // Microphysics / large-scale precipitation consumers
+  i_convection_vn -> mphys_inputs_mod;
+  l_param_conv -> mphys_inputs_mod;
+
+  // Cloud inputs and PC2 consumers
+  l_param_conv -> cloud_inputs_mod;
+  i_convection_vn -> cloud_inputs_mod;
+  i_cld_vn -> cloud_inputs_mod;
+
+  // PC2-specific modules read forced_cu and PC2 switches
+  forced_cu -> pc2_bl_forced_cu;
+  forced_cu -> pc2_homog_plus_turb;
+  i_pc2_homog_g_method -> pc2_homog_plus_turb;
+  i_pc2_init_method -> pc2_initiation_ctl;
+
+  // CASIM and microphysics linking
+  i_cld_vn -> casim_set_dependent_switches_mod;
+  casim_aerosol_option -> mphys_inputs_mod;
+  
+  // CASIM setter produces the options based on cloud settings
+  casim_set_dependent_switches_mod -> casim_moments_option;
+  casim_set_dependent_switches_mod -> casim_aerosol_option;
+  
+  // Convection choices can influence CASIM option selection via cloud coupling
+  cv_scheme -> casim_set_dependent_switches_mod;
+  l_param_conv -> casim_set_dependent_switches_mod;
+  
+  // Large-scale cloud & precipitation modules that read convection flags
+  cloud_inputs_mod; ls_cld; ls_ppnc; pc2_bl_forced_cu; pc2_homog_plus_turb; 
+  pc2_initiation_ctl; casim_set_dependent_switches_mod; mphys_inputs_mod;
+  
+  // Direct edges from convection switches to cloud/precip modules
+  l_param_conv -> ls_cld;
+  i_convection_vn -> ls_cld;
+  l_param_conv -> ls_ppnc;
+  i_convection_vn -> ls_ppnc;
+  
+  // Microphysics inputs module consumes CASIM & convection flags
+  casim_moments_option -> mphys_inputs_mod;
+  casim_aerosol_option -> mphys_inputs_mod;
+  i_convection_vn -> mphys_inputs_mod;
+  
+  // Radiation and diffusion modules consulted earlier
+  rad_input_mod; turb_diff_mod;
+  l_ccrad -> rad_input_mod;
+  i_convection_vn -> rad_input_mod;
+  cldbase_opt_sh -> turb_diff_mod;
+  
+  // PC2 consumers (explicit modules) read forced_cu and PC2 switches
+  forced_cu -> pc2_bl_forced_cu;
+  i_pc2_homog_g_method -> pc2_homog_plus_turb;
+  i_pc2_init_method -> pc2_initiation_ctl;
+
+  // ------------------------------
+  // Explicit higher-order cloud/microphysics linkages
+  // ------------------------------
+  // `cv_scheme` and `l_param_conv` together influence PC2/cloud coupling
+  cv_scheme -> i_cld_vn;           // cv_scheme affects cloud/convection interactions
+  l_param_conv -> i_cld_vn;       // l_param_conv selection can change cloud coupling
+
+  // When PC2 cloud scheme is used, `forced_cu` and `i_pc2_*` settings are driven
+  // by the combination of `cv_scheme` and `l_param_conv` (see um_physics_init)
+  cv_scheme -> i_pc2_conv_coupling;
+  l_param_conv -> i_pc2_conv_coupling;
+
+  // Effects on CASIM/microphysics: i_cld_vn controls CASIM coupling flags
+  i_cld_vn -> l_prf_cfrac;
+  i_cld_vn -> l_abelshipway;
+  i_cld_vn -> casim_set_dependent_switches;
+
+  // CASIM options are passed into the microphysics switch setter
+  casim_moments_option -> set_mphys_switches;
+  casim_aerosol_option -> set_mphys_switches;
+
+  // Microphysics initialisation consumes derived options
+  casim_moments_option -> mphys_init;
+  casim_aerosol_option -> mphys_init;
+
+  // Indirect/conditional links noted:
+  // - If `cv_scheme == cv_scheme_comorph` and `l_param_conv` is true,
+  //   then `forced_cu` is set to `forced_cu_cca` which changes PC2 behaviour.
+  // - Many comorph knobs do not appear to be read outside `um_physics_init`,
+  //   except for a few (e.g. `l_3d_cca`) which are consulted by UKCA.
+
+
+  // Notes (not edges):
+  // - The code comments indicate that `diagnostic_mode_conv` expects `l_param_conv` to be
+  //   OFF for a purely diagnostic convective parametrization, but `um_physics_init`
+  //   does not flip `l_param_conv` itself; this is therefore a hidden requirement.
+  // - Most CoMorph-specific knobs (par_*, ass_min_radius, etc.) are only referenced
+  //   inside `um_physics_init` or comorph namelist modules; only a few (e.g. `l_3d_cca`)
+  //   are read elsewhere (UKCA). This means second-order effects on non-convective
+  //   schemes are limited but present (notably UKCA).
+  // - Lambert-Lewis and other convection-kernel internals are intentionally ignored.
+  // - Modules related to coupling (paths containing 'coupled' or 'coupling') are
+  //   excluded from the analysis as requested.
+
+  // =====================================================================
+  // ADDITIONAL DISCOVERED LINKS (RIGOROUS RETRACE)
+  // =====================================================================
+  
+  // Boundary layer (KMKH / BDY_EXPL2) depends on l_param_conv
+  // (decides level treatment, cumulus layer inclusion)
+  l_param_conv -> kmkh_mod;
+  l_param_conv -> bdy_expl2_mod;
+  
+  // Boundary layer also uses i_convection_vn (e.g., bl_exp_kernel checks i_convection_vn)
+  i_convection_vn -> bl_exp_kernel_mod;
+  i_convection_vn -> bdy_expl2_mod;
+  
+  // UKCA scavenging depends on i_convection_vn (plume scavenging for 5A, 6A, CoMorph)
+  i_convection_vn -> ukca_scavenging_mod;
+  
+  // Convection calls UKCA scavenging (convec2_mod uses ukca_plume_scav)
+  cv_scheme -> ukca_scavenging_mod;
+  
+  // PC2 coupling checked in convection diagnostics (forced_cu depends on cv_scheme/l_param_conv)
+  // and controls plume diagnostics
+  forced_cu -> conv_diag_comp_mod;
+  i_cld_vn -> conv_diag_comp_mod;
+  
+  // Microphysics kernel (bl_imp2_kernel, mphys_kernel) read l_param_conv, i_cld_vn
+  l_param_conv -> bl_imp2_kernel_mod;
+  l_param_conv -> mphys_kernel_mod;
+  i_cld_vn -> bl_imp2_kernel_mod;
+  i_cld_vn -> mphys_kernel_mod;
+  l_pc2_homog_conv_pressure -> pc2_conv_coupling_kernel_mod;
+  
+  // Additional boundary-layer modules (discovered from bdy_expl2 callers)
+  // bdy_expl2 calls kmkh and kmkhz_9c
+  bdy_expl2_mod -> kmkh_mod;
+  bdy_expl2_mod -> kmkhz_9c_mod;
+  // both kmkh and kmkhz_9c use l_param_conv
+  l_param_conv -> kmkhz_9c_mod;
+
+  // create_physics_prognostics gates cloud prognostics for CoMorph and
+  // pressure increment field on l_pc2_homog_conv_pressure
+  cv_scheme -> create_physics_prognostics_mod;
+  l_pc2_homog_conv_pressure -> create_physics_prognostics_mod;
+
+  // Segment tuning/validation depends on active parametrized convection
+  i_convection_vn -> tuning_segments_mod;
+  l_param_conv -> tuning_segments_mod;
+
+  // Lightning input validation requires parametrized convection for
+  // convection-based (Price-Rind) electric method
+  l_param_conv -> electric_inputs_mod;
+
+  // Radiation cloud pre-processing uses l_param_conv for CASIM ice activation
+  l_param_conv -> rad_cloud_alg_mod;
+
+  // Legacy AP2 save/restore uses cape bounds set by diagnostic_mode_conv
+  cape_bottom -> atmos_physics2_save_restore_mod;
+  cape_top -> atmos_physics2_save_restore_mod;
+
+  // Convection diagnostics stash flags branch on convection version
+  i_convection_vn -> cv_stash_flg_mod;
+
+  // Fast/slow physics algorithm dispatch points using cv_scheme
+  cv_scheme -> fast_physics_alg_mod;
+  cv_scheme -> slow_physics_alg_mod;
+
+  // Diagnostic-mode flag triggers standalone CoMorph diagnostics in fast physics
+  diagnostic_mode_conv -> fast_physics_alg_mod;
+
+  // Implicit boundary layer algorithm branches on cv_scheme for conv wind mapping
+  cv_scheme -> bl_imp_alg_mod;
+
+  // PC2-convection coupling algorithm has cv_scheme-dependent CASIM path
+  cv_scheme -> pc2_conv_coupling_alg_mod;
+  
+  // Cosmetic: group important root nodes
+  { rank=source; diagnostic_mode_conv; convection; cv_scheme; l_param_conv; i_convection_vn }
+}
