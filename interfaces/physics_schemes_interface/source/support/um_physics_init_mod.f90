@@ -1081,9 +1081,7 @@ contains
     ! Flags for diagnostic output are set here
     call set_convection_output_flags( )
     ! Check the contents of the convection parameters module
-    ! Note: this check is fairly aggressive and will complain if conv params are set even though
-    ! l_param_conv is off
-    ! call check_run_convection()
+    call check_run_convection()
 
     ! ----------------------------------------------------------------
     ! UM convection scheme settings for plume scavenging of UKCA
