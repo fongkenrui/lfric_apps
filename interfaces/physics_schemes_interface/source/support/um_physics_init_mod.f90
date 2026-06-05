@@ -842,12 +842,18 @@ contains
       iconv_deep           = imdi
       w_cape_limit         = rmdi
       ! Double check the dependencies of this flag!
+      ! This should be fine to set
       l_reset_neg_delthvu  = .false.
 
       ! 6a conv options used in Comorph kernel
       l_mom       = .true.
       ! Double check the dependencies of this flag!
+      ! rad_input_mod has some indirect dependencies on l_ccrad
+      ! This shouldn't affect our purposes since its for experimental
+      ! rad schemes
       l_ccrad     = .true.
+      ! ukca_init_mod calls photol_setup that has l_3d_cca as an argument
+      ! Module variable is not imported from cv_run_mod.
       l_3d_cca    = .true.
 
       ! main Comorph options
