@@ -836,6 +836,8 @@ contains
       cape_bottom          = imdi
       cape_top             = imdi
       cldbase_opt_dp       = rmdi
+      ! cldbase_opt_sh gets consumed by turb_diff_mod, but only as a 
+    ! variable to assign values to.
       cldbase_opt_sh       = rmdi
       ent_fac_dp           = rmdi
       iconv_congestus      = imdi
@@ -1079,9 +1081,7 @@ contains
     ! Flags for diagnostic output are set here
     call set_convection_output_flags( )
     ! Check the contents of the convection parameters module
-    ! Note: this check is fairly aggressive and will complain if conv params are set even though
-    ! l_param_conv is off
-    ! call check_run_convection()
+    call check_run_convection()
 
     ! ----------------------------------------------------------------
     ! UM convection scheme settings for plume scavenging of UKCA

@@ -114,7 +114,8 @@ module create_physics_prognostics_mod
                                              l_conv_prog_dtheta,                &
                                              l_conv_prog_dq,                    &
                                              adv_conv_prog_dtheta,              &
-                                             adv_conv_prog_dq
+                                             adv_conv_prog_dq,                  &
+                                             l_diag_comorph
   use mphys_inputs_mod, only: casim_iopt_act, l_mcr_precfrac
   use bl_option_mod, only: l_calc_tau_at_p
   use cloud_inputs_mod, only: l_pc2_homog_conv_pressure
@@ -172,7 +173,8 @@ contains
     call processor%apply(make_spec('exner_wth_n', main%derived, Wtheta))
 
     if ( boundary_layer == boundary_layer_um .or.                              &
-         convection     == convection_um ) then
+         convection     == convection_um     .or. 
+         l_diag_comorph ) then
 
       call processor%apply(make_spec('theta_star', main%derived, Wtheta))
 
@@ -180,7 +182,8 @@ contains
 
     if ( boundary_layer == boundary_layer_um .or.                              &
          convection     == convection_um     .or.                              &
-         smagorinsky ) then
+         smagorinsky                         .or. 
+         l_diag_comorph ) then
 
       call processor%apply(make_spec('shear', main%derived, Wtheta, &
                                      empty = (.not. smagorinsky) ))
@@ -200,7 +203,8 @@ contains
 
     if ( boundary_layer               == boundary_layer_um .or.                &
          convection                   == convection_um     .or.                &
-         stochastic_physics_placement == stochastic_physics_placement_fast ) then
+         stochastic_physics_placement == stochastic_physics_placement_fast .or. &
+         l_diag_comorph ) then
 
       call processor%apply(make_spec('u_in_w3_star', main%derived, W3))
       call processor%apply(make_spec('v_in_w3_star', main%derived, W3))
@@ -646,7 +650,7 @@ contains
     !========================================================================
 
     ! 2D fields, might need checkpointing
-    if (convection == convection_um) then
+    if (convection == convection_um .or. l_diag_comorph) then
       checkpoint_flag = .true.
     else
       checkpoint_flag = .false.
@@ -659,7 +663,7 @@ contains
         ckp=(checkpoint_flag .and. srf_ex_cnv_gust)))
 
     ! 3D fields, might need checkpointing
-    if (convection == convection_um) then
+    if (convection == convection_um .or. l_diag_comorph) then
       select case (cloud_representation)
       case (cloud_representation_combined,                                      &
             cloud_representation_conv_strat_liq_ice,                            &
@@ -766,7 +770,7 @@ contains
     call processor%apply(make_spec('tau_hom_bm', main%cloud, Wtheta))
     call processor%apply(make_spec('tau_mph_bm', main%cloud, Wtheta))
 
-    is_empty = (cv_scheme /= cv_scheme_comorph)
+    is_empty = (cv_scheme /= cv_scheme_comorph) .and. (.not. l_diag_comorph)
     call processor%apply(make_spec('cf_liq_n', main%cloud, Wtheta, &
          empty = is_empty))
     call processor%apply(make_spec('cf_fro_n', main%cloud, Wtheta, &
