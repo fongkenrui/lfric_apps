@@ -173,7 +173,7 @@ contains
     call processor%apply(make_spec('exner_wth_n', main%derived, Wtheta))
 
     if ( boundary_layer == boundary_layer_um .or.                              &
-         convection     == convection_um     .or. 
+         convection     == convection_um     .or.                              & 
          l_diag_comorph ) then
 
       call processor%apply(make_spec('theta_star', main%derived, Wtheta))
@@ -182,7 +182,7 @@ contains
 
     if ( boundary_layer == boundary_layer_um .or.                              &
          convection     == convection_um     .or.                              &
-         smagorinsky                         .or. 
+         smagorinsky                         .or.                              &
          l_diag_comorph ) then
 
       call processor%apply(make_spec('shear', main%derived, Wtheta, &
