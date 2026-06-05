@@ -836,6 +836,8 @@ contains
       cape_bottom          = imdi
       cape_top             = imdi
       cldbase_opt_dp       = rmdi
+      ! cldbase_opt_sh gets consumed by turb_diff_mod, but only as a 
+    ! variable to assign values to.
       cldbase_opt_sh       = rmdi
       ent_fac_dp           = rmdi
       iconv_congestus      = imdi
