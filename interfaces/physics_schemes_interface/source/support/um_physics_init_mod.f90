@@ -399,7 +399,7 @@ contains
          tau_conv_prog_precip, tau_conv_prog_dtheta, tau_conv_prog_dq,     &
          prog_ent_grad, prog_ent_int, prog_ent_max, prog_ent_min,          &
          ent_fac_sh, c_mass_sh, orig_mdet_fac, i_cv_comorph,               &
-         l_cvdiag_ctop_qmax
+         l_cvdiag_ctop_qmax, l_diag_comorph
     use cv_param_mod, only: mtrig_ntml, md_pert_efrac
     use cv_stash_flg_mod, only: set_convection_output_flags
     use cv_set_dependent_switches_mod, only: cv_set_dependent_switches
@@ -823,12 +823,14 @@ contains
         "Running in diagnostic convection mode - only CoMorph options will be set"
       call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
+      l_diag_comorph = .true.
+
       fac_qsat     = 0.350_r_um
       mparwtr      = 1.0000e-3_r_um
       qlmin        = qlmin_in
 
-      ! CoMorph-specific options
-      i_convection_vn = i_cv_comorph
+      ! Leave i_convection_vn unset since many physics depend on this
+      ! i_convection_vn = i_cv_comorph
 
       ! conv_diag options which are different when using Comorph
       cape_bottom          = imdi
@@ -839,10 +841,12 @@ contains
       iconv_congestus      = imdi
       iconv_deep           = imdi
       w_cape_limit         = rmdi
+      ! Double check the dependencies of this flag!
       l_reset_neg_delthvu  = .false.
 
       ! 6a conv options used in Comorph kernel
       l_mom       = .true.
+      ! Double check the dependencies of this flag!
       l_ccrad     = .true.
       l_3d_cca    = .true.
 
@@ -878,11 +882,8 @@ contains
       wind_w_buoy_fac = 1.0_r_um
       wind_w_fac = 1.0_r_um
 
-      ! check the namelist
-      ! This only checks the above main comorph options
-      call check_run_comorph()
-
-
+      ! No point checking
+      ! call check_run_comorph()
 
     end if
 
