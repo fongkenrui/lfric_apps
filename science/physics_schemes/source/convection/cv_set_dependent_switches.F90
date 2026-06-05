@@ -205,7 +205,9 @@ end if
 !-------------------------------------------------------------------------------
 ! 3.0 - Settings for the CoMorph convection scheme
 !-------------------------------------------------------------------------------
-if ( i_convection_vn == i_cv_comorph ) then
+if ( i_convection_vn == i_cv_comorph .or. l_diag_comorph ) then
+  ! These flags also need to be turned on to get the right inputs
+  ! to diagnostic CoMorph
 
   ! CoMorph is written in mixing-ratios, so set flag for convection
   ! using mixing-ratios to true:
@@ -217,12 +219,6 @@ if ( i_convection_vn == i_cv_comorph ) then
   l_calc_tau_at_p = .true.
   l_wvar_for_conv = .true.
 
-end if
-
-if (l_diag_comorph) then
-  ! Not sure if this affects anything since I don't see any modules importing this
-  ! But just set it to be safe.
-  l_mr_conv = .true.
 end if
 
 !-------------------------------------------------------------------------------
