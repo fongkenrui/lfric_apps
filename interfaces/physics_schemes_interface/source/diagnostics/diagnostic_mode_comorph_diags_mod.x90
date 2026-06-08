@@ -470,7 +470,8 @@ contains
                                                        detrain_up_coarse,            &
                                                        detrain_down_coarse,          &
                                                        massflux_up_half_coarse,      &
-                                                       bl_type_ind_coarse)
+                                                       bl_type_ind_coarse,           &
+                                                       precfrac_coarse)
 
     implicit none
 
@@ -497,6 +498,7 @@ contains
     ! Other important auxillary fields to output for diagnostics
     ! These are not part of the usual set of internal CoMorph diagnostics
     type( integer_field_type ), intent(in) :: bl_type_ind_coarse
+    type( field_type ), intent(in) :: precfrac_coarse
 
     ! Local diagnostic fields to output
     type( field_type ), intent(in) :: lowest_cv_base_coarse,          &
@@ -546,6 +548,8 @@ contains
     call pres_lowest_cv_base_coarse%write_field('convection__pres_lowest_cv_base_coarse')
     call pres_lowest_cv_top_coarse%write_field('convection__pres_lowest_cv_top_coarse')
     call lowest_cca_2d_coarse%write_field('convection__lowest_cca_2d_coarse')
+
+    call precfrac_coarse%write_field('convection__precfrac_coarse')
 
     ! 3D
     call entrain_up_coarse%write_field('convection__entrain_up_coarse')
