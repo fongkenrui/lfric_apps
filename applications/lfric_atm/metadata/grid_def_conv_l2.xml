@@ -1,0 +1,22 @@
+<!-- Diagnostic convection grid definitions - on coarse mesh-->
+
+<grid_definition>
+  <!-- 3D grid definitions -->
+  <grid id="conv_full_level_face_grid">
+    <domain domain_ref="multigrid_l2_face"/>
+    <axis axis_ref="vert_axis_full_levels"/>
+  </grid>
+  <grid id="conv_half_level_face_grid">
+    <domain domain_ref="multigrid_l2_face"/>
+    <axis axis_ref="vert_axis_half_levels"/>
+  </grid>
+  <!-- 2D grid definition -->
+  <grid id="conv_face">
+    <domain domain_ref="multigrid_l2_face"/>
+  </grid>
+  <!-- Special grid definitions -->
+  <grid id="conv_bl_ind_grid">
+    <domain domain_ref="multigrid_l2_face"/>
+    <axis axis_ref="boundary_layer_types"/>
+  </grid>
+</grid_definition>
