@@ -91,8 +91,6 @@ character(len=name_length) :: field_name
 ! Loop counters
 integer :: ic, i_field
 
-character(len=*), parameter :: routinename = "SET_PAR_WINDS"
-
 do ic = 1, n_points
   ! Copy parcel radius into the parcel
   par_gen_par(ic,i_radius) = par_radius_k(ic)
@@ -125,7 +123,7 @@ factor = factor * par_gen_core_fac
 
 ! Set parcel core winds
 do i_field = i_wind_u, i_wind_w
-  do ic = 1, n_points 
+  do ic = 1, n_points
     par_gen_core(ic,i_field) = fields_k(ic,i_field)                            &
                              + factor * turb_pert_k(ic,i_field)
   end do
