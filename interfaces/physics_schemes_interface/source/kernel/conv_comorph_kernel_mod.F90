@@ -2169,11 +2169,11 @@ contains
 
       ! Map mix_len_bm to turb_len   
       ! Mod: overwrite turb_len with mix_len_bm values
-      do i=1, row_length
-        do k=1, bl_levels
-          turb_len(i,1,k) = mix_len_bm(map_wth(1,i)+k)
-        end do
-      end do
+      !do i=1, row_length
+      !  do k=1, bl_levels
+      !    turb_len(i,1,k) = mix_len_bm(map_wth(1,i)+k)
+      !  end do
+      !end do
 
       ! Check for instances of fluxes too big relative to the turbulent
       ! w-variance (causes excessive parcel perturbations);
