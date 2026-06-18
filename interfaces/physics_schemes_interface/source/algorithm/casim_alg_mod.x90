@@ -104,6 +104,7 @@ contains
     type( field_type ), pointer :: ni_mphys            => null()
     type( field_type ), pointer :: ns_mphys            => null()
     type( field_type ), pointer :: ng_mphys            => null()
+    type( field_type ), pointer :: ls_qw_sink
 
     ! In cloud value passed to radiation
     type( field_type ), pointer :: cloud_drop_no_conc  => null()
@@ -161,6 +162,7 @@ contains
     call microphysics_fields%get_field('ni_mphys',ni_mphys)
     call microphysics_fields%get_field('ns_mphys',ns_mphys)
     call microphysics_fields%get_field('ng_mphys',ng_mphys)
+    call microphysics_fields%get_field('ls_qw_sink',ls_qw_sink)
 
     call aerosol_fields%get_field('cloud_drop_no_conc',cloud_drop_no_conc)
     call aerosol_fields%get_field('murk', murk)
@@ -190,7 +192,7 @@ contains
                                      ls_rain_3d, ls_snow_3d, ls_graup_3d,      &
                                      theta_inc, cloud_drop_no_conc, murk,      &
                                      refl_tot, refl_1km,                       &
-                                     superc_liq, superc_rain ) )
+                                     superc_liq, superc_rain, ls_qw_sink ) )
 
     if (turb_gen_mixph) then
       dz_in_wth => get_dz_at_wtheta( mesh_id )

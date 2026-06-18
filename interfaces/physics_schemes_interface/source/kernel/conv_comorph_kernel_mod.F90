@@ -224,6 +224,8 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! pres_lowest_cv_base
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! pres_lowest_cv_top
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! lowest_cca_2d
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! conv_frac
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! ls_qw_sink
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! entrain_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! entrain_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! detrain_up
@@ -645,6 +647,8 @@ contains
                           pres_lowest_cv_base,               &
                           pres_lowest_cv_top,                &
                           lowest_cca_2d,                     &
+                          conv_frac,                         &
+                          ls_qw_sink,                        &
                           entrain_up,                        &
                           entrain_down,                      &
                           detrain_up,                        &
@@ -800,7 +804,7 @@ contains
          l_mcr_qcf2
     use nlsizes_namelist_mod, only: row_length, rows, bl_levels
     use planet_constants_mod, only: p_zero, kappa, planet_radius, g
-    use timestep_mod, only: timestep
+    use timestep_mod, only: timestep, recip_timestep
     use conversions_mod, only: zerodegc
 
     ! subroutines used
@@ -1007,7 +1011,9 @@ contains
                                                 pres_cv_top(:),            &
                                                 pres_lowest_cv_base(:),    &
                                                 pres_lowest_cv_top(:),     &
-                                                lowest_cca_2d(:)
+                                                lowest_cca_2d(:),          &
+                                                conv_frac(:),              &
+                                                ls_qw_sink(:)
 
     real(kind=r_def), pointer, intent(inout) :: entrain_up(:),       &
                                                 entrain_down(:),     &
@@ -1214,6 +1220,7 @@ contains
     real(kind=r_um) :: cclwp0  (row_length,rows)
     real(kind=r_um) :: cca_2d_loc (row_length,rows)
     real(kind=r_um) :: lcca   (row_length,rows)
+    real(kind=r_um) :: cv_qw_sink
 
     ! Diagnostic fields
     real(kind=r_um), target :: cape_dil(row_length, rows)
@@ -2498,6 +2505,28 @@ contains
       if (.not. associated(lowest_cca_2d, empty_real_data) ) then
         do i = 1, row_length
           lowest_cca_2d(map_2d(1,i)) = lcca(i,1)
+        end do
+      end if
+
+      if (.not. associated(conv_frac, empty_real_data) ) then
+        do i = 1, row_length
+          ! Cartesian domain, grid area constant with height
+          cv_qw_sink = -rho_dry_tq(i,1,1) * z_rho(i,1,2) &
+                     * (q_inc(i,1,1) + qcl_inc(i,1,1))
+          do k = 1, nlayers-1
+            cv_qw_sink = cv_qw_sink &
+                       - rho_dry_tq(i,1,k) * (z_rho(i,1,k+1) - z_rho(i,1,k)) &
+                       * (q_inc(i,1,k) + qcl_inc(i,1,k))
+          end do
+          ! Convert to tendency
+          cv_qw_sink = cv_qw_sink * recip_timestep
+
+          ! Calculate convective fraction
+          if (cv_qw_sink > 0.0_r_def) then
+            conv_frac(map_2d(1,i)) = cv_qw_sink / (cv_qw_sink + ls_qw_sink(map_2d(1,i)))
+          else
+            conv_frac(map_2d(1,i)) = 0.0_r_def
+          end if
         end do
       end if
     end if ! outer_iterations
