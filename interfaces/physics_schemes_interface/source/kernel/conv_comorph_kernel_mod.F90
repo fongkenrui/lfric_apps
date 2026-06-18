@@ -2157,14 +2157,13 @@ contains
       end do
 
       ! Calculate turb_len and a scaling factor applied to parcel initial radius
-      ! Mod: Instead of callinc calc_turb_len, we will instead assign mix_len_bm
-      ! as calculated by the boundary layer scheme to turb_len.
-      !call calc_turb_len( zh_eff, z_theta, z_rho, rho_wet_tq, qv_n,            &
-      !                    rhokm, bl_w_var, ls_rain, ls_snow, w,                &
-      !                    delta_x, delta_x,                                    &
-      !                    turb_len, par_radius_amp_um )
+      call calc_turb_len( zh_eff, z_theta, z_rho, rho_wet_tq, qv_n,            &
+                          rhokm, bl_w_var, ls_rain, ls_snow, w,                &
+                          delta_x, delta_x,                                    &
+                          turb_len, par_radius_amp_um )
 
       ! Map mix_len_bm to turb_len   
+      ! Mod: overwrite turb_len with mix_len_bm values
       do i=1, row_length
         do k=1, bl_levels
           turb_len(i,1,k) = mix_len_bm(map_wth(1,i)+k)
