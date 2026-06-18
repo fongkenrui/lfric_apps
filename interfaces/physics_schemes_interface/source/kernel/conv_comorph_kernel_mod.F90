@@ -33,7 +33,7 @@ module conv_comorph_kernel_mod
   !>
   type, public, extends(kernel_type) :: conv_comorph_kernel_type
     private
-    type(arg_type) :: meta_args(198) = (/                                         &
+    type(arg_type) :: meta_args(199) = (/                                         &
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! outer
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! rho_in_w3
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rho_in_wth
@@ -232,6 +232,7 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! massflux_up_half
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3)                        &! gen_massflux_down
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA)                    &! parcel_radius
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -441,6 +442,7 @@ contains
   !> @param[in,out] massflux_up_half     Convective upwards mass flux on half-levels (Pa/s)
   !> @param[in,out] gen_massflux_up      Convective upwards mass flux from parcel genesis on half-levels (Pa/s)
   !> @param[in,out] gen_massflux_down    Convective downwards mass flux from parcel genesis on half-levels (Pa/s)
+  !> @param[in,out] parcel_radius        CoMorph plume turbulence-derived parcel radius (m)
   !> @param[in]     ndf_w3               Number of DOFs per cell for density space
   !> @param[in]     undf_w3              Number of unique DOFs  for density space
   !> @param[in]     map_w3               Dofmap for the cell at the base of the column for density space
@@ -655,6 +657,7 @@ contains
                           massflux_up_half,                  &
                           gen_massflux_up,                   &
                           gen_massflux_down,                 &
+                          parcel_radius,                     &
                           ndf_w3,                            &
                           undf_w3,                           &
                           map_w3,                            &
@@ -1020,7 +1023,8 @@ contains
                                                 detrain_down(:),     &
                                                 massflux_up_half(:), &
                                                 gen_massflux_up(:),  &
-                                                gen_massflux_down(:)
+                                                gen_massflux_down(:),&
+                                                parcel_radius(:)
 
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcfl_conv
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcff_conv
@@ -1226,6 +1230,7 @@ contains
     real(kind=r_um), target :: down_flux_half(row_length, rows, nlayers)
     real(kind=r_um), target :: gen_up_flux_half(row_length, rows, nlayers)
     real(kind=r_um), target :: gen_down_flux_half(row_length, rows, nlayers)
+    real(kind=r_um), target :: turb_radius(row_length, rows, nlayers)
     real(kind=r_um), target, allocatable, dimension(:,:,:) :: ent_up, ent_down,&
          det_up, det_down, pres_inc_env
 
@@ -2339,6 +2344,12 @@ contains
         comorph_diags % dndraft % gen % massflux_d                             &
                                 % field_3d => gen_down_flux_half
       end if
+      if (.not. associated(turb_radius, empty_real_data) ) then
+        comorph_diags % turb_radius                                             &
+                                % request % x_y_z = .true.
+        comorph_diags % turb_radius                                             &
+                                % field_3d => turb_radius
+      end if
     end if
     if (l_pc2_homog_conv_pressure) then
       allocate(pres_inc_env(row_length,rows,nlayers))
@@ -2636,8 +2647,9 @@ contains
         do k = 1, n_conv_levels
           do i = 1, row_length
             ! Convert to Pa s-1
-            gen_massflux_up(map_w3(1,i) + k) = gen_up_flux_half(i,1,k) * g
-            ! Don't mask below cloud-base mass flux genesis
+            gen_massflux_up(map_w3(1,i) + k-1) = gen_up_flux_half(i,1,k) * g
+            if (k <= lcbase(i,1) .or. lcbase(i,1) == 0) &
+               gen_massflux_up(map_w3(1,i) + k-1) = 0.0_r_def
           end do
         end do
       end if
@@ -2645,8 +2657,14 @@ contains
         do k = 1, n_conv_levels
           do i = 1, row_length
             ! Convert to Pa s-1
-            gen_massflux_down(map_w3(1,i) + k) = gen_down_flux_half(i,1,k) * g
-            ! Don't mask below cloud-base mass flux genesis
+            gen_massflux_down(map_w3(1,i) + k-1) = gen_down_flux_half(i,1,k) * g
+          end do
+        end do
+      end if
+      if (.not. associated(turb_radius, empty_real_data) ) then
+        do k = 1, n_conv_levels
+          do i = 1, row_length
+            parcel_radius(map_w3(1,i) + k) = turb_radius(i,1,k)
           end do
         end do
       end if
