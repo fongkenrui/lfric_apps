@@ -31,6 +31,7 @@ module bl_imp_alg_mod
   use mesh_mod,                      only: mesh_type
   use map_fd_to_prognostics_alg_mod, only: set_wind
   use physics_mappings_alg_mod,      only: map_physics_winds
+  use section_choice_config_mod,     only: convection, convection_um
   use convection_config_mod,         only: cv_scheme, cv_scheme_comorph, &
        cv_scheme_gregory_rowntree
   use blayer_config_mod,             only: fric_heating
@@ -329,7 +330,7 @@ contains
     ! Map the convection wind increments into w2 space
     call u_physics%copy_field_properties(du_conv_w2)
     if ( cv_scheme == cv_scheme_gregory_rowntree .or. &
-         cv_scheme == cv_scheme_comorph ) then
+        cv_scheme == cv_scheme_comorph ) then
       if ( subroutine_timers ) call timer("bl_imp_alg")
       call theta%copy_field_properties(dw_conv)
       call invoke(setval_c(dw_conv, 0.0_r_def) )
@@ -342,6 +343,7 @@ contains
     else
       call invoke(setval_c(du_conv_w2, 0.0_r_def) )
     end if
+
 
     ! Set up required variables in w2 space
     call u_physics%copy_field_properties(dissip)

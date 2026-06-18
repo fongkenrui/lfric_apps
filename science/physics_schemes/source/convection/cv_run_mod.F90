@@ -194,6 +194,9 @@ logical :: l_wvar_for_conv = .false.! Flag to calculate boundary-layer
                                     ! turbulent vertical velocity variance
                                     ! for use by the convection scheme.
 
+logical :: l_diag_comorph = .false. ! Flag for running CoMorph scheme diagnostically
+                                    ! with the necessary physics dependencies on.
+
 !===========================================================================
 ! Integer options set from GUI
 !===========================================================================
@@ -866,7 +869,7 @@ call  chk_var(i_convection_vn,'i_convection_vn',                               &
                i_cv_llcs, i_cv_betts, i_cv_comorph])
 
 !---------------------------------------------------------------------------
-! Check convective diagnosis options even when running without convection
+! Check convective diagnosis options even when running without convectionct
 !---------------------------------------------------------------------------
 
 call chk_var(icvdiag,'icvdiag','[1:8]')
@@ -1197,23 +1200,25 @@ else  ! Not planning to call a convection scheme so values should be
       ! trigger ignored which means logical must be false.
   ! Check no logicals set to true - at present prints warnings but should really
   ! be stopping the run.
-  if (l_mom) then
-    icode = -1
-    write(cmessage,'(a29,a52)')' l_mom  SHOULD BE set .false.',                &
-         ' as not calling convection - run will treat as false'
-    call ereport(RoutineName,icode,cmessage)
-  end if
-  if (l_3d_cca) then
-    icode = -2
-    write(cmessage,'(a32,a43)')' l_3d_cca  SHOULD BE set .false.',             &
-         ' as not calling convection so wasting space'
-    call ereport(RoutineName,icode,cmessage)
-  end if
-  if (l_ccrad) then
-    icode = -3
-    write(cmessage,'(a31,a43)')' l_ccrad  SHOULD BE set .false.',              &
-         ' as not calling convection so wasting space'
-    call ereport(RoutineName,icode,cmessage)
+  if (.not. l_diag_comorph) then
+    if (l_mom) then
+      icode = -1
+      write(cmessage,'(a29,a52)')' l_mom  SHOULD BE set .false.',                &
+          ' as not calling convection - run will treat as false'
+      call ereport(RoutineName,icode,cmessage)
+    end if
+    if (l_3d_cca) then
+      icode = -2
+      write(cmessage,'(a32,a43)')' l_3d_cca  SHOULD BE set .false.',             &
+          ' as not calling convection so wasting space'
+      call ereport(RoutineName,icode,cmessage)
+    end if
+    if (l_ccrad) then
+      icode = -3
+      write(cmessage,'(a31,a43)')' l_ccrad  SHOULD BE set .false.',              &
+          ' as not calling convection so wasting space'
+      call ereport(RoutineName,icode,cmessage)
+    end if
   end if
 
 end if
