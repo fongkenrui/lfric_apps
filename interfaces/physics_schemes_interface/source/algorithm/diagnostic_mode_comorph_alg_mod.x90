@@ -1,0 +1,1298 @@
+!-------------------------------------------------------------------------------
+! (c) Crown copyright 2024 Met Office. All rights reserved.
+! The file LICENCE, distributed with this code, contains details of the terms
+! under which the code may be used.
+!-------------------------------------------------------------------------------
+!> @brief Interface to the Comorph convection scheme running in diagnostic mode
+
+module diagnostic_mode_comorph_alg_mod
+
+  use constants_mod,        only: i_def, r_def
+  use field_mod,            only: field_type
+  use integer_field_mod,    only: integer_field_type
+  use field_collection_mod, only: field_collection_type
+  use mr_indices_mod,       only: nummr, imr_v, imr_cl, imr_ci, imr_r, imr_g,&
+       imr_s
+
+  use timestepping_config_mod,     only: outer_iterations
+  use sci_geometric_constants_mod, only: get_height_fv, get_delta_at_wtheta
+  use fs_continuity_mod,           only: W3, Wtheta
+
+  use io_config_mod,        only: subroutine_timers
+  use timer_mod,            only: timer
+  ! xios output
+  use io_config_mod,        only: write_diag, use_xios_io
+  use log_mod,              only: log_event, log_scratch_space, &
+                                  LOG_LEVEL_DEBUG, LOG_LEVEL_INFO, LOG_LEVEL_ERROR
+  use mesh_mod,             only: mesh_type
+  use mesh_collection_mod,  only: mesh_collection
+  use um_sizes_init_mod,    only: um_sizes_init
+
+  ! Logging
+  use print_field_stats_alg_mod, only: print_field_stats_alg
+
+  implicit none
+
+  private
+  public diagnostic_mode_comorph_alg
+
+contains
+
+  !>@brief Run the Comorph convection scheme in diagnostic mode
+  !>@details The Comorph convection scheme does:
+  !>             vertical mixing of heat, momentum and moisture,
+  !>@param[in,out] mr                  Mixing ratios
+  !>@param[in]     rho                 Dry density in its native (w3) space
+  !>@param[in]     exner               Exner Pressure in the w3 space
+  !>@param[in]     derived_fields      Group of derived fields
+  !>@param[in]     turbulence_fields   Fields for turbulence scheme
+  !>@param[in]     convection_fields   Fields for convection scheme
+  !>@param[in]     cloud_fields        Fields for cloud scheme
+  !>@param[in]     surface_fields      Fields for surface scheme
+  !>@param[in]     chemistry_fields    Fields for chemistry scheme
+  !>@param[in]     aerosol_fields      Fields for aerosol scheme
+  !>@param[in]     microphysics_fields Fields for microphysics scheme
+  !>@param[in]     outer             Outer loop counter
+  subroutine diagnostic_mode_comorph_alg(mr, mr_n, rho, exner, theta, derived_fields,&
+                         turbulence_fields, convection_fields,            &
+                         cloud_fields, surface_fields, chemistry_fields,  &
+                         aerosol_fields, microphysics_fields, outer)
+
+    use conv_comorph_kernel_mod, only: conv_comorph_kernel_type
+    use diagnostic_mode_conv_config_mod, only: conv_mesh_name
+    use diagnostic_mode_comorph_diags_mod, only: init_coarse_field_from, &
+                                                 init_coarse_integer_field_from, &
+                                                 initialise_diags_for_diagnostic_mode_comorph, &
+                                                 output_diags_for_diagnostic_mode_comorph
+    use intermesh_mappings_alg_mod, &
+                              only: map_scalar_field,  &
+                                    map_rho_intermesh, &
+                                    map_mr_bundle_intermesh
+    use physics_mappings_alg_mod,  only: map_physics_scalars
+
+    implicit none
+
+    type( field_type ), intent( in )        :: mr(nummr)
+    type( field_type ), intent( in )        :: mr_n(nummr)
+    type( field_type ), intent( in )        :: rho, exner, theta
+
+    type( field_collection_type ), intent(in) :: derived_fields
+    type( field_collection_type ), intent(in) :: turbulence_fields
+    type( field_collection_type ), intent(in) :: convection_fields
+    type( field_collection_type ), intent(in) :: cloud_fields
+    type( field_collection_type ), intent(in) :: surface_fields
+    type( field_collection_type ), intent(in) :: chemistry_fields
+    type( field_collection_type ), intent(in) :: aerosol_fields
+    type( field_collection_type ), intent(in) :: microphysics_fields
+
+    integer(kind=i_def), intent(in)         :: outer
+
+    ! Temporary fields unpacked fields from collections
+    type( field_type ), pointer :: exner_in_wth => null()
+    type( field_type ), pointer :: delta => null()
+    type( field_type ), pointer :: rho_in_wth => null()
+    type( field_type ), pointer :: wetrho_in_wth => null()
+    type( field_type ), pointer :: wetrho_in_w3 => null()
+    type( field_type ), pointer :: u_in_w3 => null()
+    type( field_type ), pointer :: v_in_w3 => null()
+    type( field_type ), pointer :: w_in_wth => null()
+    type( field_type ), pointer :: theta_star => null()
+    type( field_type ), pointer :: u_in_w3_star => null()
+    type( field_type ), pointer :: v_in_w3_star => null()
+
+    type( field_type ), pointer :: zh => null()
+    type( field_type ), pointer :: zh_nonloc => null()
+    type( field_type ), pointer :: zhsc => null()
+    type( field_type ), pointer :: inv_depth => null()
+    type( integer_field_type ), pointer :: bl_type_ind => null()
+    type( field_type ), pointer :: tke_bl => null()
+    type( field_type ), pointer :: wvar => null()
+    type( field_type ), pointer :: rhokm_bl => null()
+    type( field_type ), pointer :: moist_flux => null()
+    type( field_type ), pointer :: heat_flux => null()
+    type( field_type ), pointer :: taux => null()
+    type( field_type ), pointer :: tauy => null()
+
+    type( field_type ), pointer :: surf_interp => null()
+    type( field_type ), pointer :: ustar => null()
+
+    type( field_type ), pointer :: conv_rain => null()
+    type( field_type ), pointer :: conv_rain_3d => null()
+    type( field_type ), pointer :: conv_snow => null()
+    type( field_type ), pointer :: conv_snow_3d => null()
+    type( field_type ), pointer :: cca_2d => null()
+    type( field_type ), pointer :: cv_base => null()
+    type( field_type ), pointer :: cv_top => null()
+    type( field_type ), pointer :: cca => null()
+    type( field_type ), pointer :: ccw => null()
+    type( field_type ), pointer :: dt_conv => null()
+    type( field_type ), pointer :: dmv_conv => null()
+    type( field_type ), pointer :: dmcl_conv => null()
+    type( field_type ), pointer :: dms_conv => null()
+    type( field_type ), pointer :: dcfl_conv => null()
+    type( field_type ), pointer :: dcff_conv => null()
+    type( field_type ), pointer :: dbcf_conv => null()
+    type( field_type ), pointer :: du_conv => null()
+    type( field_type ), pointer :: dv_conv => null()
+    type( field_type ), pointer :: conv_prog_dtheta => null()
+    type( field_type ), pointer :: conv_prog_dmv => null()
+    type( field_type ), pointer :: dd_mf_cb => null()
+    type( field_type ), pointer :: massflux_up => null()
+    type( field_type ), pointer :: massflux_down => null()
+    type( field_type ), pointer :: cape_diluted => null()
+    type( field_type ), pointer :: pressure_inc_env => null()
+
+    type( field_type ), pointer :: cf_fro => null()
+    type( field_type ), pointer :: cf_liq => null()
+    type( field_type ), pointer :: cf_bulk => null()
+    type( field_type ), pointer :: cf_liq_n => null()
+    type( field_type ), pointer :: cf_fro_n => null()
+    type( field_type ), pointer :: cf_bulk_n => null()
+
+    type( field_type ), pointer :: o3p => null()
+    type( field_type ), pointer :: o1d => null()
+    type( field_type ), pointer :: o3 => null()
+    type( field_type ), pointer :: n => null()
+    type( field_type ), pointer :: no => null()
+    type( field_type ), pointer :: no3 => null()
+    type( field_type ), pointer :: lumped_n => null()
+    type( field_type ), pointer :: n2o5 => null()
+    type( field_type ), pointer :: ho2no2 => null()
+    type( field_type ), pointer :: hono2 => null()
+    type( field_type ), pointer :: h2o2 => null()
+    type( field_type ), pointer :: ch4 => null()
+    type( field_type ), pointer :: co => null()
+    type( field_type ), pointer :: hcho => null()
+    type( field_type ), pointer :: meoo => null()
+    type( field_type ), pointer :: meooh => null()
+    type( field_type ), pointer :: h => null()
+    type( field_type ), pointer :: oh => null()
+    type( field_type ), pointer :: ho2 => null()
+    type( field_type ), pointer :: cl => null()
+    type( field_type ), pointer :: cl2o2 => null()
+    type( field_type ), pointer :: clo => null()
+    type( field_type ), pointer :: oclo => null()
+    type( field_type ), pointer :: br => null()
+    type( field_type ), pointer :: lumped_br => null()
+    type( field_type ), pointer :: brcl => null()
+    type( field_type ), pointer :: brono2 => null()
+    type( field_type ), pointer :: n2o => null()
+    type( field_type ), pointer :: lumped_cl => null()
+    type( field_type ), pointer :: hocl => null()
+    type( field_type ), pointer :: hbr => null()
+    type( field_type ), pointer :: hobr => null()
+    type( field_type ), pointer :: clono2 => null()
+    type( field_type ), pointer :: cfcl3 => null()
+    type( field_type ), pointer :: cf2cl2 => null()
+    type( field_type ), pointer :: mebr => null()
+    type( field_type ), pointer :: hono => null()
+    type( field_type ), pointer :: c2h6 => null()
+    type( field_type ), pointer :: etoo => null()
+    type( field_type ), pointer :: etooh => null()
+    type( field_type ), pointer :: mecho => null()
+    type( field_type ), pointer :: meco3 => null()
+    type( field_type ), pointer :: pan => null()
+    type( field_type ), pointer :: c3h8 => null()
+    type( field_type ), pointer :: n_proo => null()
+    type( field_type ), pointer :: i_proo => null()
+    type( field_type ), pointer :: n_prooh => null()
+    type( field_type ), pointer :: i_prooh => null()
+    type( field_type ), pointer :: etcho => null()
+    type( field_type ), pointer :: etco3 => null()
+    type( field_type ), pointer :: me2co => null()
+    type( field_type ), pointer :: mecoch2oo => null()
+    type( field_type ), pointer :: mecoch2ooh => null()
+    type( field_type ), pointer :: ppan => null()
+    type( field_type ), pointer :: meono2 => null()
+    type( field_type ), pointer :: c5h8 => null()
+    type( field_type ), pointer :: iso2 => null()
+    type( field_type ), pointer :: isooh => null()
+    type( field_type ), pointer :: ison => null()
+    type( field_type ), pointer :: macr => null()
+    type( field_type ), pointer :: macro2 => null()
+    type( field_type ), pointer :: macrooh => null()
+    type( field_type ), pointer :: mpan => null()
+    type( field_type ), pointer :: hacet => null()
+    type( field_type ), pointer :: mgly => null()
+    type( field_type ), pointer :: nald => null()
+    type( field_type ), pointer :: hcooh => null()
+    type( field_type ), pointer :: meco3h => null()
+    type( field_type ), pointer :: meco2h => null()
+    type( field_type ), pointer :: h2 => null()
+    type( field_type ), pointer :: meoh => null()
+    type( field_type ), pointer :: msa => null()
+    type( field_type ), pointer :: nh3 => null()
+    type( field_type ), pointer :: cs2 => null()
+    type( field_type ), pointer :: csul => null()
+    type( field_type ), pointer :: h2s => null()
+    type( field_type ), pointer :: so3 => null()
+    type( field_type ), pointer :: passive_o3 => null()
+    type( field_type ), pointer :: age_of_air => null()
+
+    type( field_type ), pointer :: dms => null()
+    type( field_type ), pointer :: so2 => null()
+    type( field_type ), pointer :: h2so4 => null()
+    type( field_type ), pointer :: dmso => null()
+    type( field_type ), pointer :: monoterpene => null()
+    type( field_type ), pointer :: secondary_organic => null()
+
+    type( field_type ), pointer :: n_nuc_sol => null()
+    type( field_type ), pointer :: nuc_sol_su => null()
+    type( field_type ), pointer :: nuc_sol_om => null()
+    type( field_type ), pointer :: n_ait_sol => null()
+    type( field_type ), pointer :: ait_sol_su => null()
+    type( field_type ), pointer :: ait_sol_bc => null()
+    type( field_type ), pointer :: ait_sol_om => null()
+    type( field_type ), pointer :: n_acc_sol => null()
+    type( field_type ), pointer :: acc_sol_su => null()
+    type( field_type ), pointer :: acc_sol_bc => null()
+    type( field_type ), pointer :: acc_sol_om => null()
+    type( field_type ), pointer :: acc_sol_ss => null()
+    type( field_type ), pointer :: n_cor_sol => null()
+    type( field_type ), pointer :: cor_sol_su => null()
+    type( field_type ), pointer :: cor_sol_bc => null()
+    type( field_type ), pointer :: cor_sol_om => null()
+    type( field_type ), pointer :: cor_sol_ss => null()
+    type( field_type ), pointer :: n_ait_ins => null()
+    type( field_type ), pointer :: ait_ins_bc => null()
+    type( field_type ), pointer :: ait_ins_om => null()
+    type( field_type ), pointer :: n_acc_ins => null()
+    type( field_type ), pointer :: acc_ins_du => null()
+    type( field_type ), pointer :: n_cor_ins => null()
+    type( field_type ), pointer :: cor_ins_du => null()
+
+    type( field_type ), pointer :: tnuc => null()
+    type( field_type ), pointer :: precfrac => null()
+    type( field_type ), pointer :: ls_rain => null()
+    type( field_type ), pointer :: ls_snow => null()
+
+    type( field_type ), pointer :: height_w3 => null()
+    type( field_type ), pointer :: height_wth => null()
+
+    ! Coarsened fields to be passed to CoMorph kernel
+    type( field_type ) :: rho_coarse 
+    type( field_type ) :: exner_coarse
+    type( field_type ) :: theta_coarse
+    type( field_type ) :: mr_coarse(nummr)
+    type( field_type ) :: mr_n_coarse(nummr)
+
+    type( field_type ) :: exner_in_wth_coarse
+    ! type( field_type ) :: delta_coarse
+    type( field_type ) :: rho_in_wth_coarse
+    type( field_type ) :: wetrho_in_wth_coarse
+    type( field_type ) :: wetrho_in_w3_coarse
+    type( field_type ) :: u_in_w3_coarse
+    type( field_type ) :: v_in_w3_coarse
+    type( field_type ) :: w_in_wth_coarse
+    type( field_type ) :: theta_star_coarse
+    type( field_type ) :: u_in_w3_star_coarse
+    type( field_type ) :: v_in_w3_star_coarse
+
+    type( field_type ) :: zh_coarse
+    type( field_type ) :: zh_nonloc_coarse
+    type( field_type ) :: zhsc_coarse
+    type( field_type ) :: inv_depth_coarse
+    type( integer_field_type ) :: bl_type_ind_coarse
+    type( field_type ) :: tke_bl_coarse
+    type( field_type ) :: wvar_coarse
+    type( field_type ) :: rhokm_bl_coarse
+    type( field_type ) :: moist_flux_coarse
+    type( field_type ) :: heat_flux_coarse
+    type( field_type ) :: taux_coarse
+    type( field_type ) :: tauy_coarse
+
+    type( field_type ) :: surf_interp_coarse
+    type( field_type ) :: ustar_coarse
+
+    type( field_type ) :: conv_rain_coarse
+    type( field_type ) :: conv_rain_3d_coarse
+    type( field_type ) :: conv_snow_coarse
+    type( field_type ) :: conv_snow_3d_coarse
+    type( field_type ) :: cca_2d_coarse
+    type( field_type ) :: cv_base_coarse
+    type( field_type ) :: cv_top_coarse
+    type( field_type ) :: cca_coarse
+    type( field_type ) :: ccw_coarse
+    type( field_type ) :: dt_conv_coarse
+    type( field_type ) :: dmv_conv_coarse
+    type( field_type ) :: dmcl_conv_coarse
+    type( field_type ) :: dms_conv_coarse
+    type( field_type ) :: dcfl_conv_coarse
+    type( field_type ) :: dcff_conv_coarse
+    type( field_type ) :: dbcf_conv_coarse
+    type( field_type ) :: du_conv_coarse
+    type( field_type ) :: dv_conv_coarse
+    type( field_type ) :: conv_prog_dtheta_coarse
+    type( field_type ) :: conv_prog_dmv_coarse
+    type( field_type ) :: dd_mf_cb_coarse
+    type( field_type ) :: massflux_up_coarse
+    type( field_type ) :: massflux_down_coarse
+    type( field_type ) :: cape_diluted_coarse
+    type( field_type ) :: pressure_inc_env_coarse
+
+    type( field_type ) :: cf_fro_coarse
+    type( field_type ) :: cf_liq_coarse
+    type( field_type ) :: cf_bulk_coarse
+    type( field_type ) :: cf_liq_n_coarse
+    type( field_type ) :: cf_fro_n_coarse
+    type( field_type ) :: cf_bulk_n_coarse
+
+    type( field_type ) :: o3p_coarse
+    type( field_type ) :: o1d_coarse
+    type( field_type ) :: o3_coarse
+    type( field_type ) :: n_coarse
+    type( field_type ) :: no_coarse
+    type( field_type ) :: no3_coarse
+    type( field_type ) :: lumped_n_coarse
+    type( field_type ) :: n2o5_coarse
+    type( field_type ) :: ho2no2_coarse
+    type( field_type ) :: hono2_coarse
+    type( field_type ) :: h2o2_coarse
+    type( field_type ) :: ch4_coarse
+    type( field_type ) :: co_coarse
+    type( field_type ) :: hcho_coarse
+    type( field_type ) :: meoo_coarse
+    type( field_type ) :: meooh_coarse
+    type( field_type ) :: h_coarse
+    type( field_type ) :: oh_coarse
+    type( field_type ) :: ho2_coarse
+    type( field_type ) :: cl_coarse
+    type( field_type ) :: cl2o2_coarse
+    type( field_type ) :: clo_coarse
+    type( field_type ) :: oclo_coarse
+    type( field_type ) :: br_coarse
+    type( field_type ) :: lumped_br_coarse
+    type( field_type ) :: brcl_coarse
+    type( field_type ) :: brono2_coarse
+    type( field_type ) :: n2o_coarse
+    type( field_type ) :: lumped_cl_coarse
+    type( field_type ) :: hocl_coarse
+    type( field_type ) :: hbr_coarse
+    type( field_type ) :: hobr_coarse
+    type( field_type ) :: clono2_coarse
+    type( field_type ) :: cfcl3_coarse
+    type( field_type ) :: cf2cl2_coarse
+    type( field_type ) :: mebr_coarse
+    type( field_type ) :: hono_coarse
+    type( field_type ) :: c2h6_coarse
+    type( field_type ) :: etoo_coarse
+    type( field_type ) :: etooh_coarse
+    type( field_type ) :: mecho_coarse
+    type( field_type ) :: meco3_coarse
+    type( field_type ) :: pan_coarse
+    type( field_type ) :: c3h8_coarse
+    type( field_type ) :: n_proo_coarse
+    type( field_type ) :: i_proo_coarse
+    type( field_type ) :: n_prooh_coarse
+    type( field_type ) :: i_prooh_coarse
+    type( field_type ) :: etcho_coarse
+    type( field_type ) :: etco3_coarse
+    type( field_type ) :: me2co_coarse
+    type( field_type ) :: mecoch2oo_coarse
+    type( field_type ) :: mecoch2ooh_coarse
+    type( field_type ) :: ppan_coarse
+    type( field_type ) :: meono2_coarse
+    type( field_type ) :: c5h8_coarse
+    type( field_type ) :: iso2_coarse
+    type( field_type ) :: isooh_coarse
+    type( field_type ) :: ison_coarse
+    type( field_type ) :: macr_coarse
+    type( field_type ) :: macro2_coarse
+    type( field_type ) :: macrooh_coarse
+    type( field_type ) :: mpan_coarse
+    type( field_type ) :: hacet_coarse
+    type( field_type ) :: mgly_coarse
+    type( field_type ) :: nald_coarse
+    type( field_type ) :: hcooh_coarse
+    type( field_type ) :: meco3h_coarse
+    type( field_type ) :: meco2h_coarse
+    type( field_type ) :: h2_coarse
+    type( field_type ) :: meoh_coarse
+    type( field_type ) :: msa_coarse
+    type( field_type ) :: nh3_coarse
+    type( field_type ) :: cs2_coarse
+    type( field_type ) :: csul_coarse
+    type( field_type ) :: h2s_coarse
+    type( field_type ) :: so3_coarse
+    type( field_type ) :: passive_o3_coarse
+    type( field_type ) :: age_of_air_coarse
+
+    type( field_type ) :: dms_coarse
+    type( field_type ) :: so2_coarse
+    type( field_type ) :: h2so4_coarse
+    type( field_type ) :: dmso_coarse
+    type( field_type ) :: monoterpene_coarse
+    type( field_type ) :: secondary_organic_coarse
+
+    type( field_type ) :: n_nuc_sol_coarse
+    type( field_type ) :: nuc_sol_su_coarse
+    type( field_type ) :: nuc_sol_om_coarse
+    type( field_type ) :: n_ait_sol_coarse
+    type( field_type ) :: ait_sol_su_coarse
+    type( field_type ) :: ait_sol_bc_coarse
+    type( field_type ) :: ait_sol_om_coarse
+    type( field_type ) :: n_acc_sol_coarse
+    type( field_type ) :: acc_sol_su_coarse
+    type( field_type ) :: acc_sol_bc_coarse
+    type( field_type ) :: acc_sol_om_coarse
+    type( field_type ) :: acc_sol_ss_coarse
+    type( field_type ) :: n_cor_sol_coarse
+    type( field_type ) :: cor_sol_su_coarse
+    type( field_type ) :: cor_sol_bc_coarse
+    type( field_type ) :: cor_sol_om_coarse
+    type( field_type ) :: cor_sol_ss_coarse
+    type( field_type ) :: n_ait_ins_coarse
+    type( field_type ) :: ait_ins_bc_coarse
+    type( field_type ) :: ait_ins_om_coarse
+    type( field_type ) :: n_acc_ins_coarse
+    type( field_type ) :: acc_ins_du_coarse
+    type( field_type ) :: n_cor_ins_coarse
+    type( field_type ) :: cor_ins_du_coarse
+
+    type( field_type ) :: tnuc_coarse
+    type( field_type ) :: precfrac_coarse
+    type( field_type ) :: ls_rain_coarse
+    type( field_type ) :: ls_snow_coarse
+
+    ! local variables - directly declare on coarse grid
+    type( field_type ) :: lowest_cv_base_coarse,lowest_cv_top_coarse
+    type( field_type ) :: entrain_up_coarse,entrain_down_coarse
+    type( field_type ) :: detrain_up_coarse,detrain_down_coarse
+    type( field_type ) :: pres_cv_base_coarse,pres_cv_top_coarse
+    type( field_type ) :: pres_lowest_cv_base_coarse,pres_lowest_cv_top_coarse, lowest_cca_2d_coarse
+    type( field_type ) :: massflux_up_half_coarse
+
+    type( mesh_type ), pointer  :: conv_mesh
+    integer(i_def) :: ncells
+
+    ! Loop variable
+    integer( kind=i_def ) :: i_mr
+
+    ! Outer variable override
+    integer( kind=i_def ) :: outer_0
+
+    ! Set an override outer loop counter
+    ! This forces the comorph kernel to skip outer loop tracer advection
+    outer_0 = 0_i_def
+
+    if ( subroutine_timers ) call timer("conv_comorph_alg")
+
+    write(log_scratch_space,*) "conv_mesh_name = ", conv_mesh_name
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+    ! Get the convection grid mesh
+    conv_mesh => mesh_collection%get_mesh( conv_mesh_name )
+    
+    ! Validate that mesh retrieval succeeded
+    if ( .not. associated(conv_mesh) ) then
+      call log_event( 'ERROR: conv_mesh not found in mesh_collection', LOG_LEVEL_ERROR )
+      return
+    end if
+    
+    delta => get_delta_at_wtheta( conv_mesh%get_id() )
+
+    write(log_scratch_space,*) "conv_mesh_id = ", conv_mesh%get_id()
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+    ! Unpack derived fields
+    call derived_fields%get_field('exner_in_wth', exner_in_wth)
+    call derived_fields%get_field('wetrho_in_wth', wetrho_in_wth)
+    call derived_fields%get_field('wetrho_in_w3', wetrho_in_w3)
+    call derived_fields%get_field('rho_in_wth', rho_in_wth)
+    call derived_fields%get_field('u_in_w3', u_in_w3)
+    call derived_fields%get_field('v_in_w3', v_in_w3)
+    call derived_fields%get_field('w_in_wth', w_in_wth)
+    call derived_fields%get_field('theta_star', theta_star)
+    call derived_fields%get_field('u_in_w3_star', u_in_w3_star)
+    call derived_fields%get_field('v_in_w3_star', v_in_w3_star)
+
+    ! Unpack turbulence fields
+    call turbulence_fields%get_field('zh', zh)
+    call turbulence_fields%get_field('zh_nonloc', zh_nonloc)
+    call turbulence_fields%get_field('inv_depth', inv_depth)
+    call turbulence_fields%get_field('zhsc', zhsc)
+    call turbulence_fields%get_field('bl_type_ind', bl_type_ind)
+    call turbulence_fields%get_field('tke_bl', tke_bl)
+    call turbulence_fields%get_field('wvar', wvar)
+    call turbulence_fields%get_field('rhokm_bl', rhokm_bl)
+    call turbulence_fields%get_field('moist_flux_bl', moist_flux)
+    call turbulence_fields%get_field('heat_flux_bl', heat_flux)
+    call turbulence_fields%get_field('taux', taux)
+    call turbulence_fields%get_field('tauy', tauy)
+
+    ! Unpack surface fields
+    call surface_fields%get_field('surf_interp', surf_interp)
+    call surface_fields%get_field('ustar', ustar)
+
+    ! Unpack convection fields
+    ! These are fields we'd want to write out as diagnostics 
+    call convection_fields%get_field('conv_rain', conv_rain)
+    call convection_fields%get_field('conv_rain_3d', conv_rain_3d)
+    call convection_fields%get_field('conv_snow', conv_snow)
+    call convection_fields%get_field('conv_snow_3d', conv_snow_3d)
+    call convection_fields%get_field('cca_2d', cca_2d)
+    call convection_fields%get_field('cca', cca)
+    call convection_fields%get_field('ccw', ccw)
+    call convection_fields%get_field('dt_conv', dt_conv)
+    call convection_fields%get_field('dmv_conv', dmv_conv)
+    call convection_fields%get_field('dmcl_conv', dmcl_conv)
+    call convection_fields%get_field('dms_conv', dms_conv)
+    call convection_fields%get_field('dcfl_conv', dcfl_conv)
+    call convection_fields%get_field('dcff_conv', dcff_conv)
+    call convection_fields%get_field('dbcf_conv', dbcf_conv)
+    call convection_fields%get_field('du_conv', du_conv)
+    call convection_fields%get_field('dv_conv', dv_conv)
+    call convection_fields%get_field('conv_prog_dtheta', conv_prog_dtheta)
+    call convection_fields%get_field('conv_prog_dmv', conv_prog_dmv)
+    call convection_fields%get_field('dd_mf_cb', dd_mf_cb)
+    call convection_fields%get_field('massflux_up', massflux_up)
+    call convection_fields%get_field('massflux_down', massflux_down)
+    call convection_fields%get_field('cape_diluted', cape_diluted)
+    call convection_fields%get_field('cv_base', cv_base)
+    call convection_fields%get_field('cv_top', cv_top)
+    call convection_fields%get_field('pressure_inc_env', pressure_inc_env)
+
+    ! Unpack cloud fields
+    call cloud_fields%get_field('frozen_fraction', cf_fro)
+    call cloud_fields%get_field('liquid_fraction', cf_liq)
+    call cloud_fields%get_field('bulk_fraction', cf_bulk)
+    call cloud_fields%get_field('cf_liq_n', cf_liq_n)
+    call cloud_fields%get_field('cf_fro_n', cf_fro_n)
+    call cloud_fields%get_field('cf_bulk_n', cf_bulk_n)
+
+    ! Unpack chemistry fields
+    call chemistry_fields%get_field('o3p',o3p)
+    call chemistry_fields%get_field('o1d',o1d)
+    call chemistry_fields%get_field('o3',o3)
+    call chemistry_fields%get_field('n',n)
+    call chemistry_fields%get_field('no',no)
+    call chemistry_fields%get_field('no3',no3)
+    call chemistry_fields%get_field('lumped_n',lumped_n)
+    call chemistry_fields%get_field('n2o5',n2o5)
+    call chemistry_fields%get_field('ho2no2',ho2no2)
+    call chemistry_fields%get_field('hono2',hono2)
+    call chemistry_fields%get_field('h2o2', h2o2)
+    call chemistry_fields%get_field('ch4',ch4)
+    call chemistry_fields%get_field('co',co)
+    call chemistry_fields%get_field('hcho',hcho)
+    call chemistry_fields%get_field('meoo',meoo)
+    call chemistry_fields%get_field('meooh',meooh)
+    call chemistry_fields%get_field('h',h)
+    call chemistry_fields%get_field('oh',oh)
+    call chemistry_fields%get_field('ho2',ho2)
+    call chemistry_fields%get_field('cl',cl)
+    call chemistry_fields%get_field('cl2o2',cl2o2)
+    call chemistry_fields%get_field('clo',clo)
+    call chemistry_fields%get_field('oclo',oclo)
+    call chemistry_fields%get_field('br',br)
+    call chemistry_fields%get_field('lumped_br',lumped_br)
+    call chemistry_fields%get_field('brcl',brcl)
+    call chemistry_fields%get_field('brono2',brono2)
+    call chemistry_fields%get_field('n2o',n2o)
+    call chemistry_fields%get_field('lumped_cl',lumped_cl)
+    call chemistry_fields%get_field('hocl',hocl)
+    call chemistry_fields%get_field('hbr',hbr)
+    call chemistry_fields%get_field('hobr',hobr)
+    call chemistry_fields%get_field('clono2',clono2)
+    call chemistry_fields%get_field('cfcl3',cfcl3)
+    call chemistry_fields%get_field('cf2cl2',cf2cl2)
+    call chemistry_fields%get_field('mebr',mebr)
+    call chemistry_fields%get_field('hono',hono)
+    call chemistry_fields%get_field('c2h6',c2h6)
+    call chemistry_fields%get_field('etoo',etoo)
+    call chemistry_fields%get_field('etooh',etooh)
+    call chemistry_fields%get_field('mecho',mecho)
+    call chemistry_fields%get_field('meco3',meco3)
+    call chemistry_fields%get_field('pan',pan)
+    call chemistry_fields%get_field('c3h8',c3h8)
+    call chemistry_fields%get_field('n_proo',n_proo)
+    call chemistry_fields%get_field('i_proo',i_proo)
+    call chemistry_fields%get_field('n_prooh',n_prooh)
+    call chemistry_fields%get_field('i_prooh',i_prooh)
+    call chemistry_fields%get_field('etcho',etcho)
+    call chemistry_fields%get_field('etco3',etco3)
+    call chemistry_fields%get_field('me2co',me2co)
+    call chemistry_fields%get_field('mecoch2oo',mecoch2oo)
+    call chemistry_fields%get_field('mecoch2ooh',mecoch2ooh)
+    call chemistry_fields%get_field('ppan',ppan)
+    call chemistry_fields%get_field('meono2',meono2)
+    call chemistry_fields%get_field('c5h8',c5h8)
+    call chemistry_fields%get_field('iso2',iso2)
+    call chemistry_fields%get_field('isooh',isooh)
+    call chemistry_fields%get_field('ison',ison)
+    call chemistry_fields%get_field('macr',macr)
+    call chemistry_fields%get_field('macro2',macro2)
+    call chemistry_fields%get_field('macrooh',macrooh)
+    call chemistry_fields%get_field('mpan',mpan)
+    call chemistry_fields%get_field('hacet',hacet)
+    call chemistry_fields%get_field('mgly',mgly)
+    call chemistry_fields%get_field('nald',nald)
+    call chemistry_fields%get_field('hcooh',hcooh)
+    call chemistry_fields%get_field('meco3h',meco3h)
+    call chemistry_fields%get_field('meco2h',meco2h)
+    call chemistry_fields%get_field('h2',h2)
+    call chemistry_fields%get_field('meoh',meoh)
+    call chemistry_fields%get_field('msa',msa)
+    call chemistry_fields%get_field('nh3',nh3)
+    call chemistry_fields%get_field('cs2',cs2)
+    call chemistry_fields%get_field('csul',csul)
+    call chemistry_fields%get_field('h2s',h2s)
+    call chemistry_fields%get_field('so3',so3)
+    call chemistry_fields%get_field('passive_o3',passive_o3)
+    call chemistry_fields%get_field('age_of_air',age_of_air)
+
+    call chemistry_fields%get_field('dms', dms)
+    call chemistry_fields%get_field('so2', so2)
+    call chemistry_fields%get_field('h2so4', h2so4)
+    call chemistry_fields%get_field('dmso', dmso)
+    call chemistry_fields%get_field('monoterpene', monoterpene)
+    call chemistry_fields%get_field('secondary_organic', secondary_organic)
+
+    ! Unpack aerosol fields
+    call aerosol_fields%get_field('n_nuc_sol', n_nuc_sol)
+    call aerosol_fields%get_field('nuc_sol_su', nuc_sol_su)
+    call aerosol_fields%get_field('nuc_sol_om', nuc_sol_om)
+    call aerosol_fields%get_field('n_ait_sol', n_ait_sol)
+    call aerosol_fields%get_field('ait_sol_su', ait_sol_su)
+    call aerosol_fields%get_field('ait_sol_bc', ait_sol_bc)
+    call aerosol_fields%get_field('ait_sol_om', ait_sol_om)
+    call aerosol_fields%get_field('n_acc_sol', n_acc_sol)
+    call aerosol_fields%get_field('acc_sol_su', acc_sol_su)
+    call aerosol_fields%get_field('acc_sol_bc', acc_sol_bc)
+    call aerosol_fields%get_field('acc_sol_om', acc_sol_om)
+    call aerosol_fields%get_field('acc_sol_ss', acc_sol_ss)
+    call aerosol_fields%get_field('n_cor_sol', n_cor_sol)
+    call aerosol_fields%get_field('cor_sol_su', cor_sol_su)
+    call aerosol_fields%get_field('cor_sol_bc', cor_sol_bc)
+    call aerosol_fields%get_field('cor_sol_om', cor_sol_om)
+    call aerosol_fields%get_field('cor_sol_ss', cor_sol_ss)
+    call aerosol_fields%get_field('n_ait_ins', n_ait_ins)
+    call aerosol_fields%get_field('ait_ins_bc', ait_ins_bc)
+    call aerosol_fields%get_field('ait_ins_om', ait_ins_om)
+    call aerosol_fields%get_field('n_acc_ins', n_acc_ins)
+    call aerosol_fields%get_field('acc_ins_du', acc_ins_du)
+    call aerosol_fields%get_field('n_cor_ins', n_cor_ins)
+    call aerosol_fields%get_field('cor_ins_du', cor_ins_du)
+
+    call microphysics_fields%get_field('tnuc', tnuc)
+    call microphysics_fields%get_field('precfrac', precfrac)
+    call microphysics_fields%get_field('ls_rain', ls_rain)
+    call microphysics_fields%get_field('ls_snow', ls_snow)
+
+    height_wth => get_height_fv(Wtheta, conv_mesh%get_id())
+    height_w3  => get_height_fv(W3, conv_mesh%get_id())
+
+    ncells = conv_mesh%get_last_edge_cell()
+    call um_sizes_init(ncells)
+    write(log_scratch_space,*) ", ncells = ", ncells
+    call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+    ! Initialise the coarse convection fields
+    call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
+
+    ! Model prognostics
+    call init_coarse_field_from(rho_coarse, rho, conv_mesh)
+    call init_coarse_field_from(exner_coarse, exner, conv_mesh)
+    call init_coarse_field_from(theta_coarse, theta, conv_mesh)
+    ! Mixing ratios - need special handling
+    do i_mr=1, nummr
+      call init_coarse_field_from(mr_coarse(i_mr), mr(i_mr), conv_mesh)
+      call init_coarse_field_from(mr_n_coarse(i_mr), mr_n(i_mr), conv_mesh)
+    end do
+
+    ! Derived fields/packed fields
+    call init_coarse_field_from(exner_in_wth_coarse, exner_in_wth, conv_mesh)
+    call init_coarse_field_from(rho_in_wth_coarse, rho_in_wth, conv_mesh)
+    call init_coarse_field_from(wetrho_in_wth_coarse, wetrho_in_wth, conv_mesh)
+    call init_coarse_field_from(wetrho_in_w3_coarse, wetrho_in_w3, conv_mesh)
+    call init_coarse_field_from(u_in_w3_coarse, u_in_w3, conv_mesh)
+    call init_coarse_field_from(v_in_w3_coarse, v_in_w3, conv_mesh)
+    call init_coarse_field_from(w_in_wth_coarse, w_in_wth, conv_mesh)
+    call init_coarse_field_from(theta_star_coarse, theta_star, conv_mesh)
+    call init_coarse_field_from(u_in_w3_star_coarse, u_in_w3_star, conv_mesh)
+    call init_coarse_field_from(v_in_w3_star_coarse, v_in_w3_star, conv_mesh)
+
+    call init_coarse_field_from(zh_coarse, zh, conv_mesh)
+    call init_coarse_field_from(zh_nonloc_coarse, zh_nonloc, conv_mesh)
+    call init_coarse_field_from(zhsc_coarse, zhsc, conv_mesh)
+    call init_coarse_field_from(inv_depth_coarse, inv_depth, conv_mesh)
+    call init_coarse_integer_field_from(bl_type_ind_coarse, bl_type_ind, conv_mesh)
+    call init_coarse_field_from(tke_bl_coarse, tke_bl, conv_mesh)
+    call init_coarse_field_from(wvar_coarse, wvar, conv_mesh)
+    call init_coarse_field_from(rhokm_bl_coarse, rhokm_bl, conv_mesh)
+    call init_coarse_field_from(moist_flux_coarse, moist_flux, conv_mesh)
+    call init_coarse_field_from(heat_flux_coarse, heat_flux, conv_mesh)
+    call init_coarse_field_from(taux_coarse, taux, conv_mesh)
+    call init_coarse_field_from(tauy_coarse, tauy, conv_mesh)
+
+    call init_coarse_field_from(surf_interp_coarse, surf_interp, conv_mesh)
+    call init_coarse_field_from(ustar_coarse, ustar, conv_mesh)
+
+    call init_coarse_field_from(conv_rain_coarse, conv_rain, conv_mesh)
+    call init_coarse_field_from(conv_rain_3d_coarse, conv_rain_3d, conv_mesh)
+    call init_coarse_field_from(conv_snow_coarse, conv_snow, conv_mesh)
+    call init_coarse_field_from(conv_snow_3d_coarse, conv_snow_3d, conv_mesh)
+    call init_coarse_field_from(cca_2d_coarse, cca_2d, conv_mesh)
+    call init_coarse_field_from(cv_base_coarse, cv_base, conv_mesh)
+    call init_coarse_field_from(cv_top_coarse, cv_top, conv_mesh)
+    call init_coarse_field_from(cca_coarse, cca, conv_mesh)
+    call init_coarse_field_from(ccw_coarse, ccw, conv_mesh)
+    call init_coarse_field_from(dt_conv_coarse, dt_conv, conv_mesh)
+    call init_coarse_field_from(dmv_conv_coarse, dmv_conv, conv_mesh)
+    call init_coarse_field_from(dmcl_conv_coarse, dmcl_conv, conv_mesh)
+    call init_coarse_field_from(dms_conv_coarse, dms_conv, conv_mesh)
+    call init_coarse_field_from(dcfl_conv_coarse, dcfl_conv, conv_mesh)
+    call init_coarse_field_from(dcff_conv_coarse, dcff_conv, conv_mesh)
+    call init_coarse_field_from(dbcf_conv_coarse, dbcf_conv, conv_mesh)
+    call init_coarse_field_from(du_conv_coarse, du_conv, conv_mesh)
+    call init_coarse_field_from(dv_conv_coarse, dv_conv, conv_mesh)
+    call init_coarse_field_from(conv_prog_dtheta_coarse, conv_prog_dtheta, conv_mesh)
+    call init_coarse_field_from(conv_prog_dmv_coarse, conv_prog_dmv, conv_mesh)
+    call init_coarse_field_from(dd_mf_cb_coarse, dd_mf_cb, conv_mesh)
+    call init_coarse_field_from(massflux_up_coarse, massflux_up, conv_mesh)
+    call init_coarse_field_from(massflux_down_coarse, massflux_down, conv_mesh)
+    call init_coarse_field_from(cape_diluted_coarse, cape_diluted, conv_mesh)
+    call init_coarse_field_from(pressure_inc_env_coarse, pressure_inc_env, conv_mesh)
+
+    call init_coarse_field_from(cf_fro_coarse, cf_fro, conv_mesh)
+    call init_coarse_field_from(cf_liq_coarse, cf_liq, conv_mesh)
+    call init_coarse_field_from(cf_bulk_coarse, cf_bulk, conv_mesh)
+    call init_coarse_field_from(cf_liq_n_coarse, cf_liq_n, conv_mesh)
+    call init_coarse_field_from(cf_fro_n_coarse, cf_fro_n, conv_mesh)
+    call init_coarse_field_from(cf_bulk_n_coarse, cf_bulk_n, conv_mesh)
+
+    call init_coarse_field_from(o3p_coarse, o3p, conv_mesh)
+    call init_coarse_field_from(o1d_coarse, o1d, conv_mesh)
+    call init_coarse_field_from(o3_coarse, o3, conv_mesh)
+    call init_coarse_field_from(n_coarse, n, conv_mesh)
+    call init_coarse_field_from(no_coarse, no, conv_mesh)
+    call init_coarse_field_from(no3_coarse, no3, conv_mesh)
+    call init_coarse_field_from(lumped_n_coarse, lumped_n, conv_mesh)
+    call init_coarse_field_from(n2o5_coarse, n2o5, conv_mesh)
+    call init_coarse_field_from(ho2no2_coarse, ho2no2, conv_mesh)
+    call init_coarse_field_from(hono2_coarse, hono2, conv_mesh)
+    call init_coarse_field_from(h2o2_coarse, h2o2, conv_mesh)
+    call init_coarse_field_from(ch4_coarse, ch4, conv_mesh)
+    call init_coarse_field_from(co_coarse, co, conv_mesh)
+    call init_coarse_field_from(hcho_coarse, hcho, conv_mesh)
+    call init_coarse_field_from(meoo_coarse, meoo, conv_mesh)
+    call init_coarse_field_from(meooh_coarse, meooh, conv_mesh)
+    call init_coarse_field_from(h_coarse, h, conv_mesh)
+    call init_coarse_field_from(oh_coarse, oh, conv_mesh)
+    call init_coarse_field_from(ho2_coarse, ho2, conv_mesh)
+    call init_coarse_field_from(cl_coarse, cl, conv_mesh)
+    call init_coarse_field_from(cl2o2_coarse, cl2o2, conv_mesh)
+    call init_coarse_field_from(clo_coarse, clo, conv_mesh)
+    call init_coarse_field_from(oclo_coarse, oclo, conv_mesh)
+    call init_coarse_field_from(br_coarse, br, conv_mesh)
+    call init_coarse_field_from(lumped_br_coarse, lumped_br, conv_mesh)
+    call init_coarse_field_from(brcl_coarse, brcl, conv_mesh)
+    call init_coarse_field_from(brono2_coarse, brono2, conv_mesh)
+    call init_coarse_field_from(n2o_coarse, n2o, conv_mesh)
+    call init_coarse_field_from(lumped_cl_coarse, lumped_cl, conv_mesh)
+    call init_coarse_field_from(hocl_coarse, hocl, conv_mesh)
+    call init_coarse_field_from(hbr_coarse, hbr, conv_mesh)
+    call init_coarse_field_from(hobr_coarse, hobr, conv_mesh)
+    call init_coarse_field_from(clono2_coarse, clono2, conv_mesh)
+    call init_coarse_field_from(cfcl3_coarse, cfcl3, conv_mesh)
+    call init_coarse_field_from(cf2cl2_coarse, cf2cl2, conv_mesh)
+    call init_coarse_field_from(mebr_coarse, mebr, conv_mesh)
+    call init_coarse_field_from(hono_coarse, hono, conv_mesh)
+    call init_coarse_field_from(c2h6_coarse, c2h6, conv_mesh)
+    call init_coarse_field_from(etoo_coarse, etoo, conv_mesh)
+    call init_coarse_field_from(etooh_coarse, etooh, conv_mesh)
+    call init_coarse_field_from(mecho_coarse, mecho, conv_mesh)
+    call init_coarse_field_from(meco3_coarse, meco3, conv_mesh)
+    call init_coarse_field_from(pan_coarse, pan, conv_mesh)
+    call init_coarse_field_from(c3h8_coarse, c3h8, conv_mesh)
+    call init_coarse_field_from(n_proo_coarse, n_proo, conv_mesh)
+    call init_coarse_field_from(i_proo_coarse, i_proo, conv_mesh)
+    call init_coarse_field_from(n_prooh_coarse, n_prooh, conv_mesh)
+    call init_coarse_field_from(i_prooh_coarse, i_prooh, conv_mesh)
+    call init_coarse_field_from(etcho_coarse, etcho, conv_mesh)
+    call init_coarse_field_from(etco3_coarse, etco3, conv_mesh)
+    call init_coarse_field_from(me2co_coarse, me2co, conv_mesh)
+    call init_coarse_field_from(mecoch2oo_coarse, mecoch2oo, conv_mesh)
+    call init_coarse_field_from(mecoch2ooh_coarse, mecoch2ooh, conv_mesh)
+    call init_coarse_field_from(ppan_coarse, ppan, conv_mesh)
+    call init_coarse_field_from(meono2_coarse, meono2, conv_mesh)
+    call init_coarse_field_from(c5h8_coarse, c5h8, conv_mesh)
+    call init_coarse_field_from(iso2_coarse, iso2, conv_mesh)
+    call init_coarse_field_from(isooh_coarse, isooh, conv_mesh)
+    call init_coarse_field_from(ison_coarse, ison, conv_mesh)
+    call init_coarse_field_from(macr_coarse, macr, conv_mesh)
+    call init_coarse_field_from(macro2_coarse, macro2, conv_mesh)
+    call init_coarse_field_from(macrooh_coarse, macrooh, conv_mesh)
+    call init_coarse_field_from(mpan_coarse, mpan, conv_mesh)
+    call init_coarse_field_from(hacet_coarse, hacet, conv_mesh)
+    call init_coarse_field_from(mgly_coarse, mgly, conv_mesh)
+    call init_coarse_field_from(nald_coarse, nald, conv_mesh)
+    call init_coarse_field_from(hcooh_coarse, hcooh, conv_mesh)
+    call init_coarse_field_from(meco3h_coarse, meco3h, conv_mesh)
+    call init_coarse_field_from(meco2h_coarse, meco2h, conv_mesh)
+    call init_coarse_field_from(h2_coarse, h2, conv_mesh)
+    call init_coarse_field_from(meoh_coarse, meoh, conv_mesh)
+    call init_coarse_field_from(msa_coarse, msa, conv_mesh)
+    call init_coarse_field_from(nh3_coarse, nh3, conv_mesh)
+    call init_coarse_field_from(cs2_coarse, cs2, conv_mesh)
+    call init_coarse_field_from(csul_coarse, csul, conv_mesh)
+    call init_coarse_field_from(h2s_coarse, h2s, conv_mesh)
+    call init_coarse_field_from(so3_coarse, so3, conv_mesh)
+    call init_coarse_field_from(passive_o3_coarse, passive_o3, conv_mesh)
+    call init_coarse_field_from(age_of_air_coarse, age_of_air, conv_mesh)
+
+    call init_coarse_field_from(dms_coarse, dms, conv_mesh)
+    call init_coarse_field_from(so2_coarse, so2, conv_mesh)
+    call init_coarse_field_from(h2so4_coarse, h2so4, conv_mesh)
+    call init_coarse_field_from(dmso_coarse, dmso, conv_mesh)
+    call init_coarse_field_from(monoterpene_coarse, monoterpene, conv_mesh)
+    call init_coarse_field_from(secondary_organic_coarse, secondary_organic, conv_mesh)
+
+    call init_coarse_field_from(n_nuc_sol_coarse, n_nuc_sol, conv_mesh)
+    call init_coarse_field_from(nuc_sol_su_coarse, nuc_sol_su, conv_mesh)
+    call init_coarse_field_from(nuc_sol_om_coarse, nuc_sol_om, conv_mesh)
+    call init_coarse_field_from(n_ait_sol_coarse, n_ait_sol, conv_mesh)
+    call init_coarse_field_from(ait_sol_su_coarse, ait_sol_su, conv_mesh)
+    call init_coarse_field_from(ait_sol_bc_coarse, ait_sol_bc, conv_mesh)
+    call init_coarse_field_from(ait_sol_om_coarse, ait_sol_om, conv_mesh)
+    call init_coarse_field_from(n_acc_sol_coarse, n_acc_sol, conv_mesh)
+    call init_coarse_field_from(acc_sol_su_coarse, acc_sol_su, conv_mesh)
+    call init_coarse_field_from(acc_sol_bc_coarse, acc_sol_bc, conv_mesh)
+    call init_coarse_field_from(acc_sol_om_coarse, acc_sol_om, conv_mesh)
+    call init_coarse_field_from(acc_sol_ss_coarse, acc_sol_ss, conv_mesh)
+    call init_coarse_field_from(n_cor_sol_coarse, n_cor_sol, conv_mesh)
+    call init_coarse_field_from(cor_sol_su_coarse, cor_sol_su, conv_mesh)
+    call init_coarse_field_from(cor_sol_bc_coarse, cor_sol_bc, conv_mesh)
+    call init_coarse_field_from(cor_sol_om_coarse, cor_sol_om, conv_mesh)
+    call init_coarse_field_from(cor_sol_ss_coarse, cor_sol_ss, conv_mesh)
+    call init_coarse_field_from(n_ait_ins_coarse, n_ait_ins, conv_mesh)
+    call init_coarse_field_from(ait_ins_bc_coarse, ait_ins_bc, conv_mesh)
+    call init_coarse_field_from(ait_ins_om_coarse, ait_ins_om, conv_mesh)
+    call init_coarse_field_from(n_acc_ins_coarse, n_acc_ins, conv_mesh)
+    call init_coarse_field_from(acc_ins_du_coarse, acc_ins_du, conv_mesh)
+    call init_coarse_field_from(n_cor_ins_coarse, n_cor_ins, conv_mesh)
+    call init_coarse_field_from(cor_ins_du_coarse, cor_ins_du, conv_mesh)
+
+    call init_coarse_field_from(tnuc_coarse, tnuc, conv_mesh)
+    call init_coarse_field_from(precfrac_coarse, precfrac, conv_mesh)
+    call init_coarse_field_from(ls_rain_coarse, ls_rain, conv_mesh)
+    call init_coarse_field_from(ls_snow_coarse, ls_snow, conv_mesh)
+
+    ! Initialise local coarse fields
+    ! TODO: This needs to be handled seperately because they don't
+    ! have any corresponding fine fields!
+  
+    call initialise_diags_for_diagnostic_mode_comorph(conv_mesh,                   &
+                                                      lowest_cv_base_coarse,       &
+                                                      lowest_cv_top_coarse,        &         
+                                                      pres_cv_base_coarse,         &
+                                                      pres_cv_top_coarse,          &
+                                                      pres_lowest_cv_base_coarse,  &
+                                                      pres_lowest_cv_top_coarse,   &
+                                                      lowest_cca_2d_coarse,        &
+                                                      entrain_up_coarse,           & ! 3-D variables
+                                                      entrain_down_coarse,         &
+                                                      detrain_up_coarse,           &
+                                                      detrain_down_coarse,         &
+                                                      massflux_up_half_coarse)
+
+    ! Map the fine fields to the coarse fields
+    ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
+    ! map_rho_intermesh is only for W3 space rho
+    call log_event( 'map_rho_intermesh on ordinary rho', LOG_LEVEL_INFO )
+    call map_rho_intermesh(rho_coarse, rho)
+    call map_scalar_field(exner_coarse, exner)
+    call map_scalar_field(theta_coarse, theta)
+
+    ! Check coarse rho field
+    call print_field_stats_alg(rho_coarse, LOG_LEVEL_INFO, name='rho_coarse after map_rho_intermesh')
+
+    ! mr bundle fields
+    call log_event( 'map_mr_bundle_intermesh on mr', LOG_LEVEL_INFO )
+    call map_mr_bundle_intermesh(mr_coarse, mr, rho_coarse, rho)
+    call log_event( 'map_mr_bundle_intermesh on mr_n', LOG_LEVEL_INFO )
+    call map_mr_bundle_intermesh(mr_n_coarse, mr_n, rho_coarse, rho)
+    ! Other derived fields
+    call map_scalar_field(exner_in_wth_coarse, exner_in_wth)
+    ! map_rho_intermesh only works with W3 fields, so use physics field
+    ! mapping for wth equivalents of rho/wetrho
+    call log_event( 'map_rho_intermesh on wet_rho', LOG_LEVEL_INFO )
+    call map_rho_intermesh(wetrho_in_w3_coarse, wetrho_in_w3)
+    call log_event( 'map_physics_scalars for rho and wetrho', LOG_LEVEL_INFO )
+    call map_physics_scalars(rho_in_wth_coarse, rho_coarse)
+    call map_physics_scalars(wetrho_in_wth_coarse, wetrho_in_w3_coarse)
+    ! u,v,w velocity components
+    call map_scalar_field(u_in_w3_coarse, u_in_w3)
+    call map_scalar_field(v_in_w3_coarse, v_in_w3)
+    call map_scalar_field(w_in_wth_coarse, w_in_wth)
+    call map_scalar_field(theta_star_coarse, theta_star)
+    call map_scalar_field(u_in_w3_star_coarse, u_in_w3_star)
+    call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
+    ! Boundary layer fields; these are 2D fields
+    call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
+    call map_scalar_field(zh_coarse, zh)
+    call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
+    call map_scalar_field(zhsc_coarse, zhsc)
+    call map_scalar_field(inv_depth_coarse, inv_depth)
+    ! bl_type_ind is an integer field; TODO: use majority vote mapping
+    ! For now we just set all indicators to zero since the kernel only
+    ! cares whether or not it is a Type 7 BL; this is equivalent to saying
+    ! that all of them are not Type 7 BL.
+    call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
+    call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
+    ! Boundary layer fields
+    call map_scalar_field(tke_bl_coarse, tke_bl)
+    call map_scalar_field(wvar_coarse, wvar)
+    call map_scalar_field(rhokm_bl_coarse, rhokm_bl)
+    call map_scalar_field(moist_flux_coarse, moist_flux)
+    call map_scalar_field(heat_flux_coarse, heat_flux)
+    call map_scalar_field(taux_coarse, taux)
+    call map_scalar_field(tauy_coarse, tauy)
+    ! Surface fields; does map_scalar_field work for 2D fields?
+    call map_scalar_field(surf_interp_coarse, surf_interp)
+    call map_scalar_field(ustar_coarse, ustar)
+    ! Convection diagnostics
+    call map_scalar_field(conv_rain_coarse, conv_rain)
+    call map_scalar_field(conv_rain_3d_coarse, conv_rain_3d)
+    call map_scalar_field(conv_snow_coarse, conv_snow)
+    call map_scalar_field(conv_snow_3d_coarse, conv_snow_3d)
+    call map_scalar_field(cca_2d_coarse, cca_2d)
+    call map_scalar_field(cv_base_coarse, cv_base)
+    call map_scalar_field(cv_top_coarse, cv_top)
+    call map_scalar_field(cca_coarse, cca)
+    call map_scalar_field(ccw_coarse, ccw)
+    call map_scalar_field(dt_conv_coarse, dt_conv)
+    call map_scalar_field(dmv_conv_coarse, dmv_conv)
+    call map_scalar_field(dmcl_conv_coarse, dmcl_conv)
+    call map_scalar_field(dms_conv_coarse, dms_conv)
+    call map_scalar_field(dcfl_conv_coarse, dcfl_conv)
+    call map_scalar_field(dcff_conv_coarse, dcff_conv)
+    call map_scalar_field(dbcf_conv_coarse, dbcf_conv)
+    call map_scalar_field(du_conv_coarse, du_conv)
+    call map_scalar_field(dv_conv_coarse, dv_conv)
+    call map_scalar_field(conv_prog_dtheta_coarse, conv_prog_dtheta)
+    call map_scalar_field(conv_prog_dmv_coarse, conv_prog_dmv)
+    call map_scalar_field(dd_mf_cb_coarse, dd_mf_cb)
+    call map_scalar_field(massflux_up_coarse, massflux_up)
+    call map_scalar_field(massflux_down_coarse, massflux_down)
+    call map_scalar_field(cape_diluted_coarse, cape_diluted)
+    call map_scalar_field(pressure_inc_env_coarse, pressure_inc_env)
+    ! Cloud fields
+    call map_scalar_field(cf_fro_coarse, cf_fro)
+    call map_scalar_field(cf_liq_coarse, cf_liq)
+    call map_scalar_field(cf_bulk_coarse, cf_bulk)
+    call map_scalar_field(cf_liq_n_coarse, cf_liq_n)
+    call map_scalar_field(cf_fro_n_coarse, cf_fro_n)
+    call map_scalar_field(cf_bulk_n_coarse, cf_bulk_n)
+    ! Chemistry & Aerosol fields
+    call map_scalar_field(o3p_coarse, o3p)
+    call map_scalar_field(o1d_coarse, o1d)
+    call map_scalar_field(o3_coarse, o3)
+    call map_scalar_field(n_coarse, n)
+    call map_scalar_field(no_coarse, no)
+    call map_scalar_field(no3_coarse, no3)
+    call map_scalar_field(lumped_n_coarse, lumped_n)
+    call map_scalar_field(n2o5_coarse, n2o5)
+    call map_scalar_field(ho2no2_coarse, ho2no2)
+    call map_scalar_field(hono2_coarse, hono2)
+    call map_scalar_field(h2o2_coarse, h2o2)
+    call map_scalar_field(ch4_coarse, ch4)
+    call map_scalar_field(co_coarse, co)
+    call map_scalar_field(hcho_coarse, hcho)
+    call map_scalar_field(meoo_coarse, meoo)
+    call map_scalar_field(meooh_coarse, meooh)
+    call map_scalar_field(h_coarse, h)
+    call map_scalar_field(oh_coarse, oh)
+    call map_scalar_field(ho2_coarse, ho2)
+    call map_scalar_field(cl_coarse, cl)
+    call map_scalar_field(cl2o2_coarse, cl2o2)
+    call map_scalar_field(clo_coarse, clo)
+    call map_scalar_field(oclo_coarse, oclo)
+    call map_scalar_field(br_coarse, br)
+    call map_scalar_field(lumped_br_coarse, lumped_br)
+    call map_scalar_field(brcl_coarse, brcl)
+    call map_scalar_field(brono2_coarse, brono2)
+    call map_scalar_field(n2o_coarse, n2o)
+    call map_scalar_field(lumped_cl_coarse, lumped_cl)
+    call map_scalar_field(hocl_coarse, hocl)
+    call map_scalar_field(hbr_coarse, hbr)
+    call map_scalar_field(hobr_coarse, hobr)
+    call map_scalar_field(clono2_coarse, clono2)
+    call map_scalar_field(cfcl3_coarse, cfcl3)
+    call map_scalar_field(cf2cl2_coarse, cf2cl2)
+    call map_scalar_field(mebr_coarse, mebr)
+    call map_scalar_field(hono_coarse, hono)
+    call map_scalar_field(c2h6_coarse, c2h6)
+    call map_scalar_field(etoo_coarse, etoo)
+    call map_scalar_field(etooh_coarse, etooh)
+    call map_scalar_field(mecho_coarse, mecho)
+    call map_scalar_field(meco3_coarse, meco3)
+    call map_scalar_field(pan_coarse, pan)
+    call map_scalar_field(c3h8_coarse, c3h8)
+    call map_scalar_field(n_proo_coarse, n_proo)
+    call map_scalar_field(i_proo_coarse, i_proo)
+    call map_scalar_field(n_prooh_coarse, n_prooh)
+    call map_scalar_field(i_prooh_coarse, i_prooh)
+    call map_scalar_field(etcho_coarse, etcho)
+    call map_scalar_field(etco3_coarse, etco3)
+    call map_scalar_field(me2co_coarse, me2co)
+    call map_scalar_field(mecoch2oo_coarse, mecoch2oo)
+    call map_scalar_field(mecoch2ooh_coarse, mecoch2ooh)
+    call map_scalar_field(ppan_coarse, ppan)
+    call map_scalar_field(meono2_coarse, meono2)
+    call map_scalar_field(c5h8_coarse, c5h8)
+    call map_scalar_field(iso2_coarse, iso2)
+    call map_scalar_field(isooh_coarse, isooh)
+    call map_scalar_field(ison_coarse, ison)
+    call map_scalar_field(macr_coarse, macr)
+    call map_scalar_field(macro2_coarse, macro2)
+    call map_scalar_field(macrooh_coarse, macrooh)
+    call map_scalar_field(mpan_coarse, mpan)
+    call map_scalar_field(hacet_coarse, hacet)
+    call map_scalar_field(mgly_coarse, mgly)
+    call map_scalar_field(nald_coarse, nald)
+    call map_scalar_field(hcooh_coarse, hcooh)
+    call map_scalar_field(meco3h_coarse, meco3h)
+    call map_scalar_field(meco2h_coarse, meco2h)
+    call map_scalar_field(h2_coarse, h2)
+    call map_scalar_field(meoh_coarse, meoh)
+    call map_scalar_field(msa_coarse, msa)
+    call map_scalar_field(nh3_coarse, nh3)
+    call map_scalar_field(cs2_coarse, cs2)
+    call map_scalar_field(csul_coarse, csul)
+    call map_scalar_field(h2s_coarse, h2s)
+    call map_scalar_field(so3_coarse, so3)
+    call map_scalar_field(passive_o3_coarse, passive_o3)
+    call map_scalar_field(age_of_air_coarse, age_of_air)
+    call map_scalar_field(dms_coarse, dms)
+    call map_scalar_field(so2_coarse, so2)
+    call map_scalar_field(h2so4_coarse, h2so4)
+    call map_scalar_field(dmso_coarse, dmso)
+    call map_scalar_field(monoterpene_coarse, monoterpene)
+    call map_scalar_field(secondary_organic_coarse, secondary_organic)
+    call map_scalar_field(n_nuc_sol_coarse, n_nuc_sol)
+    call map_scalar_field(nuc_sol_su_coarse, nuc_sol_su)
+    call map_scalar_field(nuc_sol_om_coarse, nuc_sol_om)
+    call map_scalar_field(n_ait_sol_coarse, n_ait_sol)
+    call map_scalar_field(ait_sol_su_coarse, ait_sol_su)
+    call map_scalar_field(ait_sol_bc_coarse, ait_sol_bc)
+    call map_scalar_field(ait_sol_om_coarse, ait_sol_om)
+    call map_scalar_field(n_acc_sol_coarse, n_acc_sol)
+    call map_scalar_field(acc_sol_su_coarse, acc_sol_su)
+    call map_scalar_field(acc_sol_bc_coarse, acc_sol_bc)
+    call map_scalar_field(acc_sol_om_coarse, acc_sol_om)
+    call map_scalar_field(acc_sol_ss_coarse, acc_sol_ss)
+    call map_scalar_field(n_cor_sol_coarse, n_cor_sol)
+    call map_scalar_field(cor_sol_su_coarse, cor_sol_su)
+    call map_scalar_field(cor_sol_bc_coarse, cor_sol_bc)
+    call map_scalar_field(cor_sol_om_coarse, cor_sol_om)
+    call map_scalar_field(cor_sol_ss_coarse, cor_sol_ss)
+    call map_scalar_field(n_ait_ins_coarse, n_ait_ins)
+    call map_scalar_field(ait_ins_bc_coarse, ait_ins_bc)
+    call map_scalar_field(ait_ins_om_coarse, ait_ins_om)
+    call map_scalar_field(n_acc_ins_coarse, n_acc_ins)
+    call map_scalar_field(acc_ins_du_coarse, acc_ins_du)
+    call map_scalar_field(n_cor_ins_coarse, n_cor_ins)
+    call map_scalar_field(cor_ins_du_coarse, cor_ins_du)
+   ! Microphysics 
+    call map_scalar_field(tnuc_coarse, tnuc)
+    call map_scalar_field(precfrac_coarse, precfrac)
+    call map_scalar_field(ls_rain_coarse, ls_rain)
+    call map_scalar_field(ls_snow_coarse, ls_snow)
+
+    ! call the scheme
+    call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
+                          wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
+                          delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
+                          theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
+                          height_w3, height_wth,                                                                        &
+                          dt_conv_coarse, dmv_conv_coarse, dmcl_conv_coarse,                                            &
+                          dms_conv_coarse, du_conv_coarse, dv_conv_coarse,                                              &
+                          conv_prog_dtheta_coarse, conv_prog_dmv_coarse,                                                &
+                          mr_n_coarse(imr_v), mr_n_coarse(imr_cl), mr_n_coarse(imr_ci),                                 &
+                          mr_n_coarse(imr_r), mr_n_coarse(imr_g), mr_n_coarse(imr_s),                                   &
+                          mr_coarse(imr_v), mr_coarse(imr_cl), mr_coarse(imr_ci),                                       &
+                          mr_coarse(imr_r), mr_coarse(imr_g), mr_coarse(imr_s),                                         &
+                          cf_fro_coarse, cf_liq_coarse, cf_bulk_coarse, cca_coarse, ccw_coarse, precfrac_coarse,        &
+                          cf_liq_n_coarse, cf_fro_n_coarse, cf_bulk_n_coarse,                                           &
+                          cape_diluted_coarse, cca_2d_coarse,                                                           &
+                          dd_mf_cb_coarse, massflux_up_coarse, massflux_down_coarse, tke_bl_coarse,                     &
+                          pressure_inc_env_coarse,                                                                      &
+                          zh_coarse, zh_nonloc_coarse, inv_depth_coarse, zhsc_coarse, bl_type_ind_coarse,               &
+                          wvar_coarse, rhokm_bl_coarse, moist_flux_coarse, heat_flux_coarse, taux_coarse, tauy_coarse,  &
+                          surf_interp_coarse, ustar_coarse, ls_rain_coarse, ls_snow_coarse,                             &
+                          dcfl_conv_coarse, dcff_conv_coarse, dbcf_conv_coarse,                                         &
+                          o3p_coarse,                                                                                   &
+                          o1d_coarse,                                                                                   &
+                          o3_coarse,                                                                                    &
+                          n_coarse,                                                                                     &
+                          no_coarse,                                                                                    &
+                          no3_coarse,                                                                                   &
+                          lumped_n_coarse,                                                                              &
+                          n2o5_coarse,                                                                                  &
+                          ho2no2_coarse,                                                                                &
+                          hono2_coarse,                                                                                 &
+                          h2o2_coarse,                                                                                  &
+                          ch4_coarse,                                                                                   &
+                          co_coarse,                                                                                    &
+                          hcho_coarse,                                                                                  &
+                          meoo_coarse,                                                                                  &
+                          meooh_coarse,                                                                                 &
+                          h_coarse,                                                                                     &
+                          oh_coarse,                                                                                    &
+                          ho2_coarse,                                                                                   &
+                          cl_coarse,                                                                                    &
+                          cl2o2_coarse,                                                                                 &
+                          clo_coarse,                                                                                   &
+                          oclo_coarse,                                                                                  &
+                          br_coarse,                                                                                    &
+                          lumped_br_coarse,                                                                             &
+                          brcl_coarse,                                                                                  &
+                          brono2_coarse,                                                                                &
+                          n2o_coarse,                                                                                   &
+                          lumped_cl_coarse,                                                                             &
+                          hocl_coarse,                                                                                  &
+                          hbr_coarse,                                                                                   &
+                          hobr_coarse,                                                                                  &
+                          clono2_coarse,                                                                                &
+                          cfcl3_coarse,                                                                                 &
+                          cf2cl2_coarse,                                                                                &
+                          mebr_coarse,                                                                                  &
+                          hono_coarse,                                                                                  &
+                          c2h6_coarse,                                                                                  &
+                          etoo_coarse,                                                                                  &
+                          etooh_coarse,                                                                                 &
+                          mecho_coarse,                                                                                 &
+                          meco3_coarse,                                                                                 &
+                          pan_coarse,                                                                                   &
+                          c3h8_coarse,                                                                                  &
+                          n_proo_coarse,                                                                                &
+                          i_proo_coarse,                                                                                &
+                          n_prooh_coarse,                                                                               &
+                          i_prooh_coarse,                                                                               &
+                          etcho_coarse,                                                                                 &
+                          etco3_coarse,                                                                                 &
+                          me2co_coarse,                                                                                 &
+                          mecoch2oo_coarse,                                                                             &
+                          mecoch2ooh_coarse,                                                                            &
+                          ppan_coarse,                                                                                  &
+                          meono2_coarse,                                                                                &
+                          c5h8_coarse,                                                                                  &
+                          iso2_coarse,                                                                                  &
+                          isooh_coarse,                                                                                 &
+                          ison_coarse,                                                                                  &
+                          macr_coarse,                                                                                  &
+                          macro2_coarse,                                                                                &
+                          macrooh_coarse,                                                                               &
+                          mpan_coarse,                                                                                  &
+                          hacet_coarse,                                                                                 &
+                          mgly_coarse,                                                                                  &
+                          nald_coarse,                                                                                  &
+                          hcooh_coarse,                                                                                 &
+                          meco3h_coarse,                                                                                &
+                          meco2h_coarse,                                                                                &
+                          h2_coarse,                                                                                    &
+                          meoh_coarse,                                                                                  &
+                          msa_coarse,                                                                                   &
+                          nh3_coarse,                                                                                   &
+                          cs2_coarse,                                                                                   &
+                          csul_coarse,                                                                                  &
+                          h2s_coarse,                                                                                   &
+                          so3_coarse,                                                                                   &
+                          passive_o3_coarse,                                                                            &
+                          age_of_air_coarse,                                                                            &
+                          dms_coarse,                                                                                   &
+                          so2_coarse,                                                                                   &
+                          h2so4_coarse,                                                                                 &
+                          dmso_coarse,                                                                                  &
+                          monoterpene_coarse,                                                                           &
+                          secondary_organic_coarse,                                                                     &
+                          n_nuc_sol_coarse,                                                                             &
+                          nuc_sol_su_coarse,                                                                            &
+                          nuc_sol_om_coarse,                                                                            &
+                          n_ait_sol_coarse,                                                                             &
+                          ait_sol_su_coarse,                                                                            &
+                          ait_sol_bc_coarse,                                                                            &
+                          ait_sol_om_coarse,                                                                            &
+                          n_acc_sol_coarse,                                                                             &
+                          acc_sol_su_coarse,                                                                            &
+                          acc_sol_bc_coarse,                                                                            &
+                          acc_sol_om_coarse,                                                                            &
+                          acc_sol_ss_coarse,                                                                            &
+                          n_cor_sol_coarse,                                                                             &
+                          cor_sol_su_coarse,                                                                            &
+                          cor_sol_bc_coarse,                                                                            &
+                          cor_sol_om_coarse,                                                                            &
+                          cor_sol_ss_coarse,                                                                            &
+                          n_ait_ins_coarse,                                                                             &
+                          ait_ins_bc_coarse,                                                                            &
+                          ait_ins_om_coarse,                                                                            &
+                          n_acc_ins_coarse,                                                                             &
+                          acc_ins_du_coarse,                                                                            &
+                          n_cor_ins_coarse,                                                                             &
+                          cor_ins_du_coarse,                                                                            &
+                          tnuc_coarse,                                                                                  &
+                          lowest_cv_base_coarse,                                                                        &
+                          lowest_cv_top_coarse,                                                                         &
+                          cv_base_coarse,                                                                               &
+                          cv_top_coarse,                                                                                &
+                          pres_cv_base_coarse,                                                                          &
+                          pres_cv_top_coarse,                                                                           &
+                          pres_lowest_cv_base_coarse,                                                                   &
+                          pres_lowest_cv_top_coarse,                                                                    &
+                          lowest_cca_2d_coarse,                                                                         &
+                          entrain_up_coarse,                                                                            &
+                          entrain_down_coarse,                                                                          &
+                          detrain_up_coarse,                                                                            &
+                          detrain_down_coarse,                                                                          &
+                          massflux_up_half_coarse)                                                                      &
+                                               ) ! end of invoke
+
+    call um_sizes_init(1_i_def)
+
+    if ( subroutine_timers ) call timer("conv_comorph_alg")
+
+    ! Call the diagnostics output routine
+    if ( write_diag .and. use_xios_io ) then
+
+      call output_diags_for_diagnostic_mode_comorph(            &
+                                  cca_coarse,                   &
+                                  dt_conv_coarse,               &
+                                  dmv_conv_coarse,              &
+                                  dmcl_conv_coarse,             &
+                                  dms_conv_coarse,              &
+                                  du_conv_coarse,               &
+                                  dv_conv_coarse,               &
+                                  dcfl_conv_coarse,             &
+                                  dcff_conv_coarse,             &
+                                  dbcf_conv_coarse,             &
+                                  massflux_up_coarse,           &
+                                  massflux_down_coarse,         &
+                                  cape_diluted_coarse,          &
+                                  conv_rain_coarse,             &
+                                  conv_snow_coarse,             &
+                                  conv_rain_3d_coarse,          &
+                                  conv_snow_3d_coarse,          &
+                                  cca_2d_coarse,                &
+                                  lowest_cv_base_coarse,        &
+                                  lowest_cv_top_coarse,         &
+                                  cv_base_coarse,               &
+                                  cv_top_coarse,                &
+                                  pres_cv_base_coarse,          &
+                                  pres_cv_top_coarse,           &
+                                  pres_lowest_cv_base_coarse,   &
+                                  pres_lowest_cv_top_coarse,    &
+                                  lowest_cca_2d_coarse,         &
+                                  entrain_up_coarse,            & ! 3-D
+                                  entrain_down_coarse,          &
+                                  detrain_up_coarse,            &
+                                  detrain_down_coarse,          &
+                                  massflux_up_half_coarse,      &
+                                  bl_type_ind_coarse,           &
+                                  precfrac_coarse)
+    end if
+
+  nullify( conv_mesh )
+
+  end subroutine diagnostic_mode_comorph_alg
+
+end module diagnostic_mode_comorph_alg_mod

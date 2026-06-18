@@ -430,6 +430,7 @@ do i_field = 1, n_fields_tot
              "Required input primary field " //                                &
              trim(adjustl(field_names(i_field))) //                            &
              "has insufficient extent / the wrong shape." )
+      
     end if
   end if
 end do

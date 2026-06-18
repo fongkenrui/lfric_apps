@@ -91,7 +91,6 @@ character(len=name_length) :: field_name
 ! Loop counters
 integer :: ic, i_field
 
-
 do ic = 1, n_points
   ! Copy parcel radius into the parcel
   par_gen_par(ic,i_radius) = par_radius_k(ic)
@@ -148,16 +147,14 @@ if ( l_tracer .and. n_tracers > 0 ) then
   end if
 end if
 
-
 if ( i_check_bad_values_cmpr > i_check_bad_none ) then
   ! Check outputs for bad values (NaN, Inf etc).
-
   if ( l_down ) then
     call_string = "On output from set_par_winds; dndraft"
   else
     call_string = "On output from set_par_winds; updraft"
   end if
-
+  
   do i_field = i_wind_u, i_wind_w
     field_name = "par_gen_mean_" // trim(adjustl(field_names(i_field)))
     call check_bad_values_cmpr( cmpr_init, k, par_gen_mean(:,i_field),         &

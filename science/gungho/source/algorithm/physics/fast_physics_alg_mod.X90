@@ -41,7 +41,8 @@ module fast_physics_alg_mod
   use formulation_config_mod,                               &
                             only: moisture_formulation,     &
                                   moisture_formulation_dry, &
-                                  theta_moist_source
+                                  theta_moist_source,       &
+                                  diagnostic_mode_conv
   use convection_config_mod,only: cv_scheme, cv_scheme_lambert_lewis, &
                                   cv_scheme_gregory_rowntree,         &
                                   cv_scheme_comorph
@@ -75,6 +76,7 @@ module fast_physics_alg_mod
   use conv_ll_alg_mod, only: conv_ll_alg
   use conv_gr_alg_mod, only: conv_gr_alg
   use conv_comorph_alg_mod, only: conv_comorph_alg
+  use diagnostic_mode_comorph_alg_mod, only: diagnostic_mode_comorph_alg
   use pc2_conv_coupling_alg_mod, only: pc2_conv_coupling_alg
   ! Jules surface schemes
   use jules_extra_alg_mod, only: jules_extra_alg
@@ -245,6 +247,18 @@ contains
     !--------------------------------------------------------------------
     ! UM convection scheme
     !--------------------------------------------------------------------
+
+    ! Run CoMorph diagnostics ahead of the convection scheme call, since the
+    ! diagnostic call does not mutate the actual model fields and only passes
+    ! copies of it to the kernel.
+    if (diagnostic_mode_conv .and. outer == outer_iterations) then
+      call diagnostic_mode_comorph_alg(mr, mr_n, rho, exner, theta, derived_fields,&
+                         turbulence_fields, convection_fields,            &
+                         cloud_fields, surface_fields, chemistry_fields,  &
+                         aerosol_fields, microphysics_fields, outer)
+    end if
+
+    ! Actual convection scheme call
     if (convection == convection_um .and.                       &
         convection_placement == convection_placement_fast) then
       if ( cv_scheme == cv_scheme_lambert_lewis ) then
@@ -264,7 +278,12 @@ contains
                          cloud_fields, surface_fields, chemistry_fields,  &
                          aerosol_fields, microphysics_fields, outer)
       end if
-
+      
+     ! If using PC2 convection scheme, we need to update the cloud fields
+     ! before the boundary layer scheme as they are needed in the BL scheme.
+     ! This is only needed if using the PC2 scheme as the coupling is more
+     ! two-way with the other UM schemes and so the convection schemes are
+     ! responsible for updating the cloud fields themselves.
       if ( cloud == cloud_um .and. scheme == scheme_pc2 ) then
         ! Update the cloud fields if using PC2
         call pc2_conv_coupling_alg( mr, derived_fields,                  &

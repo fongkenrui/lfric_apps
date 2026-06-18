@@ -220,7 +220,7 @@ subroutine set_convection_output_flags()
 use model_domain_mod,   only: model_type, mt_single_column, mt_lfric
 use stash_array_mod,    only: sf
 use cosp_input_mod,     only: i_cosp_version
-use cv_run_mod,         only: i_convection_vn, i_cv_comorph
+use cv_run_mod,         only: i_convection_vn, i_cv_comorph, l_diag_comorph
 use mphys_inputs_mod,   only: l_mcr_qcf2, graupel_option, no_graupel,          &
                               l_mcr_qrain
 use comorph_constants_mod, only: l_cv_cloudfrac, l_par_core,                   &
@@ -245,14 +245,16 @@ if ((model_type /= mt_single_column) .and.  (model_type /= mt_lfric)) then
 
   flg_up_flx = .true.  ! Always needed in atmos_physics2
   flg_up_flx_half = ( ( sf(249,5) .or. sf(246,5) ) .and. l_apply_diag )        &
-               .or. ( flg_up_flx .and. i_convection_vn == i_cv_comorph )
+               .or. ( flg_up_flx .and. i_convection_vn == i_cv_comorph )       &
+               .or. (flg_up_flx .and. l_diag_comorph)
   ! Note: flux on half-levels is needed in order to compute the flux
   ! on theta-levels if using the CoMorph convection scheme, since
   ! CoMorph only outputs the fluxes on rho-levels.
 
   flg_dwn_flx = .true.  ! Always needed in atmos_physics2
   flg_dwn_flx_half = ( flg_dwn_flx .and. i_convection_vn == i_cv_comorph ) .or.&
-                       ( sf(616,5) .and. i_convection_vn == i_cv_comorph )
+                      ( sf(616,5) .and. i_convection_vn == i_cv_comorph ) .or.&
+                      ( flg_dwn_flx .and. l_diag_comorph )
 
   ! Need to store downdraught mass flux rho on half levels if want on theta
   ! levels if using the CoMorph convection scheme.
@@ -298,7 +300,7 @@ if ((model_type /= mt_single_column) .and.  (model_type /= mt_lfric)) then
   l_qcf_incr_conv = sf(184,5) .and. l_apply_diag
 
   ! Increments to optional condensate species
-  if ( i_convection_vn == i_cv_comorph .and. l_apply_diag ) then
+  if ( (i_convection_vn == i_cv_comorph .or. l_diag_comorph) .and. l_apply_diag ) then
     ! CoMorph convection scheme produces increments to any optional
     ! condensed water fields that are in use:
     l_qcf2_incr_conv   = l_mcr_qcf2 .and. sf(191,5)
@@ -370,7 +372,7 @@ if ((model_type /= mt_single_column) .and.  (model_type /= mt_lfric)) then
   flg_area_ud      = sf(229,5) .and. l_apply_diag
   flg_area_dd      = sf(230,5) .and. l_apply_diag
 
-  if ( i_convection_vn == i_cv_comorph .and. l_apply_diag) then
+  if ( (i_convection_vn == i_cv_comorph .or. l_diag_comorph) .and. l_apply_diag) then
     flg_par_radius_up  = sf(550,5)
     flg_par_radius_dwn = sf(551,5)
     flg_freq_up        = sf(552,5)
@@ -544,7 +546,7 @@ else
   l_q_incr_conv    = .true.
   l_qcl_incr_conv  = .true.
   l_qcf_incr_conv  = .true.
-  if ( i_convection_vn == i_cv_comorph ) then
+  if ( (i_convection_vn == i_cv_comorph .or. l_diag_comorph) ) then
     ! CoMorph convection scheme produces increments to any optional
     ! condensed water fields that are in use:
     l_qcf2_incr_conv   = l_mcr_qcf2
@@ -598,7 +600,7 @@ else
   flg_w_eqn      = .true.
 
   ! Comorph convection scheme
-  if ( i_convection_vn == i_cv_comorph ) then
+  if ( (i_convection_vn == i_cv_comorph) .or. l_diag_comorph ) then
     flg_par_radius_up  = .true.
     flg_par_radius_dwn = .true.
   else

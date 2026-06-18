@@ -139,7 +139,8 @@ module um_physics_init_mod
   use extrusion_config_mod,      only : domain_height, number_of_layers
 
   use formulation_config_mod,    only : moisture_formulation,    &
-                                        moisture_formulation_dry
+                                        moisture_formulation_dry, &
+                                        diagnostic_mode_conv
 
   use microphysics_config_mod,   only : a_ratio_exp_in => a_ratio_exp,       &
                                         a_ratio_fac_in => a_ratio_fac,       &
@@ -398,7 +399,7 @@ contains
          tau_conv_prog_precip, tau_conv_prog_dtheta, tau_conv_prog_dq,     &
          prog_ent_grad, prog_ent_int, prog_ent_max, prog_ent_min,          &
          ent_fac_sh, c_mass_sh, orig_mdet_fac, i_cv_comorph,               &
-         l_cvdiag_ctop_qmax
+         l_cvdiag_ctop_qmax, l_diag_comorph
     use cv_param_mod, only: mtrig_ntml, md_pert_efrac
     use cv_stash_flg_mod, only: set_convection_output_flags
     use cv_set_dependent_switches_mod, only: cv_set_dependent_switches
@@ -808,6 +809,91 @@ contains
     w_cape_limit         = 0.4_r_um
     l_reset_neg_delthvu  = .true.
     l_cvdiag_ctop_qmax   = l_cvdiag_ctop_qmax_in
+
+    if ( diagnostic_mode_conv ) then
+      ! Option for running CoMorph in diagnostic mode.
+      ! We need to be careful to only toggle the switches
+      ! that are needed for CoMorph to run without altering
+      ! the behaviour of the other physics schemes that are
+      ! coupled to the model dynamics.
+
+      ! Specifically l_param_conv needs to be off, with the
+      ! convection option left as it were in the namelist.
+      write(log_scratch_space,'(A)')                                         &
+        "Running in diagnostic convection mode - only CoMorph options will be set"
+      call log_event( log_scratch_space, LOG_LEVEL_INFO )
+
+      l_diag_comorph = .true.
+
+      fac_qsat     = 0.350_r_um
+      mparwtr      = 1.0000e-3_r_um
+      qlmin        = qlmin_in
+
+      ! Leave i_convection_vn unset since many physics depend on this
+      ! i_convection_vn = i_cv_comorph
+
+      ! conv_diag options which are different when using Comorph
+      cape_bottom          = imdi
+      cape_top             = imdi
+      cldbase_opt_dp       = rmdi
+      ! cldbase_opt_sh gets consumed by turb_diff_mod, but only as a 
+    ! variable to assign values to.
+      cldbase_opt_sh       = rmdi
+      ent_fac_dp           = rmdi
+      iconv_congestus      = imdi
+      iconv_deep           = imdi
+      w_cape_limit         = rmdi
+      ! Double check the dependencies of this flag!
+      ! This should be fine to set
+      l_reset_neg_delthvu  = .false.
+
+      ! 6a conv options used in Comorph kernel
+      l_mom       = .true.
+      ! Double check the dependencies of this flag!
+      ! rad_input_mod has some indirect dependencies on l_ccrad
+      ! This shouldn't affect our purposes since its for experimental
+      ! rad schemes
+      l_ccrad     = .true.
+      ! ukca_init_mod calls photol_setup that has l_3d_cca as an argument
+      ! Module variable is not imported from cv_run_mod.
+      l_3d_cca    = .true.
+
+      ! main Comorph options
+      ass_min_radius = 500.0_r_um
+      autoc_opt = 2
+      cf_conv_fac = 2.0_r_um
+      coef_auto = 0.025_r_um
+      col_eff_coef = 1.0_r_um
+      core_ent_fac = 1.0_r_um
+      drag_coef_cond = 0.5_r_um
+      drag_coef_par = 0.5_r_um
+      dx_ref = dx_ref_in
+      ent_coef = 0.2_r_um
+      hetnuc_temp = 263.0_r_um
+      l_core_ent_cmr = .true.
+      l_resdep_precipramp = resdep_precipramp
+      n_dndraft_types = 1
+      overlap_power = 0.5_r_um
+      par_gen_core_fac = 3.0_r_um
+      par_gen_mass_fac = par_gen_mass_fac_in
+      par_gen_pert_fac = 0.333_r_um
+      par_gen_rhpert = par_gen_rhpert_in
+      par_radius_evol_method = 3
+      par_radius_init_method = 4
+      par_radius_knob = 0.45_r_um
+      par_radius_knob_max = 2.0_r_um
+      par_radius_ppn_max = par_radius_ppn_max_in
+      r_fac_tdep_n = 8.18_r_um
+      rain_area_min = 0.05_r_um
+      rho_rim = 600.0_r_um
+      vent_factor = 0.25_r_um
+      wind_w_buoy_fac = 1.0_r_um
+      wind_w_fac = 1.0_r_um
+
+      ! No point checking
+      ! call check_run_comorph()
+
+    end if
 
     if ( convection == convection_um ) then
 

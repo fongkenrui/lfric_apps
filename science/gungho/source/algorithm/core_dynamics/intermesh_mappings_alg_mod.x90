@@ -23,7 +23,8 @@ module intermesh_mappings_alg_mod
   use function_space_collection_mod,  only : function_space_collection
   use fs_continuity_mod,              only : W2, Wtheta, W3
   use integer_field_mod,              only : integer_field_type
-  use log_mod,                        only : log_event, LOG_LEVEL_ERROR
+  use log_mod,                        only : log_event, log_scratch_space, &
+                                             LOG_LEVEL_INFO, LOG_LEVEL_ERROR
   use mesh_collection_mod,            only : mesh_collection
   use mesh_mod,                       only : mesh_type
   use mr_indices_mod,                 only : nummr
