@@ -378,7 +378,9 @@ contains
                                                           entrain_down_coarse,           &
                                                           detrain_up_coarse,             &
                                                           detrain_down_coarse,           &
-                                                          massflux_up_half_coarse)
+                                                          massflux_up_half_coarse,       &
+                                                          gen_massflux_up_coarse,        &
+                                                          gen_massflux_down_coarse)
 
     implicit none
     ! This is pretty much a copy of initialise_diags_for_comorph, but modified to pair
@@ -398,7 +400,9 @@ contains
                                          entrain_down_coarse,            &
                                          detrain_up_coarse,              &
                                          detrain_down_coarse,            &
-                                         massflux_up_half_coarse
+                                         massflux_up_half_coarse,        &
+                                         gen_massflux_up_coarse,         &
+                                         gen_massflux_down_coarse 
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
 
@@ -426,6 +430,8 @@ contains
 
     ! conv_half_level_face_grid (3D, W3) real
     call init_coarse_field(massflux_up_half_coarse, conv_mesh, W3)
+    call init_coarse_field(gen_massflux_up_coarse, conv_mesh, W3)
+    call init_coarse_field(gen_massflux_down_coarse, conv_mesh, W3)
     
     ! Initialise values to zero for fields passed to kernel 
     call invoke( setval_c(entrain_up_coarse, 0.0_r_def) )
