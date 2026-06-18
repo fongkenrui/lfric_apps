@@ -2166,7 +2166,7 @@ contains
       ! Mod: overwrite turb_len with mix_len_bm values
       do i=1, row_length
         do k=1, bl_levels
-          turb_len(i,1,k) = mix_len_bm(map_wth(1,i)+k)
+          turb_len(i,1,k) = mix_len_bm(map_wth(1,i)+k-1) ! Try with k-1 instead of k
         end do
       end do
 
