@@ -231,12 +231,6 @@ contains
 
       theta_forcing_done = .true. ! Collect this increment later on
 
-      if (write_diag .and. use_xios_io) then
-        write_behaviour => write_field_generic
-        call dtheta_forcing%set_write_behaviour(write_behaviour)
-        call dtheta_forcing%write_field('forcing__dtheta_force')
-      end if
-
       nullify( chi, panel_id )
 
     end if
@@ -472,6 +466,21 @@ contains
       call write_forcing_diagnostics(du_forcing=du_forcing, output_wind_inc=wind_forcing_done)
     end if
 
+    if ( vapour_forcing_done ) then 
+      if (write_diag .and. use_xios_io) then
+        write_behaviour => write_field_generic
+        call dmv_forcing%set_write_behaviour(write_behaviour)
+        call dmv_forcing%write_field('forcing__dmv_force')
+      end if
+    end if
+
+    if ( theta_forcing_done ) then 
+      if (write_diag .and. use_xios_io) then
+        write_behaviour => write_field_generic
+        call dtheta_forcing%set_write_behaviour(write_behaviour)
+        call dtheta_forcing%write_field('forcing__dtheta_force')
+      end if
+    end if
 
     if ( subroutine_timers ) call timer("external_forcing_alg")
 
