@@ -33,7 +33,7 @@ module conv_comorph_kernel_mod
   !>
   type, public, extends(kernel_type) :: conv_comorph_kernel_type
     private
-    type(arg_type) :: meta_args(197) = (/                                         &
+    type(arg_type) :: meta_args(198) = (/                                         &
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! outer
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! rho_in_w3
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rho_in_wth
@@ -94,6 +94,7 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_INTEGER, GH_READ,      ANY_DISCONTINUOUS_SPACE_2),&! bl_type
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! wvar
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rhokm_bl
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! mix_len_bm
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! moist_flux
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! heat_flux
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! taux
@@ -302,6 +303,7 @@ contains
   !> @param[in]     bl_type_ind          Diagnosed BL types
   !> @param[in]     wvar                 Vertical velocity variance in wth
   !> @param[in]     rhokm_bl             Momentum eddy diffusivity on BL levels
+  !> @param[in]     mix_len_bm           Momentum mixing length on BL levels
   !> @param[in]     moist_flux           Vertical moisture flux on BL levels
   !> @param[in]     heat_flux            Vertical heat flux on BL levels
   !> @param[in]     taux                 Explicit u momentum flux at cell centres on BL levels
@@ -515,6 +517,7 @@ contains
                           bl_type_ind,                       &
                           wvar,                              &
                           rhokm_bl,                          &
+                          mix_len_bm,                        &
                           moist_flux,                        &
                           heat_flux,                         &
                           taux,                              &
@@ -866,7 +869,9 @@ contains
                                                          theta_n,           &
                                                          theta_star,        &
                                                          height_wth,        &
-                                                         rhokm_bl, wvar,    &
+                                                         rhokm_bl,          &
+                                                         mix_len_bm,        &
+                                                         wvar,              &
                                                          cf_liq_n, cf_fro_n,&
                                                          cf_bulk_n
 
@@ -2152,10 +2157,19 @@ contains
       end do
 
       ! Calculate turb_len and a scaling factor applied to parcel initial radius
-      call calc_turb_len( zh_eff, z_theta, z_rho, rho_wet_tq, qv_n,            &
-                          rhokm, bl_w_var, ls_rain, ls_snow, w,                &
-                          delta_x, delta_x,                                    &
-                          turb_len, par_radius_amp_um )
+      ! Mod: Instead of callinc calc_turb_len, we will instead assign mix_len_bm
+      ! as calculated by the boundary layer scheme to turb_len.
+      !call calc_turb_len( zh_eff, z_theta, z_rho, rho_wet_tq, qv_n,            &
+      !                    rhokm, bl_w_var, ls_rain, ls_snow, w,                &
+      !                    delta_x, delta_x,                                    &
+      !                    turb_len, par_radius_amp_um )
+
+      ! Map mix_len_bm to turb_len   
+      do i=1, row_length
+        do k=1, bl_levels
+          turb_len(i,1,k) = mix_len_bm(map_wth(1,i)+k)
+        end do
+      end do
 
       ! Check for instances of fluxes too big relative to the turbulent
       ! w-variance (causes excessive parcel perturbations);
