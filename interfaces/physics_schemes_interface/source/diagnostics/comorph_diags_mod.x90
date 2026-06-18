@@ -32,7 +32,8 @@ module comorph_diags_mod
                       detrain_down_flag,           &
                       massflux_up_half_flag,       &
                       gen_massflux_up_flag,        &
-                      gen_massflux_down_flag
+                      gen_massflux_down_flag,      &
+                      parcel_radius_flag
 
   public :: initialise_diags_for_comorph
   public :: output_diags_for_comorph
@@ -55,7 +56,8 @@ contains
                                           detrain_down,           &
                                           massflux_up_half,       &
                                           gen_massflux_up,        &
-                                          gen_massflux_down)
+                                          gen_massflux_down,      &
+                                          parcel_radius)
 
     implicit none
 
@@ -75,7 +77,8 @@ contains
                                          detrain_down,            &
                                          massflux_up_half,        &
                                          gen_massflux_up,         &
-                                         gen_massflux_down
+                                         gen_massflux_down,       &
+                                         parcel_radius
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -118,6 +121,9 @@ contains
     gen_massflux_down_flag = init_diag(gen_massflux_down, 'convection__gen_massflux_down')
     if (gen_massflux_down_flag) call invoke( setval_c(gen_massflux_down, 0.0_r_def) )
 
+    parcel_radius_flag = init_diag(parcel_radius, 'convection__parcel_radius')
+    if (parcel_radius_flag) call invoke( setval_c(parcel_radius, 0.0_r_def) )
+
     if ( subroutine_timers ) call timer("comorph_diags")
 
   end subroutine initialise_diags_for_comorph
@@ -157,7 +163,8 @@ contains
                                     detrain_down,           &
                                     massflux_up_half,       &
                                     gen_massflux_up,        &
-                                    gen_massflux_down)
+                                    gen_massflux_down,      &
+                                    parcel_radius)
 
     implicit none
 
@@ -199,7 +206,8 @@ contains
                                        detrain_down,           &
                                        massflux_up_half,       &
                                        gen_massflux_up,        &
-                                       gen_massflux_down
+                                       gen_massflux_down,      &
+                                       parcel_radius
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -248,6 +256,7 @@ contains
     if (massflux_up_half_flag) call massflux_up_half%write_field()
     if (gen_massflux_up_flag) call gen_massflux_up%write_field()
     if (gen_massflux_down_flag) call gen_massflux_down%write_field()
+    if (parcel_radius_flag) call parcel_radius%write_field()
     if ( subroutine_timers ) call timer("comorph_diags")
 
   end subroutine output_diags_for_comorph
