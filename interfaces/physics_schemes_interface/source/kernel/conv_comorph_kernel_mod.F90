@@ -94,6 +94,7 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_INTEGER, GH_READ,      ANY_DISCONTINUOUS_SPACE_2),&! bl_type
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! wvar
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rhokm_bl
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! mix_len_bm
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! moist_flux
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! heat_flux
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! taux
@@ -304,6 +305,7 @@ contains
   !> @param[in]     bl_type_ind          Diagnosed BL types
   !> @param[in]     wvar                 Vertical velocity variance in wth
   !> @param[in]     rhokm_bl             Momentum eddy diffusivity on BL levels
+  !> @param[in]     mix_len_bm           Momentum mixing length on BL levels
   !> @param[in]     moist_flux           Vertical moisture flux on BL levels
   !> @param[in]     heat_flux            Vertical heat flux on BL levels
   !> @param[in]     taux                 Explicit u momentum flux at cell centres on BL levels
@@ -517,6 +519,7 @@ contains
                           bl_type_ind,                       &
                           wvar,                              &
                           rhokm_bl,                          &
+                          mix_len_bm,                        &
                           moist_flux,                        &
                           heat_flux,                         &
                           taux,                              &
@@ -870,7 +873,9 @@ contains
                                                          theta_n,           &
                                                          theta_star,        &
                                                          height_wth,        &
-                                                         rhokm_bl, wvar,    &
+                                                         rhokm_bl,          &
+                                                         mix_len_bm,        &
+                                                         wvar,              &
                                                          cf_liq_n, cf_fro_n,&
                                                          cf_bulk_n
 
@@ -2163,6 +2168,18 @@ contains
                           rhokm, bl_w_var, ls_rain, ls_snow, w,                &
                           delta_x, delta_x,                                    &
                           turb_len, par_radius_amp_um )
+
+      ! Map mix_len_bm to turb_len   
+      ! Mod: overwrite turb_len with mix_len_bm values
+      do i=1, row_length
+        do k=1, bl_levels
+          write(10,*) "turb_len before overwrite: ", turb_len(i,1,k)
+          flush(10)
+          turb_len(i,1,k) = mix_len_bm(map_wth(1,i) + k)
+          write(10,*) "turb_len after overwrite: ", turb_len(i,1,k)
+          flush(10)
+        end do
+      end do
 
       ! Check for instances of fluxes too big relative to the turbulent
       ! w-variance (causes excessive parcel perturbations);
