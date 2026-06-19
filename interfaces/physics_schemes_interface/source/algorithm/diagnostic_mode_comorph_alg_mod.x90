@@ -67,7 +67,8 @@ contains
     use intermesh_mappings_alg_mod, &
                               only: map_scalar_field,  &
                                     map_rho_intermesh, &
-                                    map_mr_bundle_intermesh
+                                    map_mr_bundle_intermesh, &
+                                    map_mr_intermesh
     use physics_mappings_alg_mod,  only: map_physics_scalars
 
     implicit none
@@ -266,6 +267,7 @@ contains
     type( field_type ), pointer :: precfrac => null()
     type( field_type ), pointer :: ls_rain => null()
     type( field_type ), pointer :: ls_snow => null()
+    type( field_type ), pointer :: ls_qw_sink => null()
 
     type( field_type ), pointer :: height_w3 => null()
     type( field_type ), pointer :: height_wth => null()
@@ -455,6 +457,7 @@ contains
     type( field_type ) :: precfrac_coarse
     type( field_type ) :: ls_rain_coarse
     type( field_type ) :: ls_snow_coarse
+    type( field_type ) :: ls_qw_sink_coarse
 
     ! local variables - directly declare on coarse grid
     type( field_type ) :: lowest_cv_base_coarse,lowest_cv_top_coarse
@@ -462,7 +465,7 @@ contains
     type( field_type ) :: detrain_up_coarse,detrain_down_coarse
     type( field_type ) :: pres_cv_base_coarse,pres_cv_top_coarse
     type( field_type ) :: pres_lowest_cv_base_coarse,pres_lowest_cv_top_coarse, lowest_cca_2d_coarse
-    type( field_type ) :: massflux_up_half_coarse
+    type( field_type ) :: massflux_up_half_coarse, conv_frac_coarse
     type( field_type ) :: gen_massflux_up_coarse, gen_massflux_down_coarse
 
     type( mesh_type ), pointer  :: conv_mesh
@@ -681,6 +684,7 @@ contains
     call microphysics_fields%get_field('precfrac', precfrac)
     call microphysics_fields%get_field('ls_rain', ls_rain)
     call microphysics_fields%get_field('ls_snow', ls_snow)
+    call microphysics_fields%get_field('ls_qw_sink', ls_qw_sink)
 
     height_wth => get_height_fv(Wtheta, conv_mesh%get_id())
     height_w3  => get_height_fv(W3, conv_mesh%get_id())
@@ -881,6 +885,7 @@ contains
     call init_coarse_field_from(precfrac_coarse, precfrac, conv_mesh)
     call init_coarse_field_from(ls_rain_coarse, ls_rain, conv_mesh)
     call init_coarse_field_from(ls_snow_coarse, ls_snow, conv_mesh)
+    call init_coarse_field_from(ls_qw_sink_coarse, ls_qw_sink, conv_mesh)
 
     ! Initialise local coarse fields
     ! TODO: This needs to be handled seperately because they don't
@@ -894,6 +899,7 @@ contains
                                                       pres_lowest_cv_base_coarse,  &
                                                       pres_lowest_cv_top_coarse,   &
                                                       lowest_cca_2d_coarse,        &
+                                                      conv_frac_coarse,            &
                                                       entrain_up_coarse,           & ! 3-D variables
                                                       entrain_down_coarse,         &
                                                       detrain_up_coarse,           &
@@ -1106,6 +1112,9 @@ contains
     call map_scalar_field(precfrac_coarse, precfrac)
     call map_scalar_field(ls_rain_coarse, ls_rain)
     call map_scalar_field(ls_snow_coarse, ls_snow)
+    ! This is a 2D column integral of a mixing ratio
+    ! Should be interpreted as a scalar field?
+    call map_scalar_field(ls_qw_sink_coarse, ls_qw_sink)
 
     ! call the scheme
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
@@ -1249,6 +1258,8 @@ contains
                           pres_lowest_cv_base_coarse,                                                                   &
                           pres_lowest_cv_top_coarse,                                                                    &
                           lowest_cca_2d_coarse,                                                                         &
+                          conv_frac_coarse,                                                                             &
+                          ls_qw_sink_coarse,                                                                            &
                           entrain_up_coarse,                                                                            &
                           entrain_down_coarse,                                                                          &
                           detrain_up_coarse,                                                                            &
@@ -1293,6 +1304,7 @@ contains
                                   pres_lowest_cv_base_coarse,   &
                                   pres_lowest_cv_top_coarse,    &
                                   lowest_cca_2d_coarse,         &
+                                  conv_frac_coarse,             &
                                   entrain_up_coarse,            & ! 3-D
                                   entrain_down_coarse,          &
                                   detrain_up_coarse,            &

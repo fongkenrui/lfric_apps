@@ -374,6 +374,7 @@ contains
                                                           pres_lowest_cv_base_coarse,    &
                                                           pres_lowest_cv_top_coarse,     &
                                                           lowest_cca_2d_coarse,          &
+                                                          conv_frac_coarse,              &
                                                           entrain_up_coarse,             & ! 3-D
                                                           entrain_down_coarse,           &
                                                           detrain_up_coarse,             &
@@ -396,6 +397,7 @@ contains
                                          pres_lowest_cv_base_coarse,     &
                                          pres_lowest_cv_top_coarse,      &
                                          lowest_cca_2d_coarse,           &
+                                         conv_frac_coarse,               &
                                          entrain_up_coarse,              & ! 3-D
                                          entrain_down_coarse,            &
                                          detrain_up_coarse,              &
@@ -422,6 +424,7 @@ contains
     call init_coarse_field(pres_lowest_cv_base_coarse, conv_mesh, W3, TWOD)
     call init_coarse_field(pres_lowest_cv_top_coarse, conv_mesh, W3, TWOD)
     call init_coarse_field(lowest_cca_2d_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(conv_frac_coarse, conv_mesh, W3, TWOD)
     ! conv_full_level_face_grid (3D, WTHETA) real
     call init_coarse_field(entrain_up_coarse, conv_mesh, WTHETA)
     call init_coarse_field(entrain_down_coarse, conv_mesh, WTHETA)
@@ -471,6 +474,7 @@ contains
                                                        pres_lowest_cv_base_coarse,   &
                                                        pres_lowest_cv_top_coarse,    &
                                                        lowest_cca_2d_coarse,         &
+                                                       conv_frac_coarse,             &
                                                        entrain_up_coarse,            & 
                                                        entrain_down_coarse,          &
                                                        detrain_up_coarse,            &
@@ -516,6 +520,7 @@ contains
                                       pres_lowest_cv_base_coarse,     &
                                       pres_lowest_cv_top_coarse,      &
                                       lowest_cca_2d_coarse,           &
+                                      conv_frac_coarse,               &
                                       entrain_up_coarse,              & 
                                       entrain_down_coarse,            &
                                       detrain_up_coarse,              &
@@ -554,6 +559,7 @@ contains
     call pres_lowest_cv_base_coarse%write_field('convection__pres_lowest_cv_base_coarse')
     call pres_lowest_cv_top_coarse%write_field('convection__pres_lowest_cv_top_coarse')
     call lowest_cca_2d_coarse%write_field('convection__lowest_cca_2d_coarse')
+    call conv_frac_coarse%write_field('convection__conv_frac_coarse')
 
     call precfrac_coarse%write_field('convection__precfrac_coarse')
 

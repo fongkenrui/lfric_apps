@@ -19,6 +19,9 @@ module bdy_expl2_mod
 
 use fm_drag_mod, only: fm_drag
 
+use convection_config_mod, only: cv_scheme, cv_scheme_comorph
+use cv_run_mod, only: l_diag_comorph
+
 use tuning_segments_mod, only:                                                 &
     l_autotune_segments,                                                       &
     bl_segment_size
@@ -2285,7 +2288,10 @@ if (BL_diag%l_tke) then
 
   end if  ! var_diags_opt
 
-  if ( i_bm_ez_opt == i_bm_ez_entpar ) then
+  if ( i_bm_ez_opt == i_bm_ez_entpar .or. &
+      ! Make sure mix_len_bm is calculated for comorph kernel
+       cv_scheme == cv_scheme_comorph .or. &
+       l_diag_comorph ) then
     ! Calculate mixing-length to pass to bimodal cloud scheme,
     ! using Km and TKE.
 !$OMP PARALLEL DEFAULT(none) private( i, j, k, weight1 )                       &
