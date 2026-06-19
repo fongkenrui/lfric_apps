@@ -1107,7 +1107,8 @@ contains
     call map_scalar_field(precfrac_coarse, precfrac)
     call map_scalar_field(ls_rain_coarse, ls_rain)
     call map_scalar_field(ls_snow_coarse, ls_snow)
-    ! Probably need to call map_mr_intermesh for this instead?
+    ! This is a 2D column integral of a mixing ratio
+    ! Should be interpreted as a scalar field?
     call map_scalar_field(ls_qw_sink_coarse, ls_qw_sink)
 
     ! call the scheme
