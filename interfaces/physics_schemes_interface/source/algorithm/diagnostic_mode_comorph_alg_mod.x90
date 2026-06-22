@@ -469,6 +469,7 @@ contains
     type( field_type ) :: pres_lowest_cv_base_coarse,pres_lowest_cv_top_coarse, lowest_cca_2d_coarse
     type( field_type ) :: massflux_up_half_coarse, conv_frac_coarse
     type( field_type ) :: gen_massflux_up_coarse, gen_massflux_down_coarse
+    type( field_type ) :: parcel_radius_coarse
 
     type( mesh_type ), pointer  :: conv_mesh
     integer(i_def) :: ncells
@@ -1020,7 +1021,8 @@ contains
                                                       detrain_down_coarse,         &
                                                       massflux_up_half_coarse,     &
                                                       gen_massflux_up_coarse,      &
-                                                      gen_massflux_down_coarse)
+                                                      gen_massflux_down_coarse,    &
+                                                      parcel_radius_coarse)
 
     ! Map the fine fields to the coarse fields
     ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
@@ -1583,7 +1585,8 @@ contains
                           detrain_down_coarse,                                                                          &
                           massflux_up_half_coarse,                                                                      &
                           gen_massflux_up_coarse,                                                                       &
-                          gen_massflux_down_coarse)                                                                     &
+                          gen_massflux_down_coarse,                                                                     &
+                          parcel_radius_coarse)                                                                                &
                                                ) ! end of invoke
     
     call um_sizes_init(1_i_def)
@@ -1628,7 +1631,8 @@ contains
                                   detrain_down_coarse,          &
                                   massflux_up_half_coarse,      &
                                   bl_type_ind_coarse,           &
-                                  precfrac_coarse)
+                                  precfrac_coarse,              &
+                                  parcel_radius_coarse)         
     end if
 
   nullify( conv_mesh )
