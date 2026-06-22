@@ -2694,7 +2694,7 @@ contains
           end do
         end do
       end if
-      if (.not. associated(turb_radius, empty_real_data) ) then
+      if (.not. associated(parcel_radius, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
             parcel_radius(map_wth(1,i) + k) = turb_radius(i,1,k)
