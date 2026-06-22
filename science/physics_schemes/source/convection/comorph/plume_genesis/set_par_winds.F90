@@ -93,12 +93,6 @@ character(len=name_length) :: field_name
 integer :: ic, i_field
 
 do ic = 1, n_points
-  ! Defensive checks
-  if ( ic > n_par ) then
-    write(10, *) "Warning in ", routinename, ": number of points (", ic, ") exceeds n_par (", n_par, ")."
-    flush(10)
-    call raise_warning( routinename, "Number of points exceeds n_par" )
-  end if
   ! Copy parcel radius into the parcel
   par_gen_par(ic,i_radius) = par_radius_k(ic)
 end do
