@@ -484,7 +484,8 @@ contains
                                                        detrain_down_coarse,          &
                                                        massflux_up_half_coarse,      &
                                                        bl_type_ind_coarse,           &
-                                                       precfrac_coarse)
+                                                       precfrac_coarse,              &
+                                                       parcel_radius_coarse)
 
     implicit none
 
@@ -528,7 +529,9 @@ contains
                                       entrain_down_coarse,            &
                                       detrain_up_coarse,              &
                                       detrain_down_coarse,            &
-                                      massflux_up_half_coarse
+                                      massflux_up_half_coarse,        &
+                                      conv_frac_coarse,               &
+                                      parcel_radius_coarse
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
     ! Write the fields here
@@ -563,6 +566,7 @@ contains
     call pres_lowest_cv_top_coarse%write_field('convection__pres_lowest_cv_top_coarse')
     call lowest_cca_2d_coarse%write_field('convection__lowest_cca_2d_coarse')
     call conv_frac_coarse%write_field('convection__conv_frac_coarse')
+    call parcel_radius_coarse%write_field('convection__parcel_radius_coarse')
 
     call precfrac_coarse%write_field('convection__precfrac_coarse')
 

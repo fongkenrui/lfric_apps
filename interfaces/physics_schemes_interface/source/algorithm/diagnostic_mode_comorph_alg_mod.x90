@@ -1314,7 +1314,8 @@ contains
                                   detrain_down_coarse,          &
                                   massflux_up_half_coarse,      &
                                   bl_type_ind_coarse,           &
-                                  precfrac_coarse)
+                                  precfrac_coarse,              &
+                                  parcel_radius_coarse)         
     end if
 
   nullify( conv_mesh )
