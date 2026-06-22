@@ -2355,7 +2355,7 @@ contains
         comorph_diags % dndraft % gen % massflux_d                             &
                                 % field_3d => gen_down_flux_half
       end if
-      if (.not. associated(turb_radius, empty_real_data) ) then
+      if (.not. associated(parcel_radius, empty_real_data) ) then
         comorph_diags % turb_radius                                             &
                                 % request % x_y_z = .true.
         comorph_diags % turb_radius                                             &
