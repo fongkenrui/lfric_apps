@@ -954,6 +954,8 @@ contains
     ! that all of them are not Type 7 BL.
     call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
     call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
+    ! DEBUG
+    call 
     ! Boundary layer fields
     call map_scalar_field(tke_bl_coarse, tke_bl)
     call map_scalar_field(wvar_coarse, wvar)
