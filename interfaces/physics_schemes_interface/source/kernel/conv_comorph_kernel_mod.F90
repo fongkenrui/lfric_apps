@@ -2740,6 +2740,9 @@ contains
         massflux_down(map_wth(1,i) + k) = (1.0_r_def-interp) *                 &
                                        down_flux_half(i,1,k) * g               &
                                     +  interp  * down_flux_half(i,1,k+1) * g
+        ! Write out massflux_up
+        write(10,*) "massflux_up(", map_wth(1,i) + k, ") = ", massflux_up(map_wth(1,i) + k)
+        flush(10)
       end do
     end do
 

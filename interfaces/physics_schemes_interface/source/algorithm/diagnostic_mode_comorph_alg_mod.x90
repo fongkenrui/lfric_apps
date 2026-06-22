@@ -1155,8 +1155,13 @@ contains
     ! For now we just set all indicators to zero since the kernel only
     ! cares whether or not it is a Type 7 BL; this is equivalent to saying
     ! that all of them are not Type 7 BL.
-    call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
-    call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
+    
+    ! DEBUG: force bl_type_ind_coarse to use map_scalar_field to rule
+    ! out bl_type_ind differences; must be identity mapping on same grid
+    call map_scalar_field(bl_type_ind_coarse, bl_type_ind)
+
+    ! call log_event( 'setval_c on bl_type_ind', LOG_LEVEL_INFO )
+    ! call invoke( int_setval_c(bl_type_ind_coarse, 0_i_def) )
 
     ! There's no point to checking this; inv_depth can be uninitialized
     ! and the comorph kernel is supposed to handle that with max()
