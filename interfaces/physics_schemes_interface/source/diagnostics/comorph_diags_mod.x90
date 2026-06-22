@@ -26,11 +26,14 @@ module comorph_diags_mod
                       pres_lowest_cv_base_flag,    &
                       pres_lowest_cv_top_flag,     &
                       lowest_cca_2d_flag,          &
+                      conv_frac_flag,              &
                       entrain_up_flag,             & ! 3-D
                       entrain_down_flag,           &
                       detrain_up_flag,             &
                       detrain_down_flag,           &
-                      massflux_up_half_flag
+                      massflux_up_half_flag,       &
+                      gen_massflux_up_flag,        &
+                      gen_massflux_down_flag
 
   public :: initialise_diags_for_comorph
   public :: output_diags_for_comorph
@@ -47,11 +50,14 @@ contains
                                           pres_lowest_cv_base,    &
                                           pres_lowest_cv_top,     &
                                           lowest_cca_2d,          &
+                                          conv_frac,              &
                                           entrain_up,             & ! 3-D
                                           entrain_down,           &
                                           detrain_up,             &
                                           detrain_down,           &
-                                          massflux_up_half)
+                                          massflux_up_half,       &
+                                          gen_massflux_up,        &
+                                          gen_massflux_down)
 
     implicit none
 
@@ -65,11 +71,14 @@ contains
                                          pres_lowest_cv_base,     &
                                          pres_lowest_cv_top,      &
                                          lowest_cca_2d,           &
+                                         conv_frac,               &
                                          entrain_up,              & ! 3-D
                                          entrain_down,            &
                                          detrain_up,              &
                                          detrain_down,            &
-                                         massflux_up_half
+                                         massflux_up_half,        &
+                                         gen_massflux_up,         &
+                                         gen_massflux_down
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -89,6 +98,7 @@ contains
 
     lowest_cca_2d_flag = init_diag(lowest_cca_2d, &
                                    'convection__lowest_cca_2d')
+    conv_frac_flag = init_diag(conv_frac, 'convection__conv_frac')
 
     ! Convective diagnostics - 3d  - theta levels
     entrain_up_flag = init_diag(entrain_up, 'convection__entrain_up')
@@ -104,6 +114,13 @@ contains
     if (detrain_down_flag) call invoke( setval_c(detrain_down, 0.0_r_def) )
 
     massflux_up_half_flag = init_diag(massflux_up_half, 'convection__massflux_up_half')
+
+    ! Initialise with zero mass flux genesis
+    gen_massflux_up_flag = init_diag(gen_massflux_up, 'convection__gen_massflux_up')
+    if (gen_massflux_up_flag) call invoke( setval_c(gen_massflux_up, 0.0_r_def) )
+
+    gen_massflux_down_flag = init_diag(gen_massflux_down, 'convection__gen_massflux_down')
+    if (gen_massflux_down_flag) call invoke( setval_c(gen_massflux_down, 0.0_r_def) )
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -138,11 +155,14 @@ contains
                                     pres_lowest_cv_base,    &
                                     pres_lowest_cv_top,     &
                                     lowest_cca_2d,          &
+                                    conv_frac,              &
                                     entrain_up,             & ! 3-D
                                     entrain_down,           &
                                     detrain_up,             &
                                     detrain_down,           &
-                                    massflux_up_half)
+                                    massflux_up_half,       &
+                                    gen_massflux_up,        &
+                                    gen_massflux_down)
 
     implicit none
 
@@ -178,11 +198,14 @@ contains
                                        pres_lowest_cv_base,    &
                                        pres_lowest_cv_top,     &
                                        lowest_cca_2d,          &
+                                       conv_frac,              &
                                        entrain_up,             & ! 3-D
                                        entrain_down,           &
                                        detrain_up,             &
                                        detrain_down,           &
-                                       massflux_up_half
+                                       massflux_up_half,       &
+                                       gen_massflux_up,        &
+                                       gen_massflux_down
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -222,6 +245,7 @@ contains
     if (pres_lowest_cv_base_flag) call pres_lowest_cv_base%write_field()
     if (pres_lowest_cv_top_flag) call pres_lowest_cv_top%write_field()
     if (lowest_cca_2d_flag) call lowest_cca_2d%write_field()
+    if (conv_frac_flag) call conv_frac%write_field()
 
     ! 3D
     if (entrain_up_flag) call entrain_up%write_field()
@@ -229,7 +253,8 @@ contains
     if (detrain_up_flag) call detrain_up%write_field()
     if (detrain_down_flag) call detrain_down%write_field()
     if (massflux_up_half_flag) call massflux_up_half%write_field()
-
+    if (gen_massflux_up_flag) call gen_massflux_up%write_field()
+    if (gen_massflux_down_flag) call gen_massflux_down%write_field()
     if ( subroutine_timers ) call timer("comorph_diags")
 
   end subroutine output_diags_for_comorph

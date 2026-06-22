@@ -35,7 +35,7 @@ module conv_comorph_kernel_mod
   !>
   type, public, extends(kernel_type) :: conv_comorph_kernel_type
     private
-    type(arg_type) :: meta_args(195) = (/                                         &
+    type(arg_type) :: meta_args(200) = (/                                         &
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! outer
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! rho_in_w3
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rho_in_wth
@@ -96,6 +96,7 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_INTEGER, GH_READ,      ANY_DISCONTINUOUS_SPACE_2),&! bl_type
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! wvar
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rhokm_bl
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! mix_len_bm
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! moist_flux
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! heat_flux
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! taux
@@ -226,11 +227,15 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! pres_lowest_cv_base
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! pres_lowest_cv_top
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! lowest_cca_2d
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! conv_frac
+         arg_type(GH_FIELD,  GH_REAL,    GH_READ,      ANY_DISCONTINUOUS_SPACE_1),&! ls_qw_sink
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! entrain_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! entrain_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! detrain_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! detrain_down
-         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3)                        &! massflux_up_half
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! massflux_up_half
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_up
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3)                        &! gen_massflux_down
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -302,6 +307,7 @@ contains
   !> @param[in]     bl_type_ind          Diagnosed BL types
   !> @param[in]     wvar                 Vertical velocity variance in wth
   !> @param[in]     rhokm_bl             Momentum eddy diffusivity on BL levels
+  !> @param[in]     mix_len_bm           Momentum mixing length on BL levels
   !> @param[in]     moist_flux           Vertical moisture flux on BL levels
   !> @param[in]     heat_flux            Vertical heat flux on BL levels
   !> @param[in]     taux                 Explicit u momentum flux at cell centres on BL levels
@@ -437,6 +443,8 @@ contains
   !> @param[in,out] detrain_up           Convective upwards detrainment
   !> @param[in,out] detrain_down         Convective downwards detrainment
   !> @param[in,out] massflux_up_half     Convective upwards mass flux on half-levels (Pa/s)
+  !> @param[in,out] gen_massflux_up      Convective upwards mass flux from parcel genesis on half-levels (Pa/s)
+  !> @param[in,out] gen_massflux_down    Convective downwards mass flux from parcel genesis on half-levels (Pa/s)
   !> @param[in]     ndf_w3               Number of DOFs per cell for density space
   !> @param[in]     undf_w3              Number of unique DOFs  for density space
   !> @param[in]     map_w3               Dofmap for the cell at the base of the column for density space
@@ -513,6 +521,7 @@ contains
                           bl_type_ind,                       &
                           wvar,                              &
                           rhokm_bl,                          &
+                          mix_len_bm,                        &
                           moist_flux,                        &
                           heat_flux,                         &
                           taux,                              &
@@ -643,11 +652,15 @@ contains
                           pres_lowest_cv_base,               &
                           pres_lowest_cv_top,                &
                           lowest_cca_2d,                     &
+                          conv_frac,                         &
+                          ls_qw_sink,                        &
                           entrain_up,                        &
                           entrain_down,                      &
                           detrain_up,                        &
                           detrain_down,                      &
                           massflux_up_half,                  &
+                          gen_massflux_up,                   &
+                          gen_massflux_down,                 &
                           ndf_w3,                            &
                           undf_w3,                           &
                           map_w3,                            &
@@ -781,7 +794,7 @@ contains
                                          glomap_mode_ukca
 
     use log_mod, only : log_event, log_scratch_space, LOG_LEVEL_ERROR
-!$  use omp_lib, only : omp_get_max_threads
+    !$  use omp_lib, only : omp_get_max_threads
 
     !---------------------------------------
     ! UM modules containing switches or global constants
@@ -796,7 +809,7 @@ contains
          l_mcr_qcf2
     use nlsizes_namelist_mod, only: row_length, rows, bl_levels
     use planet_constants_mod, only: p_zero, kappa, planet_radius, g
-    use timestep_mod, only: timestep
+    use timestep_mod, only: timestep, recip_timestep
     use conversions_mod, only: zerodegc
 
     ! subroutines used
@@ -862,7 +875,9 @@ contains
                                                          theta_n,           &
                                                          theta_star,        &
                                                          height_wth,        &
-                                                         rhokm_bl, wvar,    &
+                                                         rhokm_bl,          &
+                                                         mix_len_bm,        &
+                                                         wvar,              &
                                                          cf_liq_n, cf_fro_n,&
                                                          cf_bulk_n
 
@@ -1003,13 +1018,17 @@ contains
                                                 pres_cv_top(:),            &
                                                 pres_lowest_cv_base(:),    &
                                                 pres_lowest_cv_top(:),     &
-                                                lowest_cca_2d(:)
+                                                lowest_cca_2d(:),          &
+                                                conv_frac(:),              &
+                                                ls_qw_sink(:)
 
     real(kind=r_def), pointer, intent(inout) :: entrain_up(:),       &
                                                 entrain_down(:),     &
                                                 detrain_up(:),       &
                                                 detrain_down(:),     &
-                                                massflux_up_half(:)
+                                                massflux_up_half(:), &
+                                                gen_massflux_up(:),  &
+                                                gen_massflux_down(:)
 
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcfl_conv
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcff_conv
@@ -1208,11 +1227,14 @@ contains
     real(kind=r_um) :: cclwp0  (row_length,rows)
     real(kind=r_um) :: cca_2d_loc (row_length,rows)
     real(kind=r_um) :: lcca   (row_length,rows)
+    real(kind=r_um) :: cv_qw_sink
 
     ! Diagnostic fields
     real(kind=r_um), target :: cape_dil(row_length, rows)
     real(kind=r_um), target :: up_flux_half(row_length, rows, nlayers)
     real(kind=r_um), target :: down_flux_half(row_length, rows, nlayers)
+    real(kind=r_um), target :: gen_up_flux_half(row_length, rows, nlayers)
+    real(kind=r_um), target :: gen_down_flux_half(row_length, rows, nlayers)
     real(kind=r_um), target, allocatable, dimension(:,:,:) :: ent_up, ent_down,&
          det_up, det_down, pres_inc_env
 
@@ -1304,7 +1326,7 @@ contains
     ! If not using OMP, just run with a single segment for all columns.
     segments = 1          ! i.e. one column or whole mpi rank
     ! Under OMP sentinel, set number of segments equal to number of threads
-!$  segments = omp_get_max_threads()
+    !$  segments = omp_get_max_threads()
 
     ! Set number of layers used by convection scheme
     n_conv_levels = nlayers - 1
@@ -2252,6 +2274,18 @@ contains
                           delta_x, delta_x,                                    &
                           turb_len, par_radius_amp_um )
 
+      ! Map mix_len_bm to turb_len   
+      ! Mod: overwrite turb_len with mix_len_bm values
+      do i=1, row_length
+        do k=1, bl_levels
+          write(10,*) "turb_len before overwrite: ", turb_len(i,1,k)
+          flush(10)
+          turb_len(i,1,k) = mix_len_bm(map_wth(1,i) + k)
+          write(10,*) "turb_len after overwrite: ", turb_len(i,1,k)
+          flush(10)
+        end do
+      end do
+
       ! Check for instances of fluxes too big relative to the turbulent
       ! w-variance (causes excessive parcel perturbations);
       ! increase the w-variance where needed to avoid the problem
@@ -2416,6 +2450,18 @@ contains
                                 % request % x_y_z = .true.
         comorph_diags % dndraft % plume_model % det_mass_d                     &
                                 % field_3d => det_down
+      end if
+      if (.not. associated(gen_massflux_up, empty_real_data) ) then
+        comorph_diags % updraft % gen % massflux_d                             &
+                                % request % x_y_z = .true.
+        comorph_diags % updraft % gen % massflux_d                             &
+                                % field_3d => gen_up_flux_half
+      end if
+      if (.not. associated(gen_massflux_down, empty_real_data) ) then
+        comorph_diags % dndraft % gen % massflux_d                             &
+                                % request % x_y_z = .true.
+        comorph_diags % dndraft % gen % massflux_d                             &
+                                % field_3d => gen_down_flux_half
       end if
     end if
     if (l_pc2_homog_conv_pressure) then
@@ -2595,6 +2641,28 @@ contains
           lowest_cca_2d(map_2d(1,i)) = lcca(i,1)
         end do
       end if
+
+      if (.not. associated(conv_frac, empty_real_data) ) then
+        do i = 1, row_length
+          ! Cartesian domain, grid area constant with height
+          cv_qw_sink = -rho_dry_tq(i,1,1) * z_rho(i,1,2) &
+                     * (q_inc(i,1,1) + qcl_inc(i,1,1))
+          do k = 1, nlayers-1
+            cv_qw_sink = cv_qw_sink &
+                       - rho_dry_tq(i,1,k) * (z_rho(i,1,k+1) - z_rho(i,1,k)) &
+                       * (q_inc(i,1,k) + qcl_inc(i,1,k))
+          end do
+          ! Convert to tendency
+          cv_qw_sink = cv_qw_sink * recip_timestep
+
+          ! Calculate convective fraction
+          if (cv_qw_sink > 0.0_r_def) then
+            conv_frac(map_2d(1,i)) = cv_qw_sink / (cv_qw_sink + ls_qw_sink(map_2d(1,i)))
+          else
+            conv_frac(map_2d(1,i)) = 0.0_r_def
+          end if
+        end do
+      end if
     end if ! outer_iterations
 
     ! update input fields
@@ -2713,6 +2781,24 @@ contains
           end do
         end do
         deallocate(det_down)
+      end if
+      if (.not. associated(gen_massflux_up, empty_real_data) ) then 
+        do k = 1, n_conv_levels
+          do i = 1, row_length
+            ! Convert to Pa s-1
+            gen_massflux_up(map_w3(1,i) + k) = gen_up_flux_half(i,1,k) * g
+            ! Don't mask below cloud-base mass flux genesis
+          end do
+        end do
+      end if
+      if (.not. associated(gen_massflux_down, empty_real_data) ) then 
+        do k = 1, n_conv_levels
+          do i = 1, row_length
+            ! Convert to Pa s-1
+            gen_massflux_down(map_w3(1,i) + k) = gen_down_flux_half(i,1,k) * g
+            ! Don't mask below cloud-base mass flux genesis
+          end do
+        end do
       end if
     end if ! outer_iterations
 

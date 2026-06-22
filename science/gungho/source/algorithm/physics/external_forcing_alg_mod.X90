@@ -24,6 +24,7 @@ module external_forcing_alg_mod
                                              wind_forcing_filtering,             &
                                              wind_forcing_diffusion,             &
                                              wind_forcing_profile,               &
+                                             wind_relaxation,                    &
                                              vertadvect_forcing,                 &
                                              geostrophic_forcing,                &
                                              filtering_order,                    &
@@ -71,6 +72,7 @@ module external_forcing_alg_mod
   use vertadvect_forcing_alg_mod,      only: vertadvect_forcing_alg
   use temp_tend_profile_alg_mod,       only: temp_tend_profile_alg
   use theta_relax_alg_mod,             only: theta_relax_alg
+  use wind_relax_alg_mod,              only: wind_relax_alg
   use geostrophic_forcing_alg_mod,     only: geostrophic_forcing_alg
   use vapour_forcing_profile_alg_mod,  only: vapour_forcing_profile_alg
   use wind_forcing_profile_alg_mod,    only: wind_forcing_profile_alg
@@ -229,12 +231,6 @@ contains
 
       theta_forcing_done = .true. ! Collect this increment later on
 
-      if (write_diag .and. use_xios_io) then
-        write_behaviour => write_field_generic
-        call dtheta_forcing%set_write_behaviour(write_behaviour)
-        call dtheta_forcing%write_field('forcing__dtheta_force')
-      end if
-
       nullify( chi, panel_id )
 
     end if
@@ -364,6 +360,19 @@ contains
 
     end if
 
+    if ( wind_relaxation ) then
+
+      if ( .not.wind_forcing_done) then
+        call du_forcing%initialise( vector_space = u%get_function_space() )
+        call invoke(setval_c(du_forcing, 0.0_r_def))
+      end if
+
+      nlayers = mesh%get_nlayers()
+      call wind_relax_alg( du_forcing, u, exner,    &
+                            twod_mesh, time_now, nlayers )
+      wind_forcing_done = .true.
+    end if
+
     if ( geostrophic_forcing ) then
       if ( .not. wind_forcing_done ) then
         call du_forcing%initialise( vector_space = u%get_function_space() )
@@ -457,6 +466,21 @@ contains
       call write_forcing_diagnostics(du_forcing=du_forcing, output_wind_inc=wind_forcing_done)
     end if
 
+    if ( vapour_forcing_done ) then 
+      if (write_diag .and. use_xios_io) then
+        write_behaviour => write_field_generic
+        call dmv_forcing%set_write_behaviour(write_behaviour)
+        call dmv_forcing%write_field('forcing__dmv_force')
+      end if
+    end if
+
+    if ( theta_forcing_done ) then 
+      if (write_diag .and. use_xios_io) then
+        write_behaviour => write_field_generic
+        call dtheta_forcing%set_write_behaviour(write_behaviour)
+        call dtheta_forcing%write_field('forcing__dtheta_force')
+      end if
+    end if
 
     if ( subroutine_timers ) call timer("external_forcing_alg")
 

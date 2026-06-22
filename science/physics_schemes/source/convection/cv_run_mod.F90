@@ -869,7 +869,7 @@ call  chk_var(i_convection_vn,'i_convection_vn',                               &
                i_cv_llcs, i_cv_betts, i_cv_comorph])
 
 !---------------------------------------------------------------------------
-! Check convective diagnosis options even when running without convectionct
+! Check convective diagnosis options even when running without convection
 !---------------------------------------------------------------------------
 
 call chk_var(icvdiag,'icvdiag','[1:8]')

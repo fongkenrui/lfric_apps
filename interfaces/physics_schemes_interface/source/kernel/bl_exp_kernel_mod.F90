@@ -378,8 +378,9 @@ contains
     !---------------------------------------
     use atm_fields_bounds_mod, only: pdims
     use bl_option_mod, only: alpha_cd, l_noice_in_turb, l_use_surf_in_ri
+    use convection_config_mod, only: cv_scheme, cv_scheme_comorph
     use cv_run_mod, only: i_convection_vn, i_convection_vn_6a,               &
-                          cldbase_opt_dp, cldbase_opt_md
+                          cldbase_opt_dp, cldbase_opt_md, l_diag_comorph
     use nlsizes_namelist_mod, only: bl_levels
     use planet_constants_mod, only: p_zero, kappa, planet_radius, &
                                     lcrcp => lcrcp_bl, lsrcp => lsrcp_bl
@@ -1134,22 +1135,24 @@ contains
     ! Liquid temperature gradient and turbulent length-scale
     ! for bimodal cloud scheme
     if (scheme == scheme_bimodal .or. &
-         (scheme == scheme_pc2 .and. pc2ini == pc2ini_bimodal ) ) then
-      if (i_bm_ez_opt == i_bm_ez_opt_entpar) then
-        ! Length-scale used for entraining parcel mode construction method
-        do k = 1, nlayers
-          do i = 1, seg_len
-            mix_len_bm(map_wth(1,i)+k) = mix_len_tmp(i,1,k)
-          end do
+         (scheme == scheme_pc2 .and. pc2ini == pc2ini_bimodal ) .or. &
+         ! Make sure mix_len_bm is calculated for the comorph kernel
+          cv_scheme == cv_scheme_comorph .or. l_diag_comorph ) then
+
+      ! Length-scale used for entraining parcel mode construction method
+      do k = 1, nlayers
+        do i = 1, seg_len
+          mix_len_bm(map_wth(1,i)+k) = mix_len_tmp(i,1,k)
         end do
-      else
-        ! SL-gradient used for stable-layer mode construction method
-        do k = 1, nlayers
-          do i = 1, seg_len
-            dsldzm(map_wth(1,i)+k) = tgrad_bm(i,1,k)
-          end do
+      end do
+
+      ! SL-gradient used for stable-layer mode construction method
+      do k = 1, nlayers
+        do i = 1, seg_len
+          dsldzm(map_wth(1,i)+k) = tgrad_bm(i,1,k)
         end do
-      end if
+      end do
+
     end if
     if (scheme == scheme_bimodal .or. turb_gen_mixph .or. &
          (scheme == scheme_pc2 .and. pc2ini == pc2ini_bimodal ) ) then

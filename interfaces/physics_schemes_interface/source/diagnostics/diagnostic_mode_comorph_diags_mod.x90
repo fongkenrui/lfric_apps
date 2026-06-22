@@ -433,11 +433,14 @@ contains
                                                           pres_lowest_cv_base_coarse,    &
                                                           pres_lowest_cv_top_coarse,     &
                                                           lowest_cca_2d_coarse,          &
+                                                          conv_frac_coarse,              &
                                                           entrain_up_coarse,             & ! 3-D
                                                           entrain_down_coarse,           &
                                                           detrain_up_coarse,             &
                                                           detrain_down_coarse,           &
-                                                          massflux_up_half_coarse)
+                                                          massflux_up_half_coarse,       &
+                                                          gen_massflux_up_coarse,        &
+                                                          gen_massflux_down_coarse)
 
     implicit none
     ! This is pretty much a copy of initialise_diags_for_comorph, but modified to pair
@@ -453,11 +456,14 @@ contains
                                          pres_lowest_cv_base_coarse,     &
                                          pres_lowest_cv_top_coarse,      &
                                          lowest_cca_2d_coarse,           &
+                                         conv_frac_coarse,               &
                                          entrain_up_coarse,              & ! 3-D
                                          entrain_down_coarse,            &
                                          detrain_up_coarse,              &
                                          detrain_down_coarse,            &
-                                         massflux_up_half_coarse
+                                         massflux_up_half_coarse,        &
+                                         gen_massflux_up_coarse,         &
+                                         gen_massflux_down_coarse 
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
 
@@ -477,6 +483,7 @@ contains
     call init_coarse_field(pres_lowest_cv_base_coarse, conv_mesh, W3, TWOD)
     call init_coarse_field(pres_lowest_cv_top_coarse, conv_mesh, W3, TWOD)
     call init_coarse_field(lowest_cca_2d_coarse, conv_mesh, W3, TWOD)
+    call init_coarse_field(conv_frac_coarse, conv_mesh, W3, TWOD)
     ! conv_full_level_face_grid (3D, WTHETA) real
     call init_coarse_field(entrain_up_coarse, conv_mesh, WTHETA)
     call init_coarse_field(entrain_down_coarse, conv_mesh, WTHETA)
@@ -485,6 +492,8 @@ contains
 
     ! conv_half_level_face_grid (3D, W3) real
     call init_coarse_field(massflux_up_half_coarse, conv_mesh, W3)
+    call init_coarse_field(gen_massflux_up_coarse, conv_mesh, W3)
+    call init_coarse_field(gen_massflux_down_coarse, conv_mesh, W3)
     
     ! Initialise values to zero for fields passed to kernel 
     call invoke( setval_c(entrain_up_coarse, 0.0_r_def) )
@@ -524,12 +533,14 @@ contains
                                                        pres_lowest_cv_base_coarse,   &
                                                        pres_lowest_cv_top_coarse,    &
                                                        lowest_cca_2d_coarse,         &
+                                                       conv_frac_coarse,             &
                                                        entrain_up_coarse,            & 
                                                        entrain_down_coarse,          &
                                                        detrain_up_coarse,            &
                                                        detrain_down_coarse,          &
                                                        massflux_up_half_coarse,      &
-                                                       bl_type_ind_coarse)
+                                                       bl_type_ind_coarse,           &
+                                                       precfrac_coarse)
 
     implicit none
 
@@ -556,6 +567,7 @@ contains
     ! Other important auxillary fields to output for diagnostics
     ! These are not part of the usual set of internal CoMorph diagnostics
     type( integer_field_type ), intent(in) :: bl_type_ind_coarse
+    type( field_type ), intent(in) :: precfrac_coarse
 
     ! Local diagnostic fields to output
     type( field_type ), intent(in) :: lowest_cv_base_coarse,          &
@@ -567,6 +579,7 @@ contains
                                       pres_lowest_cv_base_coarse,     &
                                       pres_lowest_cv_top_coarse,      &
                                       lowest_cca_2d_coarse,           &
+                                      conv_frac_coarse,               &
                                       entrain_up_coarse,              & 
                                       entrain_down_coarse,            &
                                       detrain_up_coarse,              &
@@ -605,6 +618,9 @@ contains
     call pres_lowest_cv_base_coarse%write_field('convection__pres_lowest_cv_base_coarse')
     call pres_lowest_cv_top_coarse%write_field('convection__pres_lowest_cv_top_coarse')
     call lowest_cca_2d_coarse%write_field('convection__lowest_cca_2d_coarse')
+    call conv_frac_coarse%write_field('convection__conv_frac_coarse')
+
+    call precfrac_coarse%write_field('convection__precfrac_coarse')
 
     ! 3D
     call entrain_up_coarse%write_field('convection__entrain_up_coarse')

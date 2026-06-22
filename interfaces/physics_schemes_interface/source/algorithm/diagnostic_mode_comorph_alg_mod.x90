@@ -69,7 +69,8 @@ contains
     use intermesh_mappings_alg_mod, &
                               only: map_scalar_field,  &
                                     map_rho_intermesh, &
-                                    map_mr_bundle_intermesh
+                                    map_mr_bundle_intermesh, &
+                                    map_mr_intermesh
     use physics_mappings_alg_mod,  only: map_physics_scalars
 
     implicit none
@@ -110,6 +111,7 @@ contains
     type( field_type ), pointer :: tke_bl => null()
     type( field_type ), pointer :: wvar => null()
     type( field_type ), pointer :: rhokm_bl => null()
+    type( field_type ), pointer :: mix_len_bm => null()
     type( field_type ), pointer :: moist_flux => null()
     type( field_type ), pointer :: heat_flux => null()
     type( field_type ), pointer :: taux => null()
@@ -267,6 +269,7 @@ contains
     type( field_type ), pointer :: precfrac => null()
     type( field_type ), pointer :: ls_rain => null()
     type( field_type ), pointer :: ls_snow => null()
+    type( field_type ), pointer :: ls_qw_sink => null()
 
     type( field_type ), pointer :: height_w3 => null()
     type( field_type ), pointer :: height_wth => null()
@@ -298,6 +301,7 @@ contains
     type( field_type ) :: tke_bl_coarse
     type( field_type ) :: wvar_coarse
     type( field_type ) :: rhokm_bl_coarse
+    type( field_type ) :: mix_len_bm_coarse
     type( field_type ) :: moist_flux_coarse
     type( field_type ) :: heat_flux_coarse
     type( field_type ) :: taux_coarse
@@ -455,6 +459,7 @@ contains
     type( field_type ) :: precfrac_coarse
     type( field_type ) :: ls_rain_coarse
     type( field_type ) :: ls_snow_coarse
+    type( field_type ) :: ls_qw_sink_coarse
 
     ! local variables - directly declare on coarse grid
     type( field_type ) :: lowest_cv_base_coarse,lowest_cv_top_coarse
@@ -462,7 +467,8 @@ contains
     type( field_type ) :: detrain_up_coarse,detrain_down_coarse
     type( field_type ) :: pres_cv_base_coarse,pres_cv_top_coarse
     type( field_type ) :: pres_lowest_cv_base_coarse,pres_lowest_cv_top_coarse, lowest_cca_2d_coarse
-    type( field_type ) :: massflux_up_half_coarse
+    type( field_type ) :: massflux_up_half_coarse, conv_frac_coarse
+    type( field_type ) :: gen_massflux_up_coarse, gen_massflux_down_coarse
 
     type( mesh_type ), pointer  :: conv_mesh
     integer(i_def) :: ncells
@@ -532,6 +538,7 @@ contains
     call turbulence_fields%get_field('tke_bl', tke_bl)
     call turbulence_fields%get_field('wvar', wvar)
     call turbulence_fields%get_field('rhokm_bl', rhokm_bl)
+    call turbulence_fields%get_field('mix_len_bm', mix_len_bm)
     call turbulence_fields%get_field('moist_flux_bl', moist_flux)
     call turbulence_fields%get_field('heat_flux_bl', heat_flux)
     call turbulence_fields%get_field('taux', taux)
@@ -695,6 +702,7 @@ contains
     call microphysics_fields%get_field('precfrac', precfrac)
     call microphysics_fields%get_field('ls_rain', ls_rain)
     call microphysics_fields%get_field('ls_snow', ls_snow)
+    call microphysics_fields%get_field('ls_qw_sink', ls_qw_sink)
 
     height_wth => get_height_fv(Wtheta, conv_mesh%get_id())
     height_w3  => get_height_fv(W3, conv_mesh%get_id())
@@ -833,6 +841,7 @@ contains
     call init_coarse_field_from(tke_bl_coarse, tke_bl, conv_mesh)
     call init_coarse_field_from(wvar_coarse, wvar, conv_mesh)
     call init_coarse_field_from(rhokm_bl_coarse, rhokm_bl, conv_mesh)
+    call init_coarse_field_from(mix_len_bm_coarse, mix_len_bm, conv_mesh)
     call init_coarse_field_from(moist_flux_coarse, moist_flux, conv_mesh)
     call init_coarse_field_from(heat_flux_coarse, heat_flux, conv_mesh)
     call init_coarse_field_from(taux_coarse, taux, conv_mesh)
@@ -990,6 +999,7 @@ contains
     call init_coarse_field_from(precfrac_coarse, precfrac, conv_mesh)
     call init_coarse_field_from(ls_rain_coarse, ls_rain, conv_mesh)
     call init_coarse_field_from(ls_snow_coarse, ls_snow, conv_mesh)
+    call init_coarse_field_from(ls_qw_sink_coarse, ls_qw_sink, conv_mesh)
 
     ! Initialise local coarse fields
     ! TODO: This needs to be handled seperately because they don't
@@ -1003,11 +1013,14 @@ contains
                                                       pres_lowest_cv_base_coarse,  &
                                                       pres_lowest_cv_top_coarse,   &
                                                       lowest_cca_2d_coarse,        &
+                                                      conv_frac_coarse,            &
                                                       entrain_up_coarse,           & ! 3-D variables
                                                       entrain_down_coarse,         &
                                                       detrain_up_coarse,           &
                                                       detrain_down_coarse,         &
-                                                      massflux_up_half_coarse)
+                                                      massflux_up_half_coarse,     &
+                                                      gen_massflux_up_coarse,      &
+                                                      gen_massflux_down_coarse)
 
     ! Map the fine fields to the coarse fields
     ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
@@ -1208,6 +1221,7 @@ contains
     call map_scalar_field(tke_bl_coarse, tke_bl)
     call map_scalar_field(wvar_coarse, wvar)
     call map_scalar_field(rhokm_bl_coarse, rhokm_bl)
+    call map_scalar_field(mix_len_bm_coarse, mix_len_bm)
     call map_scalar_field(moist_flux_coarse, moist_flux)
     call map_scalar_field(heat_flux_coarse, heat_flux)
     call map_scalar_field(taux_coarse, taux)
@@ -1414,12 +1428,15 @@ contains
     call map_scalar_field(precfrac_coarse, precfrac)
     call map_scalar_field(ls_rain_coarse, ls_rain)
     call map_scalar_field(ls_snow_coarse, ls_snow)
+    ! This is a 2D column integral of a mixing ratio
+    ! Should be interpreted as a scalar field?
+    call map_scalar_field(ls_qw_sink_coarse, ls_qw_sink)
 
     call log_event( 'Calling conv_comorph_kernel', LOG_LEVEL_INFO )
     ! call the scheme
     call invoke( conv_comorph_kernel_type( outer, rho_coarse, rho_in_wth_coarse,                                        &
                           wetrho_in_w3_coarse, wetrho_in_wth_coarse, exner_coarse, exner_in_wth_coarse,                 &
-                          delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                  &
+                          delta, theta_coarse, u_in_w3_coarse, v_in_w3_coarse, w_in_wth_coarse,                         &
                           theta_star_coarse, u_in_w3_star_coarse, v_in_w3_star_coarse,                                  &
                           height_w3, height_wth,                                                                        &
                           dt_conv_coarse, dmv_conv_coarse, dmcl_conv_coarse,                                            &
@@ -1435,7 +1452,8 @@ contains
                           dd_mf_cb_coarse, massflux_up_coarse, massflux_down_coarse, tke_bl_coarse,                     &
                           pressure_inc_env_coarse,                                                                      &
                           zh_coarse, zh_nonloc_coarse, inv_depth_coarse, zhsc_coarse, bl_type_ind_coarse,               &
-                          wvar_coarse, rhokm_bl_coarse, moist_flux_coarse, heat_flux_coarse, taux_coarse, tauy_coarse,  &
+                          wvar_coarse, rhokm_bl_coarse, mix_len_bm_coarse, moist_flux_coarse, heat_flux_coarse,         &
+                          taux_coarse, tauy_coarse,                                                                     &
                           surf_interp_coarse, ustar_coarse, ls_rain_coarse, ls_snow_coarse,                             &
                           dcfl_conv_coarse, dcff_conv_coarse, dbcf_conv_coarse,                                         &
                           o3p_coarse,                                                                                   &
@@ -1557,11 +1575,15 @@ contains
                           pres_lowest_cv_base_coarse,                                                                   &
                           pres_lowest_cv_top_coarse,                                                                    &
                           lowest_cca_2d_coarse,                                                                         &
+                          conv_frac_coarse,                                                                             &
+                          ls_qw_sink_coarse,                                                                            &
                           entrain_up_coarse,                                                                            &
                           entrain_down_coarse,                                                                          &
                           detrain_up_coarse,                                                                            &
                           detrain_down_coarse,                                                                          &
-                          massflux_up_half_coarse)                                                                      &
+                          massflux_up_half_coarse,                                                                      &
+                          gen_massflux_up_coarse,                                                                       &
+                          gen_massflux_down_coarse)                                                                     &
                                                ) ! end of invoke
     
     call um_sizes_init(1_i_def)
@@ -1599,12 +1621,14 @@ contains
                                   pres_lowest_cv_base_coarse,   &
                                   pres_lowest_cv_top_coarse,    &
                                   lowest_cca_2d_coarse,         &
+                                  conv_frac_coarse,             &
                                   entrain_up_coarse,            & ! 3-D
                                   entrain_down_coarse,          &
                                   detrain_up_coarse,            &
                                   detrain_down_coarse,          &
                                   massflux_up_half_coarse,      &
-                                  bl_type_ind_coarse)
+                                  bl_type_ind_coarse,           &
+                                  precfrac_coarse)
     end if
 
   nullify( conv_mesh )

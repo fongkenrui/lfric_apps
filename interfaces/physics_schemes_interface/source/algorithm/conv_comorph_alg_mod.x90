@@ -99,6 +99,7 @@ contains
     type( field_type ), pointer :: tke_bl
     type( field_type ), pointer :: wvar
     type( field_type ), pointer :: rhokm_bl
+    type( field_type ), pointer :: mix_len_bm
     type( field_type ), pointer :: moist_flux
     type( field_type ), pointer :: heat_flux
     type( field_type ), pointer :: taux
@@ -256,6 +257,7 @@ contains
     type( field_type ), pointer :: precfrac
     type( field_type ), pointer :: ls_rain
     type( field_type ), pointer :: ls_snow
+    type( field_type ), pointer :: ls_qw_sink
 
     type( field_type ), pointer :: height_w3
     type( field_type ), pointer :: height_wth
@@ -266,7 +268,8 @@ contains
     type( field_type ) :: detrain_up,detrain_down
     type( field_type ) :: pres_cv_base,pres_cv_top
     type( field_type ) :: pres_lowest_cv_base,pres_lowest_cv_top, lowest_cca_2d
-    type( field_type ) :: massflux_up_half
+    type( field_type ) :: massflux_up_half, conv_frac
+    type( field_type ) :: gen_massflux_up, gen_massflux_down
 
     type( mesh_type ), pointer  :: mesh
     integer(i_def) :: ncells
@@ -305,6 +308,7 @@ contains
     call turbulence_fields%get_field('tke_bl', tke_bl)
     call turbulence_fields%get_field('wvar', wvar)
     call turbulence_fields%get_field('rhokm_bl', rhokm_bl)
+    call turbulence_fields%get_field('mix_len_bm', mix_len_bm)
     call turbulence_fields%get_field('moist_flux_bl', moist_flux)
     call turbulence_fields%get_field('heat_flux_bl', heat_flux)
     call turbulence_fields%get_field('taux', taux)
@@ -470,6 +474,7 @@ contains
     call microphysics_fields%get_field('precfrac', precfrac)
     call microphysics_fields%get_field('ls_rain', ls_rain)
     call microphysics_fields%get_field('ls_snow', ls_snow)
+    call microphysics_fields%get_field('ls_qw_sink',ls_qw_sink)
 
     height_wth => get_height_fv(Wtheta, mesh%get_id())
     height_w3  => get_height_fv(W3, mesh%get_id())
@@ -523,11 +528,14 @@ contains
                                       pres_lowest_cv_base,  &
                                       pres_lowest_cv_top,   &
                                       lowest_cca_2d,        &
+                                      conv_frac,            &
                                       entrain_up,           & ! 3-D variables
                                       entrain_down,         &
                                       detrain_up,           &
                                       detrain_down,         &
-                                      massflux_up_half)
+                                      massflux_up_half,     &
+                                      gen_massflux_up,      &
+                                      gen_massflux_down)
 
     ! call the scheme
     ncells = mesh%get_last_edge_cell()
@@ -551,7 +559,8 @@ contains
                           dd_mf_cb, massflux_up, massflux_down, tke_bl,       &
                           pressure_inc_env,                                   &
                           zh, zh_nonloc, inv_depth, zhsc, bl_type_ind,        &
-                          wvar, rhokm_bl, moist_flux, heat_flux, taux, tauy,  &
+                          wvar, rhokm_bl, mix_len_bm, moist_flux, heat_flux,  &
+                          taux, tauy,                                         &
                           surf_interp, ustar, ls_rain, ls_snow,               &
                           dcfl_conv, dcff_conv, dbcf_conv,                    &
                           o3p,                                                &
@@ -673,11 +682,15 @@ contains
                           pres_lowest_cv_base,                                &
                           pres_lowest_cv_top,                                 &
                           lowest_cca_2d,                                      &
+                          conv_frac,                                          &
+                          ls_qw_sink,                                         &
                           entrain_up,                                         &   ! 3-D local variables
                           entrain_down,                                       &
                           detrain_up,                                         &
                           detrain_down,                                       &
-                          massflux_up_half)                                   &
+                          massflux_up_half,                                   &
+                          gen_massflux_up,                                    &
+                          gen_massflux_down)                                  &
                                            ) ! end of invoke
 
     call um_sizes_init(1_i_def)
@@ -715,11 +728,14 @@ contains
                                   pres_lowest_cv_base,   &
                                   pres_lowest_cv_top,    &
                                   lowest_cca_2d,         &
+                                  conv_frac,             &
                                   entrain_up,            & ! 3-D
                                   entrain_down,          &
                                   detrain_up,            &
                                   detrain_down,          &
-                                  massflux_up_half)
+                                  massflux_up_half,      &
+                                  gen_massflux_up,       &
+                                  gen_massflux_down)
 
     end if
 
