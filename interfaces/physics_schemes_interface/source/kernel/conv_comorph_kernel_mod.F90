@@ -233,7 +233,7 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! detrain_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! massflux_up_half
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_up
-         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3)                        &! gen_massflux_down
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA)                    &! parcel_radius
         /)
     integer :: operates_on = DOMAIN
