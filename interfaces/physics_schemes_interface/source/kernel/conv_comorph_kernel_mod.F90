@@ -2681,8 +2681,9 @@ contains
           do i = 1, row_length
             ! Convert to Pa s-1
             gen_massflux_up(map_w3(1,i) + k-1) = gen_up_flux_half(i,1,k) * g
-            if (k <= lcbase(i,1) .or. lcbase(i,1) == 0) &
-               gen_massflux_up(map_w3(1,i) + k-1) = 0.0_r_def
+            ! Do not perform cloud-base masking
+            !if (k <= lcbase(i,1) .or. lcbase(i,1) == 0) &
+            !   gen_massflux_up(map_w3(1,i) + k-1) = 0.0_r_def
           end do
         end do
       end if
