@@ -451,6 +451,7 @@ contains
 
   !> @brief Output diagnostics from comorph_alg
   subroutine output_diags_for_diagnostic_mode_comorph( cca_coarse,                   &
+                                                       ccw_coarse,                   &
                                                        dt_conv_coarse,               &
                                                        dmv_conv_coarse,              &
                                                        dmcl_conv_coarse,             &
@@ -491,6 +492,7 @@ contains
 
     ! Global coarsened fields to output
     type( field_type ), intent(in) :: cca_coarse,                            &
+                                      ccw_coarse,                            &
                                       dt_conv_coarse,                        &
                                       dmv_conv_coarse,                       &
                                       dmcl_conv_coarse,                      &
@@ -535,6 +537,7 @@ contains
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
     ! Write the fields here
     call cca_coarse%write_field('convection__cca_coarse')
+    call ccw_coarse%write_field('convection__ccw_coarse')
     call dt_conv_coarse%write_field('convection__dt_conv_coarse')
     call dmv_conv_coarse%write_field('convection__dmv_conv_coarse')
     call dmcl_conv_coarse%write_field('convection__dmcl_conv_coarse')

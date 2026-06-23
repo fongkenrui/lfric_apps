@@ -1281,6 +1281,7 @@ contains
 
       call output_diags_for_diagnostic_mode_comorph(            &
                                   cca_coarse,                   &
+                                  ccw_coarse,                   &
                                   dt_conv_coarse,               &
                                   dmv_conv_coarse,              &
                                   dmcl_conv_coarse,             &

@@ -417,6 +417,7 @@
   <field id="convection__detrain_down_coarse" name="detrain_down_coarse" long_name="convection_downward_detrain_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__massflux_up_half_coarse" name="massflux_up_half_coarse" long_name="conv_upward_massflux_half_levs_on_coarse_grid" unit="Pa s-1" grid_ref="conv_half_level_face_grid" />
   <field id="convection__cca_coarse" name="cca_coarse" long_name="convective_cloud_amount_on_coarse_grid" unit="1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__ccw_coarse" name="ccw_coarse" long_name="convective_cloud_water_on_coarse_grid" unit="kg kg-1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__dt_conv_coarse" name="dt_conv_coarse" long_name="temperature_increment_from_convection_on_coarse_grid" unit="K" grid_ref="conv_full_level_face_grid" />
   <field id="convection__dmv_conv_coarse" name="dmv_conv_coarse" long_name="water_vapour_increment_from_convection_on_coarse_grid" unit="kg kg-1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__dmcl_conv_coarse" name="dmcl_conv_coarse" long_name="cloud_liquid_water_increment_from_convection_on_coarse_grid" unit="kg kg-1" grid_ref="conv_full_level_face_grid" />
