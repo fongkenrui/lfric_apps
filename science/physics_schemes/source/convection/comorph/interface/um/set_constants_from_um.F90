@@ -219,7 +219,7 @@ end do
 n_dndraft_types = n_dndraft_types_um
 
 ! Scale default parcel radius factor by tuning knob from the UM
-par_gen_radius_fac = par_gen_radius_fac * real( par_radius_knob, real_cvprec )
+par_gen_radius_fac = 8.0_real_cvprec * real( par_radius_knob, real_cvprec )
 
 ! Switch controlling how parcel radius evolves with height in the plume
 par_radius_evol_method = par_radius_evol_method_um
