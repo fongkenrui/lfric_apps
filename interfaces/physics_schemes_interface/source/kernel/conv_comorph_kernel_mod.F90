@@ -2699,6 +2699,8 @@ contains
         do k = 1, n_conv_levels
           do i = 1, row_length
             parcel_radius(map_wth(1,i) + k) = turb_radius(i,1,k)
+            write(10,*) "parcel_radius: ", parcel_radius(map_wth(1,i) + k)
+            flush(10)
           end do
         end do
       end if

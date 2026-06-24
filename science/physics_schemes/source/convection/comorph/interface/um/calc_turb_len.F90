@@ -158,6 +158,8 @@ do k = 1, bl_levels-1
       ! = diffusivity (m2s-1) / w' (ms-1)
       turb_len(i,j,k) = ( rhokm(i,j,k) / rho_wet_th(i,j,k) )                   &
                       / sqrt( bl_w_var(i,j,k) )
+      write(10,*) "turb_len: ", turb_len(i,j,k)
+      flush(10)
     end do
   end do
 end do
