@@ -444,6 +444,10 @@ contains
     call invoke( setval_c(entrain_down_coarse, 0.0_r_def) )
     call invoke( setval_c(detrain_up_coarse, 0.0_r_def) )
     call invoke( setval_c(detrain_down_coarse, 0.0_r_def) )
+    call invoke( setval_c(massflux_up_half_coarse, 0.0_r_def) )
+    call invoke( setval_c(gen_massflux_up_coarse, 0.0_r_def) )
+    call invoke( setval_c(gen_massflux_down_coarse, 0.0_r_def) )
+    call invoke( setval_c(parcel_radius_coarse, 0.0_r_def) )
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
 
