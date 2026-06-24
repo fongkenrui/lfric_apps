@@ -1143,6 +1143,9 @@ contains
       do k = 1, nlayers
         do i = 1, seg_len
           mix_len_bm(map_wth(1,i)+k) = mix_len_tmp(i,1,k)
+          write(10, *) 'Computing layer k = ', k, ' for segment i = ', i, ' in bl_exp_kernel_mod'
+          write(10,*) 'mix_len_bm', i, k, mix_len_bm(map_wth(1,i)+k)
+          write(10,*) 'mix_len_tmp', i, k, mix_len_tmp(i,1,k)
         end do
       end do
 
