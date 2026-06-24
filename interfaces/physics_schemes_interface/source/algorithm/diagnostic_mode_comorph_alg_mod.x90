@@ -1293,6 +1293,8 @@ contains
                                   dbcf_conv_coarse,             &
                                   massflux_up_coarse,           &
                                   massflux_down_coarse,         &
+                                  gen_massflux_up_coarse,       &
+                                  gen_massflux_down_coarse,     &
                                   cape_diluted_coarse,          &
                                   conv_rain_coarse,             &
                                   conv_snow_coarse,             &

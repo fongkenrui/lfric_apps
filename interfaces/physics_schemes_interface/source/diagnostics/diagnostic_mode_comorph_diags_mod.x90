@@ -463,6 +463,8 @@ contains
                                                        dbcf_conv_coarse,             &
                                                        massflux_up_coarse,           &
                                                        massflux_down_coarse,         &
+                                                       gen_massflux_up_coarse,       &
+                                                       gen_massflux_down_coarse,     &
                                                        cape_diluted_coarse,          &
                                                        conv_rain_coarse,             &
                                                        conv_snow_coarse,             &
@@ -504,6 +506,8 @@ contains
                                       dv_conv_coarse,                        &
                                       massflux_up_coarse,                    &
                                       massflux_down_coarse,                  &  
+                                      gen_massflux_up_coarse,                &
+                                      gen_massflux_down_coarse,              &
                                       cape_diluted_coarse,                   &
                                       conv_rain_coarse,                      &
                                       conv_snow_coarse,                      &
@@ -549,6 +553,8 @@ contains
     call dv_conv_coarse%write_field('convection__dv_conv_coarse')
     call massflux_up_coarse%write_field('convection__massflux_up_coarse')
     call massflux_down_coarse%write_field('convection__massflux_down_coarse')
+    call gen_massflux_up_coarse%write_field('convection__gen_massflux_up_coarse')
+    call gen_massflux_down_coarse%write_field('convection__gen_massflux_down_coarse')
     call cape_diluted_coarse%write_field('convection__cape_diluted_coarse')
     call conv_rain_coarse%write_field('convection__conv_rain_coarse')
     call conv_snow_coarse%write_field('convection__conv_snow_coarse')

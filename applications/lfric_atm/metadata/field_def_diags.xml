@@ -430,6 +430,8 @@
   <field id="convection__cape_diluted_coarse" name="cape_diluted_coarse" long_name="cape_diluted_on_coarse_grid" unit="J/kg" grid_ref="conv_face" />
   <field id="convection__massflux_up_coarse" name="massflux_up_coarse" long_name="convection_upward_massflux_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__massflux_down_coarse" name="massflux_down_coarse" long_name="convection_downward_massflux_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__gen_massflux_up_coarse" name="gen_massflux_up_coarse" long_name="convection_upward_massflux_genesis_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
+  <field id="convection__gen_massflux_down_coarse" name="gen_massflux_down_coarse" long_name="convection_downward_massflux_genesis_on_coarse_grid" unit="Pa s-1" grid_ref="conv_full_level_face_grid" />
   <field id="convection__conv_rain_coarse" name="conv_rain_coarse" long_name="surface_convective_rainfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_face" />
   <field id="convection__conv_snow_coarse" name="conv_snow_coarse" long_name="surface_convective_snowfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_face" />
   <field id="convection__conv_rain_3d_coarse" name="conv_rain_3d_coarse" long_name="convective_rainfall_rate_on_coarse_grid" unit="kg m-2 s-1" grid_ref="conv_full_level_face_grid" />
