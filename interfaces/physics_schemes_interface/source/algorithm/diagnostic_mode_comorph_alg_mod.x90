@@ -696,7 +696,7 @@ contains
     call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
     ! Initialise the coarse convection fields
-    call log_event( 'Starting coarse field initialization', LOG_LEVEL_DEBUG )
+    call log_event( 'Starting coarse field initialization', LOG_LEVEL_INFO )
 
     ! Model prognostics
     call init_coarse_field_from(rho_coarse, rho, conv_mesh)
@@ -891,7 +891,7 @@ contains
     ! Initialise local coarse fields
     ! TODO: This needs to be handled seperately because they don't
     ! have any corresponding fine fields!
-  
+    call log_event( 'call initialise_diags_for_diagnostic_mode_comorph', LOG_LEVEL_INFO )
     call initialise_diags_for_diagnostic_mode_comorph(conv_mesh,                   &
                                                       lowest_cv_base_coarse,       &
                                                       lowest_cv_top_coarse,        &         

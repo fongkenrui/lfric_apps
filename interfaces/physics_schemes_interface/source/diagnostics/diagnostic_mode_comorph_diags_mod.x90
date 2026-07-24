@@ -427,12 +427,16 @@ contains
     ! conv_face (TWOD, W3)
     ! While these are integer outputs in xios diagnostics, they are regular
     ! fields in the comorph kernel type definition...
+    write(10, *) 'lowest_cv_base_coarse'
+    flush(10)
     call log_event('init_coarse_field lowest_cv_base_coarse', LOG_LEVEL_INFO)
     call init_coarse_field(lowest_cv_base_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field lowest_cv_top_coarse', LOG_LEVEL_INFO)
     call init_coarse_field(lowest_cv_top_coarse, conv_mesh, W3, TWOD)
     
     ! conv_face (TWOD, W3) real
+    write(10, *) 'lowest_cv_base_coarse'
+    flush(10)
     call log_event('init_coarse_field pres_cv_base_coarse', LOG_LEVEL_INFO)
     call init_coarse_field(pres_cv_base_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field pres_cv_top_coarse', LOG_LEVEL_INFO)
@@ -446,6 +450,8 @@ contains
     call log_event('init_coarse_field conv_frac_coarse', LOG_LEVEL_INFO)
     call init_coarse_field(conv_frac_coarse, conv_mesh, W3, TWOD)
     ! conv_full_level_face_grid (3D, WTHETA) real
+    write(10, *) 'entrain_up-_oarse'
+    flush(10)
     call init_coarse_field(entrain_up_coarse, conv_mesh, WTHETA)
     call init_coarse_field(entrain_down_coarse, conv_mesh, WTHETA)
     call init_coarse_field(detrain_up_coarse, conv_mesh, WTHETA)
