@@ -155,9 +155,6 @@ contains
     ! Log field name
     write(log_scratch_space, * ) 'Field name', trim(field%get_name())
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
-    ! Log level number
-    write(log_scratch_space, * ) 'No. of levels', size(field%get_function_space()%get_levels())
-    call log_event(log_scratch_space, LOG_LEVEL_INFO)
     ! Extrusion id
     write(log_scratch_space, * ) 'Extrusion id', field%get_mesh()%get_extrusion_id()
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
@@ -314,9 +311,6 @@ contains
     ! Logging
     ! Log field name
     write(log_scratch_space, * ) 'Field name', trim(field%get_name())
-    call log_event(log_scratch_space, LOG_LEVEL_INFO)
-    ! Log level number
-    write(log_scratch_space, * ) 'No. of levels', size(field%get_function_space()%get_levels())
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
     ! Extrusion id
     write(log_scratch_space, * ) 'Extrusion id', field%get_mesh()%get_extrusion_id()
