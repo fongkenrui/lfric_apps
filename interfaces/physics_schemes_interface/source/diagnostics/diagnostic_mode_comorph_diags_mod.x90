@@ -156,7 +156,7 @@ contains
     write(log_scratch_space, * ) 'Field name', trim(field%get_name())
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
     ! Extrusion id
-    write(log_scratch_space, * ) 'Extrusion id', field%get_mesh()%get_extrusion_id()
+    write(log_scratch_space, * ) 'Extrusion id', target_mesh()%get_extrusion_id()
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
 
   end subroutine init_coarse_field_from
@@ -313,7 +313,7 @@ contains
     write(log_scratch_space, * ) 'Field name', trim(field%get_name())
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
     ! Extrusion id
-    write(log_scratch_space, * ) 'Extrusion id', field%get_mesh()%get_extrusion_id()
+    write(log_scratch_space, * ) 'Extrusion id', target_mesh()%get_extrusion_id()
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
 
   end subroutine init_coarse_field
