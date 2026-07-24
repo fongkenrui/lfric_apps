@@ -428,23 +428,23 @@ contains
     ! While these are integer outputs in xios diagnostics, they are regular
     ! fields in the comorph kernel type definition...
     call log_event('init_coarse_field lowest_cv_base_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(lowest_cv_base_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(lowest_cv_base_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field lowest_cv_top_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(lowest_cv_top_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(lowest_cv_top_coarse, conv_mesh, W3, TWOD)
     
     ! conv_face (TWOD, W3) real
     call log_event('init_coarse_field pres_cv_base_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(pres_cv_base_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(pres_cv_base_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field pres_cv_top_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(pres_cv_top_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(pres_cv_top_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field pres_lowest_cv_base_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(pres_lowest_cv_base_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(pres_lowest_cv_base_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field pres_lowest_cv_top_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(pres_lowest_cv_top_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(pres_lowest_cv_top_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field lowest_cca_2d_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(lowest_cca_2d_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(lowest_cca_2d_coarse, conv_mesh, W3, TWOD)
     call log_event('init_coarse_field conv_frac_coarse', LOG_LEVEL_INFO)
-    call init_coarse_field(conv_frac_coarse, conv_mesh, W3, extrusion_id=TWOD)
+    call init_coarse_field(conv_frac_coarse, conv_mesh, W3, TWOD)
     ! conv_full_level_face_grid (3D, WTHETA) real
     call init_coarse_field(entrain_up_coarse, conv_mesh, WTHETA)
     call init_coarse_field(entrain_down_coarse, conv_mesh, WTHETA)
