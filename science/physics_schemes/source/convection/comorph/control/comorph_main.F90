@@ -201,8 +201,13 @@ logical :: l_output_fallback
 integer :: lb_p(3), ub_p(3)
 
 ! Loop counters
-integer :: k, i_type, i_layr
+integer :: k, i_type, i_layr, ic, i, j
+! Work arrays for BL-top masking
+logical, allocatable :: mask_ij(:)
+integer :: ncols, id, ij_idx
 
+! Take par_bl_top from conv_sweep_ctl to build mask of bl-penetrating plumes
+type( parcel_type ), allocatable :: par_bl_top(:,:,:)
 
 !--------------------------------------------------------------
 ! 1) Calculate initiation mass sources from each model-level
@@ -260,7 +265,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                          updraft_fields_2d,                                    &
                          comorph_diags % updraft,                              &
                          updraft_diags_super,                                  &
-      fallback_par_gen = updraft_fallback_par_gen )
+      fallback_par_gen = updraft_fallback_par_gen, par_bl_top = par_bl_top )
 
     ! If updraft fall-backs are on:
     if ( l_updraft_fallback ) then
@@ -459,6 +464,85 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
   ! 7) Compute means of draft diagnostics over types / layers
   !    and decompress into output arrays
   !------------------------------------------------------------
+
+  ! Produced with the assistance of Github Copilot personal
+  ! Before computing means, perform masking of parcel fields
+  ! Build a temporary ij-mask from par_bl_top for each type/layer/level
+  allocate( mask_ij( ij_first:ij_last ) )
+
+  ! Updraft gen diagnostics mask
+  if ( n_updraft_types > 0 .and. n_updraft_layers > 0 ) then
+    do i_type = 1, n_updraft_types
+      do i_layr = 1, n_updraft_layers
+        do k = k_bot_conv, k_top_conv
+          if ( par_bl_top(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
+               updraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points > 0 ) then
+            ! Clear mask
+            do ij = ij_first, ij_last
+              mask_ij(ij) = .false.
+            end do
+            ! Set mask for BL-top crossing columns
+            do ic = 1, par_bl_top(i_type,i_layr,k) % cmpr % n_points
+              i = par_bl_top(i_type,i_layr,k) % cmpr % index_i(ic)
+              j = par_bl_top(i_type,i_layr,k) % cmpr % index_j(ic)
+              ij_idx = nx_full*(j-1) + i
+              if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
+            end do
+            ! Zero out any gen diag rows that are not BL-top crossing
+            ncols = ubound( updraft_diags_super % gen(i_type,i_layr,k) % super, 2 )
+            do ic = 1, updraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points
+              i = updraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_i(ic)
+              j = updraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_j(ic)
+              ij_idx = nx_full*(j-1) + i
+              if ( .not. mask_ij(ij_idx) ) then
+                do id = 1, ncols
+                  updraft_diags_super % gen(i_type,i_layr,k) % super(ic,id) = 0.0_real_cvprec
+                end do
+              end if
+            end do
+          end if
+        end do
+      end do
+    end do
+  end if
+
+  ! Downdraft gen diagnostics mask
+  if ( n_dndraft_types > 0 .and. n_dndraft_layers > 0 ) then
+    do i_type = 1, n_dndraft_types
+      do i_layr = 1, n_dndraft_layers
+        do k = k_bot_conv, k_top_conv
+          if ( par_bl_top(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
+               dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points > 0 ) then
+            ! Clear mask
+            do ij = ij_first, ij_last
+              mask_ij(ij) = .false.
+            end do
+            ! Set mask for BL-top crossing columns
+            do ic = 1, par_bl_top(i_type,i_layr,k) % cmpr % n_points
+              i = par_bl_top(i_type,i_layr,k) % cmpr % index_i(ic)
+              j = par_bl_top(i_type,i_layr,k) % cmpr % index_j(ic)
+              ij_idx = nx_full*(j-1) + i
+              if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
+            end do
+            ! Zero out any gen diag rows that are not BL-top crossing
+            ncols = ubound( dndraft_diags_super % gen(i_type,i_layr,k) % super, 2 )
+            do ic = 1, dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points
+              i = dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_i(ic)
+              j = dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_j(ic)
+              ij_idx = nx_full*(j-1) + i
+              if ( .not. mask_ij(ij_idx) ) then
+                do id = 1, ncols
+                  dndraft_diags_super % gen(i_type,i_layr,k) % super(ic,id) = 0.0_real_cvprec
+                end do
+              end if
+            end do
+          end if
+        end do
+      end do
+    end do
+  end if
+
+  deallocate( mask_ij )
 
   ! The calls to draft_diags_compute_means below also deallocate the
   ! compressed diagnostic arrays, so are called in reverse

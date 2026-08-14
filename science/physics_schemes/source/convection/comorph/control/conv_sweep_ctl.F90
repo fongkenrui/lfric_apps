@@ -50,7 +50,7 @@ subroutine conv_sweep_ctl( n_fields_tot,                                       &
                            fields, virt_temp,                                  &
                            par_gen, res_source, fields_2d,                     &
                            draft_diags, draft_diags_super,                     &
-                           fallback_par_gen )
+                           fallback_par_gen, par_bl_top )
 
 use comorph_constants_mod, only: nx_full, ny_full, k_bot_conv, k_top_conv,     &
                      real_cvprec, real_hmprec, zero,                           &
@@ -288,7 +288,7 @@ type(res_source_type) :: res_source_gen
 
 ! Parcel properties at the diagnosed boundary-layer top
 ! (used if homogenising the increments below the BL-top)
-type(parcel_type), allocatable :: par_bl_top(:,:,:)
+type(parcel_type), intent(in out) :: par_bl_top
 
 ! Compression indices used for combining the existing and initiating parcels
 type(cmpr_type) :: cmpr_combined
