@@ -208,8 +208,6 @@ integer :: ncols, id, ij, ij_idx
 
 ! Take par_bl_top from conv_sweep_ctl to build mask of bl-penetrating plumes
 type( parcel_type ), allocatable :: par_bl_top_updraft(:,:,:), par_bl_top_downdraft(:,:,:)
-! Dummy variable for par_bl_top for fallback/other conv sweep
-type( parcel_type ), allocatable :: par_bl_top_dummy(:,:,:)
 
 !--------------------------------------------------------------
 ! 1) Calculate initiation mass sources from each model-level
@@ -288,7 +286,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                            updraft_fallback_res_source,                        &
                            updraft_fields_2d,                                  &
                            comorph_diags % updraft_fallback,                   &
-                           updraft_fallback_diags_super, par_bl_top_dummy )
+                           updraft_fallback_diags_super )
 
     end if  ! ( l_updraft_fallback )
 
@@ -364,7 +362,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                            dndraft_fallback_res_source,                        &
                            dndraft_fields_2d,                                  &
                            comorph_diags % dndraft_fallback,                   &
-                           dndraft_fallback_diags_super, par_bl_top = par_bl_top_dummy )
+                           dndraft_fallback_diags_super )
 
     end if  ! ( l_dndraft_fallback )
 

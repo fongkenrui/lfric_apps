@@ -288,7 +288,7 @@ type(res_source_type) :: res_source_gen
 
 ! Parcel properties at the diagnosed boundary-layer top
 ! (used if homogenising the increments below the BL-top)
-type(parcel_type), allocatable, intent(in out) :: par_bl_top(:,:,:)
+type(parcel_type), allocatable, optional, intent(in out) :: par_bl_top(:,:,:)
 
 ! Compression indices used for combining the existing and initiating parcels
 type(cmpr_type) :: cmpr_combined
