@@ -204,10 +204,12 @@ integer :: lb_p(3), ub_p(3)
 integer :: k, i_type, i_layr, ic, i, j
 ! Work arrays for BL-top masking
 logical, allocatable :: mask_ij(:)
-integer :: ncols, id, ij_idx
+integer :: ncols, id, ij, ij_idx
 
 ! Take par_bl_top from conv_sweep_ctl to build mask of bl-penetrating plumes
-type( parcel_type ), allocatable :: par_bl_top(:,:,:)
+type( parcel_type ), allocatable :: par_bl_top_updraft(:,:,:), par_bl_top_downdraft(:,:,:)
+! Dummy variable for par_bl_top for fallback/other conv sweep
+type( parcel_type ), allocatable :: par_bl_top_dummy(:,:,:)
 
 !--------------------------------------------------------------
 ! 1) Calculate initiation mass sources from each model-level
@@ -265,7 +267,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                          updraft_fields_2d,                                    &
                          comorph_diags % updraft,                              &
                          updraft_diags_super,                                  &
-      fallback_par_gen = updraft_fallback_par_gen, par_bl_top = par_bl_top )
+      fallback_par_gen = updraft_fallback_par_gen, par_bl_top = par_bl_top_updraft )
 
     ! If updraft fall-backs are on:
     if ( l_updraft_fallback ) then
@@ -286,7 +288,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                            updraft_fallback_res_source,                        &
                            updraft_fields_2d,                                  &
                            comorph_diags % updraft_fallback,                   &
-                           updraft_fallback_diags_super )
+                           updraft_fallback_diags_super, par_bl_top_dummy )
 
     end if  ! ( l_updraft_fallback )
 
@@ -341,7 +343,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                          dndraft_fields_2d,                                    &
                          comorph_diags % dndraft,                              &
                          dndraft_diags_super,                                  &
-      fallback_par_gen = dndraft_fallback_par_gen )
+      fallback_par_gen = dndraft_fallback_par_gen, par_bl_top = par_bl_top_downdraft )
 
     ! If downdraft fall-backs are on:
     if ( l_dndraft_fallback ) then
@@ -362,7 +364,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
                            dndraft_fallback_res_source,                        &
                            dndraft_fields_2d,                                  &
                            comorph_diags % dndraft_fallback,                   &
-                           dndraft_fallback_diags_super )
+                           dndraft_fallback_diags_super, par_bl_top = par_bl_top_dummy )
 
     end if  ! ( l_dndraft_fallback )
 
@@ -475,16 +477,16 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
     do i_type = 1, n_updraft_types
       do i_layr = 1, n_updraft_layers
         do k = k_bot_conv, k_top_conv
-          if ( par_bl_top(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
+          if ( par_bl_top_updraft(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
                updraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points > 0 ) then
             ! Clear mask
             do ij = ij_first, ij_last
               mask_ij(ij) = .false.
             end do
             ! Set mask for BL-top crossing columns
-            do ic = 1, par_bl_top(i_type,i_layr,k) % cmpr % n_points
-              i = par_bl_top(i_type,i_layr,k) % cmpr % index_i(ic)
-              j = par_bl_top(i_type,i_layr,k) % cmpr % index_j(ic)
+            do ic = 1, par_bl_top_updraft(i_type,i_layr,k) % cmpr % n_points
+              i = par_bl_top_updraft(i_type,i_layr,k) % cmpr % index_i(ic)
+              j = par_bl_top_updraft(i_type,i_layr,k) % cmpr % index_j(ic)
               ij_idx = nx_full*(j-1) + i
               if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
             end do
@@ -511,16 +513,16 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
     do i_type = 1, n_dndraft_types
       do i_layr = 1, n_dndraft_layers
         do k = k_bot_conv, k_top_conv
-          if ( par_bl_top(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
+          if ( par_bl_top_downdraft(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
                dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points > 0 ) then
             ! Clear mask
             do ij = ij_first, ij_last
               mask_ij(ij) = .false.
             end do
             ! Set mask for BL-top crossing columns
-            do ic = 1, par_bl_top(i_type,i_layr,k) % cmpr % n_points
-              i = par_bl_top(i_type,i_layr,k) % cmpr % index_i(ic)
-              j = par_bl_top(i_type,i_layr,k) % cmpr % index_j(ic)
+            do ic = 1, par_bl_top_downdraft(i_type,i_layr,k) % cmpr % n_points
+              i = par_bl_top_downdraft(i_type,i_layr,k) % cmpr % index_i(ic)
+              j = par_bl_top_downdraft(i_type,i_layr,k) % cmpr % index_j(ic)
               ij_idx = nx_full*(j-1) + i
               if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
             end do
