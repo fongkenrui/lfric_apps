@@ -174,11 +174,6 @@ if ( k_max >= k_bot_conv ) then
                                 par_bl_top(i_type,i_layr,k),                   &
                                 res_source )
 
-            ! Deallocate stored parcel properties at BL-top
-            call cmpr_dealloc( par_bl_top(i_type,i_layr,k)%cmpr )
-            deallocate( par_bl_top(i_type,i_layr,k) % par_super )
-            deallocate( par_bl_top(i_type,i_layr,k) % mean_super)
-
           end if
         end do
 
