@@ -542,6 +542,9 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
     end do
   end if
 
+  if ( allocated( par_bl_top_updraft ) ) deallocate( par_bl_top_updraft )
+  if ( allocated( par_bl_top_downdraft ) ) deallocate( par_bl_top_downdraft )
+
   deallocate( mask_ij )
 
   ! The calls to draft_diags_compute_means below also deallocate the

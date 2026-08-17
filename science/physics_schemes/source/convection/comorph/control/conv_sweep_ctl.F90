@@ -974,7 +974,6 @@ if ( l_homog_conv_bl ) then
                           n_fields_tot, l_down,                                &
                           grid, fields, layer_mass,                            &
                           par_bl_top, turb, res_source )
-  deallocate( par_bl_top )
 end if
 
 
