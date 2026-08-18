@@ -335,7 +335,7 @@ integer, parameter :: i_cfl_check_closure = 2
 integer, parameter :: i_cfl_check_hybrid = 3
 
 ! Set to one of the above options:
-integer, parameter :: i_cfl_check = i_cfl_check_hybrid
+integer, parameter :: i_cfl_check = i_cfl_check_closure
 
 ! Options for diagnosed convective cloud:
 ! No convective cloud
