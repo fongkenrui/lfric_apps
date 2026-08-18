@@ -69,7 +69,8 @@ contains
                                     map_rho_intermesh, &
                                     map_mr_bundle_intermesh, &
                                     map_mr_intermesh,        &
-                                    restrict_scalar_max
+                                    restrict_scalar_max,     &
+                                    restrict_scalar_min
     use physics_mappings_alg_mod,  only: map_physics_scalars
 
     implicit none
@@ -945,9 +946,9 @@ contains
     call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
     ! Boundary layer fields; these are 2D fields
     call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
-    call restrict_scalar_max(zh_coarse, zh)
-    call restrict_scalar_max(zh_nonloc_coarse, zh_nonloc)
-    call restrict_scalar_max(zhsc_coarse, zhsc)
+    call restrict_scalar_min(zh_coarse, zh)
+    call restrict_scalar_min(zh_nonloc_coarse, zh_nonloc)
+    call restrict_scalar_min(zhsc_coarse, zhsc)
     call map_scalar_field(inv_depth_coarse, inv_depth)
     ! bl_type_ind is an integer field; TODO: use majority vote mapping
     ! For now we just set all indicators to zero since the kernel only
