@@ -252,7 +252,7 @@ if ( par_radius_init_method >= rain_dependence ) then
   do j = pdims%j_start, pdims%j_end
     do i = pdims%i_start, pdims%i_end
       ppnrate = dxfac(i,j) * qfac(i,j) * (ls_rain(i,j) + ls_snow(i,j))
-      rainfac(i,j) = 1.0 + ( (par_radius_knob_max/par_radius_knob)-1.0 )
+      rainfac(i,j) = 1.0 + ( (par_radius_knob_max/par_radius_knob)-1.0 ) * 0.5
       ! * min( 1.0, ppnrate/par_radius_ppn_max )
     end do
   end do
