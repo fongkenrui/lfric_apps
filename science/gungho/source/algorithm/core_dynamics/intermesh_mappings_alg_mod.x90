@@ -64,6 +64,7 @@ module intermesh_mappings_alg_mod
   public  :: apply_mr_incs             ! Maps and applies moisture increments
   public  :: map_mr_intermesh          ! Public routine for mapping single mixing ratio fields
   public  :: restrict_scalar_max       ! Public routine for max mapping
+  public  :: restrict_scalar_min       ! Public routine for min mapping
 contains
 
   !> @brief Converts rho field to the shifted mesh
@@ -151,6 +152,24 @@ contains
             restrict_scalar_max_kernel_type(target_field, source_field) )
 
   end subroutine restrict_scalar_max
+
+  !> @brief Min restriction of a W3/Wtheta field
+  !> @param[in,out] target_field  Target field, on a coarse mesh
+  !> @param[in]     source_field  Source field, on a fine mesh
+  subroutine restrict_scalar_min( target_field, source_field )
+
+    use sci_restrict_scalar_min_kernel_mod, &
+                                  only: restrict_scalar_min_kernel_type
+
+    implicit none
+
+    type(field_type),           intent(in)    :: source_field
+    type(field_type),           intent(inout) :: target_field
+
+    call invoke( name='restrict_scalar_min', &
+            restrict_scalar_min_kernel_type(target_field, source_field) )
+
+  end subroutine restrict_scalar_min
 
   !> @brief Non-conservative restriction of a W3/Wtheta multidata field
   !> @param[in,out] target_field  Target field, on a coarse mesh
