@@ -133,6 +133,24 @@ contains
 
   end subroutine restrict_scalar
 
+  !> @brief Max restriction of a W3/Wtheta field
+  !> @param[in,out] target_field  Target field, on a coarse mesh
+  !> @param[in]     source_field  Source field, on a fine mesh
+  subroutine restrict_scalar_max( target_field, source_field )
+
+    use sci_restrict_scalar_max_kernel_mod, &
+                                  only: restrict_scalar_max_kernel_type
+
+    implicit none
+
+    type(field_type),           intent(in)    :: source_field
+    type(field_type),           intent(inout) :: target_field
+
+    call invoke( name='restrict_scalar_max', &
+            restrict_scalar_max_kernel_type(target_field, source_field) )
+
+  end subroutine restrict_scalar_max
+
   !> @brief Non-conservative restriction of a W3/Wtheta multidata field
   !> @param[in,out] target_field  Target field, on a coarse mesh
   !> @param[in]     source_field  Source field, on a fine mesh
