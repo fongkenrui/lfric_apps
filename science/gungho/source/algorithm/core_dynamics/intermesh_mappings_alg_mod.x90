@@ -63,6 +63,7 @@ module intermesh_mappings_alg_mod
   public  :: map_mr_bundle_intermesh   ! Public routine for mapping mr bundle
   public  :: apply_mr_incs             ! Maps and applies moisture increments
   public  :: map_mr_intermesh          ! Public routine for mapping single mixing ratio fields
+  public  :: restrict_scalar_max       ! Public routine for max mapping
 contains
 
   !> @brief Converts rho field to the shifted mesh
