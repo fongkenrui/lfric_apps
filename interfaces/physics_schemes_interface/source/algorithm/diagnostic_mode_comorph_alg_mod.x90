@@ -69,7 +69,7 @@ contains
                                     map_rho_intermesh, &
                                     map_mr_bundle_intermesh, &
                                     map_mr_intermesh,        &
-                                    restrict_sclar_max
+                                    restrict_scalar_max
     use physics_mappings_alg_mod,  only: map_physics_scalars
 
     implicit none
