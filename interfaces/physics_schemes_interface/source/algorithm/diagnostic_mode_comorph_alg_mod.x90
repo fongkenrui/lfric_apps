@@ -960,7 +960,9 @@ contains
     call map_scalar_field(tke_bl_coarse, tke_bl)
     call map_scalar_field(wvar_coarse, wvar)
     call map_scalar_field(rhokm_bl_coarse, rhokm_bl)
-    call map_scalar_field(mix_len_bm_coarse, mix_len_bm)
+    ! EDIT: Swap to max/min to affect parcel radius computation
+    call restrict_scalar_min(mix_len_bm_coarse, mix_len_bm)
+
     call map_scalar_field(moist_flux_coarse, moist_flux)
     call map_scalar_field(heat_flux_coarse, heat_flux)
     call map_scalar_field(taux_coarse, taux)
