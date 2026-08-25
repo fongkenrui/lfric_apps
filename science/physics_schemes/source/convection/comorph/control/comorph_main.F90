@@ -533,7 +533,7 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
               if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
             end do
             ! Zero out any gen diag rows that are not BL-top crossing
-            n_diags_super = comorph_diags % downdraft % gen % n_diags_super
+            n_diags_super = comorph_diags % dndraft % gen % n_diags_super
             do ic = 1, dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points
               i = dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_i(ic)
               j = dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_j(ic)
