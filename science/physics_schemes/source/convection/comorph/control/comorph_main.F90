@@ -204,7 +204,7 @@ integer :: lb_p(3), ub_p(3)
 integer :: k, i_type, i_layr, ic, i, j
 ! Work arrays for BL-top masking
 logical, allocatable :: mask_ij(:)
-integer :: ncols, id, ij, ij_idx
+integer :: n_diags_super, id, ij, ij_idx
 
 ! Take par_bl_top from conv_sweep_ctl to build mask of bl-penetrating plumes
 type( parcel_type ), allocatable :: par_bl_top_updraft(:,:,:), par_bl_top_downdraft(:,:,:)
@@ -471,10 +471,13 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
   allocate( mask_ij( ij_first:ij_last ) )
 
   ! Updraft gen diagnostics mask
+  ! Loop over individual bulk plume types within a segment
   if ( n_updraft_types > 0 .and. n_updraft_layers > 0 ) then
     do i_type = 1, n_updraft_types
       do i_layr = 1, n_updraft_layers
+        ! Loop over vertical extent
         do k = k_bot_conv, k_top_conv
+          ! For par_bl_top k tracks the model level where crossing happens
           if ( par_bl_top_updraft(i_type,i_layr,k) % cmpr % n_points > 0 .and.       &
                updraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points > 0 ) then
             ! Clear mask
@@ -482,20 +485,25 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
               mask_ij(ij) = .false.
             end do
             ! Set mask for BL-top crossing columns
+            ! Loop over compressed active points
             do ic = 1, par_bl_top_updraft(i_type,i_layr,k) % cmpr % n_points
               i = par_bl_top_updraft(i_type,i_layr,k) % cmpr % index_i(ic)
               j = par_bl_top_updraft(i_type,i_layr,k) % cmpr % index_j(ic)
+              ! Conversion to a flattened index
               ij_idx = nx_full*(j-1) + i
               if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
             end do
             ! Zero out any gen diag rows that are not BL-top crossing
-            ncols = ubound( updraft_diags_super % gen(i_type,i_layr,k) % super, 2 )
+            n_diags_super = comorph_diags % updraft % gen % n_diags_super
             do ic = 1, updraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points
               i = updraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_i(ic)
               j = updraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_j(ic)
               ij_idx = nx_full*(j-1) + i
               if ( .not. mask_ij(ij_idx) ) then
-                do id = 1, ncols
+                ! Loop over diagnostics and zero all of them
+                ! Includes both tracer and mass diagnostic fields, but first field
+                ! should be the dry mass-flux diagnostic
+                do id = 1, n_diags_super
                   updraft_diags_super % gen(i_type,i_layr,k) % super(ic,id) = 0.0_real_cvprec
                 end do
               end if
@@ -525,13 +533,13 @@ if ( n_updraft_layers > 0 .or. n_dndraft_layers > 0 ) then
               if ( ij_idx >= ij_first .and. ij_idx <= ij_last ) mask_ij(ij_idx) = .true.
             end do
             ! Zero out any gen diag rows that are not BL-top crossing
-            ncols = ubound( dndraft_diags_super % gen(i_type,i_layr,k) % super, 2 )
+            n_diags_super = comorph_diags % downdraft % gen % n_diags_super
             do ic = 1, dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % n_points
               i = dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_i(ic)
               j = dndraft_diags_super % gen(i_type,i_layr,k) % cmpr % index_j(ic)
               ij_idx = nx_full*(j-1) + i
               if ( .not. mask_ij(ij_idx) ) then
-                do id = 1, ncols
+                do id = 1, n_diags_super
                   dndraft_diags_super % gen(i_type,i_layr,k) % super(ic,id) = 0.0_real_cvprec
                 end do
               end if
