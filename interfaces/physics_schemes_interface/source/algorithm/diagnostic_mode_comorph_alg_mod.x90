@@ -946,9 +946,9 @@ contains
     call map_scalar_field(v_in_w3_star_coarse, v_in_w3_star)
     ! Boundary layer fields; these are 2D fields
     call log_event( 'map_scalar_field on 2D BL fields', LOG_LEVEL_INFO )
-    call restrict_scalar_min(zh_coarse, zh)
-    call restrict_scalar_min(zh_nonloc_coarse, zh_nonloc)
-    call restrict_scalar_min(zhsc_coarse, zhsc)
+    call map_scalar_field(zh_coarse, zh)
+    call map_scalar_field(zh_nonloc_coarse, zh_nonloc)
+    call map_scalar_field(zhsc_coarse, zhsc)
     call map_scalar_field(inv_depth_coarse, inv_depth)
     ! bl_type_ind is an integer field; TODO: use majority vote mapping
     ! For now we just set all indicators to zero since the kernel only
@@ -997,12 +997,12 @@ contains
     call map_scalar_field(cape_diluted_coarse, cape_diluted)
     call map_scalar_field(pressure_inc_env_coarse, pressure_inc_env)
     ! Cloud fields
-    call map_scalar_field(cf_fro_coarse, cf_fro)
-    call map_scalar_field(cf_liq_coarse, cf_liq)
-    call map_scalar_field(cf_bulk_coarse, cf_bulk)
-    call map_scalar_field(cf_liq_n_coarse, cf_liq_n)
-    call map_scalar_field(cf_fro_n_coarse, cf_fro_n)
-    call map_scalar_field(cf_bulk_n_coarse, cf_bulk_n)
+    call restrict_scalar_min(cf_fro_coarse, cf_fro)
+    call restrict_scalar_min(cf_liq_coarse, cf_liq)
+    call restrict_scalar_min(cf_bulk_coarse, cf_bulk)
+    call restrict_scalar_min(cf_liq_n_coarse, cf_liq_n)
+    call restrict_scalar_min(cf_fro_n_coarse, cf_fro_n)
+    call restrict_scalar_min(cf_bulk_n_coarse, cf_bulk_n)
     ! Chemistry & Aerosol fields
     call map_scalar_field(o3p_coarse, o3p)
     call map_scalar_field(o1d_coarse, o1d)
