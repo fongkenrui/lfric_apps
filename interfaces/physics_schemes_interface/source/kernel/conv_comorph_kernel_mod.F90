@@ -33,7 +33,7 @@ module conv_comorph_kernel_mod
   !>
   type, public, extends(kernel_type) :: conv_comorph_kernel_type
     private
-    type(arg_type) :: meta_args(201) = (/                                         &
+    type(arg_type) :: meta_args(205) = (/                                         &
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! outer
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! rho_in_w3
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      WTHETA),                   &! rho_in_wth
@@ -235,6 +235,10 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, W3),                       &! gen_massflux_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA)                    &! parcel_radius
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_entrain_up
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_entrain_down
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_detrain_up
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_detrain_down
         /)
     integer :: operates_on = DOMAIN
   contains
@@ -445,6 +449,10 @@ contains
   !> @param[in,out] gen_massflux_up      Convective upwards mass flux from parcel genesis on half-levels (Pa/s)
   !> @param[in,out] gen_massflux_down    Convective downwards mass flux from parcel genesis on half-levels (Pa/s)
   !> @param[in,out] parcel_radius        CoMorph plume turbulence-derived parcel radius (m)
+  !> @param[in,out] entrain_up           Convective upwards fractional entrainment
+  !> @param[in,out] entrain_down         Convective downwards fractional entrainment
+  !> @param[in,out] detrain_up           Convective upwards fractional detrainment
+  !> @param[in,out] detrain_down         Convective downwards fractional detrainment
   !> @param[in]     ndf_w3               Number of DOFs per cell for density space
   !> @param[in]     undf_w3              Number of unique DOFs  for density space
   !> @param[in]     map_w3               Dofmap for the cell at the base of the column for density space
@@ -662,6 +670,10 @@ contains
                           gen_massflux_up,                   &
                           gen_massflux_down,                 &
                           parcel_radius,                     &
+                          frac_entrain_up,                   &
+                          frac_entrain_down,                 &
+                          frac_detrain_up,                   &
+                          frac_detrain_down,                 &
                           ndf_w3,                            &
                           undf_w3,                           &
                           map_w3,                            &
@@ -1030,7 +1042,12 @@ contains
                                                 massflux_up_half(:), &
                                                 gen_massflux_up(:),  &
                                                 gen_massflux_down(:),&
-                                                parcel_radius(:)
+                                                parcel_radius(:),    &
+                                                frac_entrain_up(:),  &
+                                                frac_entrain_down(:),&
+                                                frac_detrain_up(:),  &
+                                                frac_detrain_down(:)
+
 
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcfl_conv
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcff_conv

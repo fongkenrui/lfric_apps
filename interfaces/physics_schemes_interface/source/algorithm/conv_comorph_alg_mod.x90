@@ -640,9 +640,13 @@ contains
                           detrain_down,                                       &
                           massflux_up_half,                                   &
                           gen_massflux_up,                                    &
-                          gen_massflux_down,                                  &
-                          parcel_radius)                                      &
-                                           ) ! end of invoke
+                          gen_massflux_down,                                  &   
+                          parcel_radius,                                      &
+                          frac_entrain_up,                                    &
+                          frac_entrain_down,                                  &
+                          frac_detrain_up,                                    &
+                          frac_detrain_down)                                  &
+                          ) ! end of invoke
 
     call um_sizes_init(1_i_def)
 
@@ -687,7 +691,11 @@ contains
                                   massflux_up_half,      &
                                   gen_massflux_up,       &
                                   gen_massflux_down,     &
-                                  parcel_radius)
+                                  parcel_radius,         &
+                                  frac_entrain_up,       &
+                                  frac_entrain_down,     &
+                                  frac_detrain_up,       &
+                                  frac_detrain_down)
 
     end if
 

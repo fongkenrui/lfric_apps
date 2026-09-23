@@ -404,6 +404,10 @@
   <field id="convection__pres_lowest_cv_top" name="pres_lowest_cv_top" long_name="pressure_at_lowest_convective_cloud_top" unit="Pa" domain_ref="face" />
   <field id="convection__pres_cv_base" name="pres_cv_base" long_name="pressure_at_convective_cloud_base" unit="Pa" domain_ref="face" />
   <field id="convection__pres_cv_top" name="pres_cv_top" long_name="pressure_at_convective_cloud_top" unit="Pa" domain_ref="face" />
+  <field id="convection__frac_entrain_up" name="frac_entrain_up" long_name="convection_upward_fractional_entrain" unit="1" grid_ref="full_level_face_grid" />
+  <field id="convection__frac_entrain_down" name="frac_entrain_down" long_name="convection_downward_fractional_entrain" unit="1" grid_ref="full_level_face_grid" />
+  <field id="convection__frac_detrain_up" name="frac_entrain_up" long_name="convection_upward_fractional_entrain" unit="1" grid_ref="full_level_face_grid" />
+  <field id="convection__frac_detrain_down" name="frac_entrain_down" long_name="convection_downward_fractional_entrain" unit="1" grid_ref="full_level_face_grid" />
   <!-- Coarsened diagnostic-mode CoMorph diagnostics -->
   <!-- The following definitions are essential because the code uses the xios metadata defined here for initializing the fields -->
   <field id="convection__pres_lowest_cv_base_coarse" name="pres_lowest_cv_base_coarse" long_name="pressure_at_lowest_convective_cloud_base_on_coarse_grid" unit="Pa" grid_ref="conv_face" />

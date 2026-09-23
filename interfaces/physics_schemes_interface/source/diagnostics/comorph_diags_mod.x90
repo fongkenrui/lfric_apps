@@ -34,7 +34,11 @@ module comorph_diags_mod
                       massflux_up_half_flag,       &
                       gen_massflux_up_flag,        &
                       gen_massflux_down_flag,      &
-                      parcel_radius_flag
+                      parcel_radius_flag,          &
+                      frac_entrain_up_flag,        &
+                      frac_entrain_down_flag,      &
+                      frac_detrain_up_flag,        &
+                      frac_detrain_down_flag,      &
 
   public :: initialise_diags_for_comorph
   public :: output_diags_for_comorph
@@ -59,7 +63,11 @@ contains
                                           massflux_up_half,       &
                                           gen_massflux_up,        &
                                           gen_massflux_down,      &
-                                          parcel_radius)
+                                          parcel_radius,          &
+                                          frac_entrain_up,        &
+                                          frac_entrain_down,      &
+                                          frac_detrain_up,        &
+                                          frac_detrain_down)
 
     implicit none
 
@@ -81,7 +89,11 @@ contains
                                          massflux_up_half,        &
                                          gen_massflux_up,         &
                                          gen_massflux_down,       &
-                                         parcel_radius
+                                         parcel_radius,           &
+                                         frac_entrain_up,        &
+                                         frac_entrain_down,      &
+                                         frac_detrain_up,        &
+                                         frac_detrain_down
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -115,6 +127,19 @@ contains
 
     detrain_down_flag = init_diag(detrain_down, 'convection__detrain_down')
     if (detrain_down_flag) call invoke( setval_c(detrain_down, 0.0_r_def) )
+
+    ! Fractional entrainment diagnostics
+    frac_entrain_up_flag = init_diag(frac_entrain_up, 'convection__frac_entrain_up')
+    if (frac_entrain_up_flag) call invoke( setval_c(frac_entrain_up, 0.0_r_def) )
+
+    frac_entrain_down_flag = init_diag(frac_entrain_down, 'convection__frac_entrain_down')
+    if (frac_entrain_down_flag) call invoke( setval_c(frac_entrain_down, 0.0_r_def) )
+
+    frac_detrain_up_flag = init_diag(frac_detrain_up, 'convection__frac_detrain_up')
+    if (frac_detrain_up_flag) call invoke( setval_c(frac_detrain_up, 0.0_r_def) )
+
+    frac_detrain_down_flag = init_diag(frac_detrain_down, 'convection__frac_detrain_down')
+    if (frac_detrain_down_flag) call invoke( setval_c(frac_detrain_down, 0.0_r_def) )
 
     massflux_up_half_flag = init_diag(massflux_up_half, 'convection__massflux_up_half')
 
@@ -169,7 +194,11 @@ contains
                                     massflux_up_half,       &
                                     gen_massflux_up,        &
                                     gen_massflux_down,      &
-                                    parcel_radius)
+                                    parcel_radius,          &
+                                    frac_entrain_up,        &
+                                    frac_entrain_down,      &
+                                    frac_detrain_up,        &
+                                    frac_detrain_down)
 
     implicit none
 
@@ -213,7 +242,11 @@ contains
                                        massflux_up_half,       &
                                        gen_massflux_up,        &
                                        gen_massflux_down,      &
-                                       parcel_radius
+                                       parcel_radius,          &
+                                       frac_entrain_up,        &
+                                       frac_entrain_down,      &
+                                       frac_detrain_up,        &
+                                       frac_detrain_down
 
     if ( subroutine_timers ) call timer("comorph_diags")
 
@@ -264,6 +297,10 @@ contains
     if (gen_massflux_up_flag) call gen_massflux_up%write_field()
     if (gen_massflux_down_flag) call gen_massflux_down%write_field()
     if (parcel_radius_flag) call parcel_radius%write_field()
+    if (frac_entrain_up_flag) call frac_entrain_up%write_field()
+    if (frac_entrain_down_flag) call frac_entrain_down%write_field()
+    if (frac_detrain_up_flag) call frac_detrain_up%write_field()
+    if (frac_detrain_down_flag) call frac_detrain_down%write_field()
     if ( subroutine_timers ) call timer("comorph_diags")
 
   end subroutine output_diags_for_comorph
