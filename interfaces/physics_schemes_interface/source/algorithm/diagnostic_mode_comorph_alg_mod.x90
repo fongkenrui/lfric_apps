@@ -463,6 +463,8 @@ contains
     type( field_type ) :: lowest_cv_base_coarse,lowest_cv_top_coarse
     type( field_type ) :: entrain_up_coarse,entrain_down_coarse
     type( field_type ) :: detrain_up_coarse,detrain_down_coarse
+    type( field_type ) :: frac_entrain_up_coarse,frac_entrain_down_coarse
+    type( field_type ) :: frac_detrain_up_coarse,frac_detrain_down_coarse
     type( field_type ) :: pres_cv_base_coarse,pres_cv_top_coarse
     type( field_type ) :: pres_lowest_cv_base_coarse,pres_lowest_cv_top_coarse, lowest_cca_2d_coarse
     type( field_type ) :: massflux_up_half_coarse, conv_frac_coarse
@@ -908,7 +910,12 @@ contains
                                                       massflux_up_half_coarse,     &
                                                       gen_massflux_up_coarse,      &
                                                       gen_massflux_down_coarse,    &
-                                                      parcel_radius_coarse)
+                                                      parcel_radius_coarse,        &
+                                                      frac_entrain_up_coarse,      &
+                                                      frac_entrain_down_coarse,    &
+                                                      frac_detrain_up_coarse,      &
+                                                      frac_detrain_down_coarse)
+
 
     ! Map the fine fields to the coarse fields
     ! map_scalar_field works with generic W3/WTH scalar fields; nonconservative
@@ -1269,7 +1276,11 @@ contains
                           massflux_up_half_coarse,                                                                      &
                           gen_massflux_up_coarse,                                                                       &
                           gen_massflux_down_coarse,                                                                     &
-                          parcel_radius_coarse)                                                                                &
+                          parcel_radius_coarse,                                                                         &
+                          frac_entrain_up_coarse,                                                                       &
+                          frac_entrain_down_coarse,                                                                     &
+                          frac_detrain_up_coarse,                                                                       &
+                          frac_detrain_down_coarse)                                                                     &                                                                                &
                                                ) ! end of invoke
 
     call um_sizes_init(1_i_def)
@@ -1318,7 +1329,11 @@ contains
                                   massflux_up_half_coarse,      &
                                   bl_type_ind_coarse,           &
                                   precfrac_coarse,              &
-                                  parcel_radius_coarse)         
+                                  parcel_radius_coarse,         &
+                                  frac_entrain_up_coarse,       &
+                                  frac_entrain_down_coarse,     &
+                                  frac_detrain_up_coarse,       &
+                                  frac_detrain_down_coarse)         
     end if
 
   nullify( conv_mesh )

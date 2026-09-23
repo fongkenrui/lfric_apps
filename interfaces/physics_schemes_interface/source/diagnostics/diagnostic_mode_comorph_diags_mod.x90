@@ -382,7 +382,11 @@ contains
                                                           massflux_up_half_coarse,       &
                                                           gen_massflux_up_coarse,        &
                                                           gen_massflux_down_coarse,      &
-                                                          parcel_radius_coarse)
+                                                          parcel_radius_coarse,          &
+                                                          frac_entrain_up_coarse,        &
+                                                          frac_entrain_down_coarse,      &
+                                                          frac_detrain_up_coarse,        &
+                                                          frac_detrain_down_coarse)
 
     implicit none
     ! This is pretty much a copy of initialise_diags_for_comorph, but modified to pair
@@ -406,7 +410,11 @@ contains
                                          massflux_up_half_coarse,        &
                                          gen_massflux_up_coarse,         &
                                          gen_massflux_down_coarse,       &
-                                         parcel_radius_coarse
+                                         parcel_radius_coarse,           &
+                                         frac_entrain_up_coarse,         &
+                                         frac_entrain_down_coarse,       &
+                                         frac_detrain_up_coarse,         &
+                                         frac_detrain_down_coarse
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
 
@@ -492,7 +500,11 @@ contains
                                                        massflux_up_half_coarse,      &
                                                        bl_type_ind_coarse,           &
                                                        precfrac_coarse,              &
-                                                       parcel_radius_coarse)
+                                                       parcel_radius_coarse,         &
+                                                       frac_entrain_up_coarse,       &
+                                                       frac_entrain_down_coarse,     &
+                                                       frac_detrain_up_coarse,       &
+                                                       frac_detrain_down_coarse)
 
     implicit none
 
@@ -540,7 +552,11 @@ contains
                                       detrain_up_coarse,              &
                                       detrain_down_coarse,            &
                                       massflux_up_half_coarse,        &
-                                      parcel_radius_coarse
+                                      parcel_radius_coarse,           &
+                                      frac_entrain_up_coarse,         &
+                                      frac_entrain_down_coarse,       &
+                                      frac_detrain_up_coarse,         &
+                                      frac_detrain_down_coarse 
 
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
     ! Write the fields here
