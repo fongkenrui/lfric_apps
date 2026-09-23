@@ -487,7 +487,11 @@ contains
                                       massflux_up_half,     &
                                       gen_massflux_up,      &
                                       gen_massflux_down,    &
-                                      parcel_radius)
+                                      parcel_radius,        &
+                                      frac_entrain_up,      &
+                                      frac_entrain_down,    &
+                                      frac_detrain_up,      &
+                                      frac_detrain_down)
 
     ! call the scheme
     ncells = mesh%get_last_edge_cell()
