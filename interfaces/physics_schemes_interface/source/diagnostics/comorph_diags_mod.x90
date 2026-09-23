@@ -38,7 +38,7 @@ module comorph_diags_mod
                       frac_entrain_up_flag,        &
                       frac_entrain_down_flag,      &
                       frac_detrain_up_flag,        &
-                      frac_detrain_down_flag,      &
+                      frac_detrain_down_flag
 
   public :: initialise_diags_for_comorph
   public :: output_diags_for_comorph
