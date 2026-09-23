@@ -1280,7 +1280,7 @@ contains
                           frac_entrain_up_coarse,                                                                       &
                           frac_entrain_down_coarse,                                                                     &
                           frac_detrain_up_coarse,                                                                       &
-                          frac_detrain_down_coarse)                                                                     &                                                                                &
+                          frac_detrain_down_coarse)                                                                     &
                                                ) ! end of invoke
 
     call um_sizes_init(1_i_def)
