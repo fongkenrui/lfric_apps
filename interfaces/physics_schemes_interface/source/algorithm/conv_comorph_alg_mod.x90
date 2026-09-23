@@ -262,6 +262,8 @@ contains
     type( field_type ) :: lowest_cv_base,lowest_cv_top
     type( field_type ) :: entrain_up,entrain_down
     type( field_type ) :: detrain_up,detrain_down
+    type( field_type ) :: frac_entrain_up,frac_entrain_down
+    type( field_type ) :: frac_detrain_up,frac_detrain_down
     type( field_type ) :: pres_cv_base,pres_cv_top
     type( field_type ) :: pres_lowest_cv_base,pres_lowest_cv_top, lowest_cca_2d
     type( field_type ) :: massflux_up_half, conv_frac
