@@ -238,7 +238,7 @@ module conv_comorph_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_entrain_up
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_entrain_down
          arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_detrain_up
-         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA),                   &! frac_detrain_down
+         arg_type(GH_FIELD,  GH_REAL,    GH_READWRITE, WTHETA)                    &! frac_detrain_down
         /)
     integer :: operates_on = DOMAIN
   contains
