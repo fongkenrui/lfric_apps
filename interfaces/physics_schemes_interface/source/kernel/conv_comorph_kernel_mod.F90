@@ -2647,7 +2647,7 @@ contains
       end do
     end if
 
-    ! Update optional diagnostics
+    ! Update optional diagnostics 
     if (outer == outer_iterations) then
       if (.not. associated(entrain_up, empty_real_data) ) then
         do k = 1, n_conv_levels
@@ -2658,7 +2658,8 @@ contains
                  entrain_up(map_wth(1,i) + k) = 0.0_r_def
           end do
         end do
-        deallocate(ent_up)
+        ! Keep for frac diagnostics
+        ! deallocate(ent_up)
       end if
       if (.not. associated(entrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
@@ -2667,7 +2668,8 @@ contains
             entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) * g
           end do
         end do
-        deallocate(ent_down)
+        ! Keep for frac diagnostics
+        ! deallocate(ent_down)
       end if
       if (.not. associated(detrain_up, empty_real_data) ) then
         do k = 1, n_conv_levels
@@ -2678,7 +2680,8 @@ contains
                  detrain_up(map_wth(1,i) + k) = 0.0_r_def
           end do
         end do
-        deallocate(det_up)
+        ! Keep for frac diagnostics
+        ! deallocate(det_up)
       end if
       if (.not. associated(detrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
@@ -2687,7 +2690,8 @@ contains
             detrain_down(map_wth(1,i) + k) = det_down(i,1,k) * g
           end do
         end do
-        deallocate(det_down)
+        ! Keep for frac diagnostics
+        ! deallocate(det_down)
       end if
       if (.not. associated(gen_massflux_up, empty_real_data) ) then 
         do k = 1, n_conv_levels
@@ -2716,6 +2720,44 @@ contains
         end do
       end if
     end if ! outer_iterations
+    if (.not. associated(frac_entrain_up, empty_real_data) ) then
+      do k = 1, n_conv_levels
+        do i = 1, row_length
+          ! entrain_up = M_up (lower level) * frac_ent
+          ! Divide further by delta Z to get frac entrain rate
+          ! We keep to dimensionless frac ent for now
+          frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
+        end do
+      end do
+      deallocate(ent_up)
+    end if
+
+    if (.not. associated(frac_entrain_down, empty_real_data) ) then
+      do k = 1, n_conv_levels
+        do i = 1, row_length
+          frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_um))
+        end do
+      end do
+      deallocate(ent_down)
+    end if
+
+    if (.not. associated(frac_detrain_up, empty_real_data) ) then
+      do k = 1, n_conv_levels
+        do i = 1, row_length
+          frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
+        end do
+      end do
+      deallocate(det_up)
+    end if
+
+    if (.not. associated(frac_detrain_down, empty_real_data) ) then
+      do k = 1, n_conv_levels
+        do i = 1, row_length
+          frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_um))
+        end do
+      end do
+      deallocate(det_down)
+    end if
 
     if (l_mom) then
       do k = 1, n_conv_levels
