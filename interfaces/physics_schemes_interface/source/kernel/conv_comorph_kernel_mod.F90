@@ -2735,7 +2735,7 @@ contains
             flush(10)
             write(10, *) "ent_up(i,1,k) = ", ent_up(i,1,k)
             write(10, *) "up_flux_half(i,1,k) = ", up_flux_half(i,1,k)
-            write(10, *) "frac_entrain_up(map_wth(1,i)+k) = " frac_entrain_up(map_wth(1,i) + k)
+            write(10, *) "frac_entrain_up(map_wth(1,i)+k) = ", frac_entrain_up(map_wth(1,i) + k)
             frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
           end do
         end do
