@@ -1042,7 +1042,12 @@ contains
                                                 massflux_up_half(:), &
                                                 gen_massflux_up(:),  &
                                                 gen_massflux_down(:),&
-                                                parcel_radius(:)
+                                                parcel_radius(:),    &
+                                                frac_entrain_up(:),  &
+                                                frac_entrain_down(:),&
+                                                frac_detrain_up(:),  &
+                                                frac_detrain_down(:)
+
 
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcfl_conv
     real(kind=r_def), dimension(undf_wth), intent(inout) :: dcff_conv
@@ -1068,9 +1073,7 @@ contains
          theta_conv, q_conv, qcl_conv, qcf_conv, dtheta_conv,                &
          qrain_conv, qcf2_conv, qgraup_conv, cf_liquid_conv, cf_frozen_conv, &
          bulk_cf_conv, u_conv, v_conv, ccw_3d, dubydt_p,                     &
-         dvbydt_p, tnuc_new, cca_3d0, ccw_3d0,                               &
-         frac_entrain_up, frac_entrain_down,                                 &
-         frac_detrain_up, frac_detrain_down
+         dvbydt_p, tnuc_new, cca_3d0, ccw_3d0
 
     ! profile fields from level 0 upwards
     real(r_um), dimension(row_length,rows,0:nlayers) ::                      &
