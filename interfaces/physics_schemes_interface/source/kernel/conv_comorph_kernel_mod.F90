@@ -2327,29 +2327,35 @@ contains
                                 % field_3d => down_flux_half
     ! Set requests and assign pointers for entrainment and
     ! detrainment diagnostics
+    ! Set entrainment/detrainment diagnostics to be requested even when only
+    ! fractional versions of the diagnostic are requested
     if (outer == outer_iterations) then
-      if (.not. associated(entrain_up, empty_real_data) ) then
+      if ((.not. associated(entrain_up, empty_real_data) ) .or.                &
+          (.not. associated(frac_entrain_up, empty_real_data) )) then
         allocate(ent_up(row_length,rows,nlayers))
         comorph_diags % updraft % plume_model % ent_mass_d                     &
                                 % request % x_y_z = .true.
         comorph_diags % updraft % plume_model % ent_mass_d                     &
                                 % field_3d => ent_up
       end if
-      if (.not. associated(entrain_down, empty_real_data) ) then
+      if ((.not. associated(entrain_down, empty_real_data) ) .or.              &
+          (.not. associated(frac_entrain_down, empty_real_data) )) then
         allocate(ent_down(row_length,rows,nlayers))
         comorph_diags % dndraft % plume_model % ent_mass_d                     &
                                 % request % x_y_z = .true.
         comorph_diags % dndraft % plume_model % ent_mass_d                     &
                                 % field_3d => ent_down
       end if
-      if (.not. associated(detrain_up, empty_real_data) ) then
+      if ((.not. associated(detrain_up, empty_real_data) ) .or.                &
+          (.not. associated(frac_detrain_up, empty_real_data) )) then
         allocate(det_up(row_length,rows,nlayers))
         comorph_diags % updraft % plume_model % det_mass_d                     &
                                 % request % x_y_z = .true.
         comorph_diags % updraft % plume_model % det_mass_d                     &
                                 % field_3d => det_up
       end if
-      if (.not. associated(detrain_down, empty_real_data) ) then
+      if ((.not. associated(detrain_down, empty_real_data) ) .or.              &
+          (.not. associated(frac_detrain_down, empty_real_data) )) then
         allocate(det_down(row_length,rows,nlayers))
         comorph_diags % dndraft % plume_model % det_mass_d                     &
                                 % request % x_y_z = .true.
