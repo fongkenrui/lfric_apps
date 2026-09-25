@@ -2736,7 +2736,7 @@ contains
             write(10, *) "ent_up(i,1,k) = ", ent_up(i,1,k)
             write(10, *) "up_flux_half(i,1,k) = ", up_flux_half(i,1,k)
             write(10, *) "frac_entrain_up(map_wth(1,i)+k) = ", frac_entrain_up(map_wth(1,i) + k)
-            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
+            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_def))
           end do
         end do
         deallocate(ent_up)
@@ -2744,7 +2744,7 @@ contains
       if (.not. associated(frac_entrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_um))
+            frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_def))
           end do
         end do
         deallocate(ent_down)
@@ -2752,7 +2752,7 @@ contains
       if (.not. associated(frac_detrain_up, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
+            frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_def))
           end do
         end do
         deallocate(det_up)
@@ -2760,7 +2760,7 @@ contains
       if (.not. associated(frac_detrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_um))
+            frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_def))
           end do
         end do
         deallocate(det_down)
