@@ -2731,12 +2731,7 @@ contains
             ! entrain_up = M_up (lower level) * frac_ent
             ! Divide further by delta Z to get frac entrain rate
             ! We keep to dimensionless frac ent for now
-            write(10, *) "i=", i, "k=", k
-            flush(10)
-            write(10, *) "ent_up(i,1,k) = ", ent_up(i,1,k)
-            write(10, *) "up_flux_half(i,1,k) = ", up_flux_half(i,1,k)
-            write(10, *) "frac_entrain_up(map_wth(1,i)+k) = ", frac_entrain_up(map_wth(1,i) + k)
-            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_def))
+            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
           end do
         end do
         deallocate(ent_up)
