@@ -2732,14 +2732,12 @@ contains
             ! Divide further by delta Z to get frac entrain rate
             ! We keep to dimensionless frac ent for now
 
-            !if (abs(ent_up(i,1,k)) > up_flux_half(i,1,k) ) then 
+            if (up_flux_half(i,1,k) < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
-              !frac_entrain_up(map_wth(1,i) + k) = 0.0_r_def
-            !end if
+              frac_entrain_up(map_wth(1,i) + k) = 0.0_r_def
+            end if
             
-            ! Estimate pre-detrainment mass-flux for the denominator
-            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k) &
-                                                + det_up(i,1,k), tiny(1.0_r_um))
+            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
             ! Write output
             write(10, *) "ent_up=", ent_up(i,1,k)
             write(10, *) "det_up=", det_up(i,1,k)
@@ -2752,24 +2750,23 @@ contains
       if (.not. associated(frac_entrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / max(down_flux_half(i,1,k) &
-                                                  + det_down(i,1,k), tiny(1.0_r_um))
+            frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / max(down_flux_half(i,1,k), tiny(1.0_r_um))
           end do
         end do
       end if
       if (.not. associated(frac_detrain_up, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / max(up_flux_half(i,1,k) &
-                                                + det_up(i,1,k), tiny(1.0_r_um))
+            frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / max(up_flux_half(i,1,k+1) &
+                                                - det_up(i,1,k), tiny(1.0_r_um))
           end do
         end do
       end if
       if (.not. associated(frac_detrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / max(down_flux_half(i,1,k) &
-                                                  + det_down(i,1,k), tiny(1.0_r_um))
+            frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / max(down_flux_half(i,1,k+1) &
+                                                  - det_down(i,1,k), tiny(1.0_r_um))
           end do
         end do
       end if
