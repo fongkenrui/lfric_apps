@@ -2731,8 +2731,11 @@ contains
             ! entrain_up = M_up (lower level) * frac_ent
             ! Divide further by delta Z to get frac entrain rate
             ! We keep to dimensionless frac ent for now
-            
-            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max(up_flux_half(i,1,k), tiny(1.0_r_um))
+            interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
+                 / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
+            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / &
+                                      max( (1.0_r_def-interp)*up_flux_half(i,1,k) &
+                                      + interp*up_flux_half(i,1,k+1), tiny(1.0_r_um))
 
             ! if (up_flux_half(i,1,k) < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
