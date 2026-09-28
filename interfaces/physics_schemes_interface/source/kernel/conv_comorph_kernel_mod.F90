@@ -2739,6 +2739,7 @@ contains
               frac_entrain_up(map_wth(1,i) + k) = 0.0_r_def
             end if
             ! Write output
+            write(10, *) "i = ", i, "k = ", k
             write(10, *) "ent_up=", ent_up(i,1,k)
             write(10, *) "det_up=", det_up(i,1,k)
             write(10, *) "up_flux_half=", up_flux_half(i,1,k)
