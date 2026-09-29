@@ -441,6 +441,10 @@ contains
     call init_coarse_field(detrain_up_coarse, conv_mesh, WTHETA)
     call init_coarse_field(detrain_down_coarse, conv_mesh, WTHETA)
     call init_coarse_field(parcel_radius_coarse, conv_mesh, WTHETA)
+    call init_coarse_field(frac_entrain_up_coarse, conv_mesh, WTHETA)
+    call init_coarse_field(frac_entrain_down_coarse, conv_mesh, WTHETA)
+    call init_coarse_field(frac_detrain_up_coarse, conv_mesh, WTHETA)
+    call init_coarse_field(frac_detrain_down_coarse, conv_mesh, WTHETA)
 
     ! conv_half_level_face_grid (3D, W3) real
     call init_coarse_field(massflux_up_half_coarse, conv_mesh, W3)
@@ -603,6 +607,10 @@ contains
     call entrain_down_coarse%write_field('convection__entrain_down_coarse')
     call detrain_up_coarse%write_field('convection__detrain_up_coarse')
     call detrain_down_coarse%write_field('convection__detrain_down_coarse')
+    call frac_entrain_up_coarse%write_field('convection__frac_entrain_up_coarse')
+    call frac_entrain_down_coarse%write_field('convection__frac_entrain_down_coarse')
+    call frac_detrain_up_coarse%write_field('convection__frac_detrain_up_coarse')
+    call frac_detrain_down_coarse%write_field('convection__frac_detrain_down_coarse')
     call massflux_up_half_coarse%write_field('convection__massflux_up_half_coarse')
     if ( subroutine_timers ) call timer("diagnostic_mode_comorph_diags")
 
