@@ -2799,6 +2799,7 @@ contains
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
               ! This usually happens when there is genesis and complete detrainment within a single level
               frac_detrain_up(map_wth(1,i) + k) = 0.0_r_def
+            end if
           end do
         end do
       end if
