@@ -2737,10 +2737,11 @@ contains
                                       max( (1.0_r_def-interp)*up_flux_half(i,1,k) &
                                       + interp*up_flux_half(i,1,k+1), tiny(1.0_r_um))
 
-            ! if (up_flux_half(i,1,k) < tiny(1.0_r_um)) then 
+            if ( (up_flux_half(i,1,k) + up_flux_half(i,1,k+1))  < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
-              ! frac_entrain_up(map_wth(1,i) + k) = 0.0_r_def
-            ! end if
+              ! This usually happens when there is genesis and complete detrainment within a single level
+              frac_entrain_up(map_wth(1,i) + k) = 0.0_r_def
+            end if
             ! Write output
             write(10, *) "i = ", i, "k = ", k
             write(10, *) "ent_up=", ent_up(i,1,k)
