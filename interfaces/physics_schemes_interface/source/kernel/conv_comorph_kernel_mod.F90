@@ -2797,10 +2797,10 @@ contains
         end do
       end if
       ! Deallocate ent/det arrays
-      if allocated(ent_up) deallocate(ent_up)
-      if allocated(ent_down) deallocate(ent_down)
-      if allocated(det_up) deallocate(det_up)
-      if allocated(det_down) deallocate(det_down)
+      if ( allocated(ent_up) ) deallocate(ent_up)
+      if ( allocated(ent_down) ) deallocate(ent_down)
+      if ( allocated(det_up) ) deallocate(det_up)
+      if ( allocated(det_down) ) deallocate(det_down)
     end if ! outer_iterations
 
     if (l_mom) then
