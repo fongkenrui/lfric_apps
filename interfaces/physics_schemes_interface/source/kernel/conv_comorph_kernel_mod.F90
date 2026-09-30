@@ -2731,11 +2731,15 @@ contains
             ! entrain_up = M_up (lower level) * frac_ent
             ! Divide further by delta Z to get frac entrain rate
             ! We keep to dimensionless frac ent for now
-            interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
-                 / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
-            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / &
-                                      max( (1.0_r_def-interp)*up_flux_half(i,1,k) &
-                                      + interp*up_flux_half(i,1,k+1), tiny(1.0_r_um))
+            !interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
+            !     / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
+            !frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / &
+            !                          max( (1.0_r_def-interp)*up_flux_half(i,1,k) &
+            !                          + interp*up_flux_half(i,1,k+1), tiny(1.0_r_um))
+
+            ! Alternate scheme based on incoming mass flux + genesis
+            frac_entrain_up(map_wth(1,i) + k) = ent_up(i,1,k) / max( up_flux_half(i,1,k) &
+                                              + gen_up_flux_half(i,1,k), tiny(1.0_r_um))
 
             if ( (up_flux_half(i,1,k) + up_flux_half(i,1,k+1))  < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
@@ -2748,11 +2752,15 @@ contains
       if (.not. associated(frac_entrain_down, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
-                 / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
-            frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / &
-                                      max( (1.0_r_def-interp)*down_flux_half(i,1,k) &
-                                      + interp*down_flux_half(i,1,k+1), tiny(1.0_r_um))
+            !interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
+            !     / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
+            !frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / &
+            !                          max( (1.0_r_def-interp)*down_flux_half(i,1,k) &
+            !                          + interp*down_flux_half(i,1,k+1), tiny(1.0_r_um))
+            ! gen_up_flux_half actually lives on full-levels not half; there's been a mistake in
+            ! the diagnostic wiring that needs to be fixed. Either way there's no need to do an offset.
+            frac_entrain_down(map_wth(1,i) + k) = ent_down(i,1,k) / max( down_flux_half(i,1,k+1) &
+                                              + gen_down_flux_half(i,1,k), tiny(1.0_r_um))
 
             if ( (down_flux_half(i,1,k) + down_flux_half(i,1,k+1))  < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
@@ -2765,11 +2773,15 @@ contains
       if (.not. associated(frac_detrain_up, empty_real_data) ) then
         do k = 1, n_conv_levels
           do i = 1, row_length
-            interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
-                 / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
-            frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / &
-                                      max( (1.0_r_def-interp)*up_flux_half(i,1,k) &
-                                      + interp*up_flux_half(i,1,k+1), tiny(1.0_r_um))
+            !interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
+            !     / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
+            !frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / &
+            !                          max( (1.0_r_def-interp)*up_flux_half(i,1,k) &
+            !                          + interp*up_flux_half(i,1,k+1), tiny(1.0_r_um))
+            ! We add ent_up to denominator since det calculations always take into account
+            ! dry mass entrained at each half-step.
+            frac_detrain_up(map_wth(1,i) + k) = det_up(i,1,k) / max( up_flux_half(i,1,k) &
+                                              + gen_up_flux_half(i,1,k) + ent_up(i,1,k), tiny(1.0_r_um))
             
             if ( (up_flux_half(i,1,k) + up_flux_half(i,1,k+1))  < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
@@ -2784,9 +2796,11 @@ contains
           do i = 1, row_length
             interp = ( z_theta(i,1,k) - z_rho(i,1,k) )                             &
                  / ( z_rho(i,1,k+1) - z_rho(i,1,k) )
-            frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / &
-                                      max( (1.0_r_def-interp)*down_flux_half(i,1,k) &
-                                      + interp*down_flux_half(i,1,k+1), tiny(1.0_r_um))
+            !frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / &
+            !                          max( (1.0_r_def-interp)*down_flux_half(i,1,k) &
+            !                          + interp*down_flux_half(i,1,k+1), tiny(1.0_r_um))
+            frac_detrain_down(map_wth(1,i) + k) = det_down(i,1,k) / max( down_flux_half(i,1,k+1) &
+                                              + gen_down_flux_half(i,1,k) + ent_down(i,1,k), tiny(1.0_r_um))
             
             if ( (down_flux_half(i,1,k) + down_flux_half(i,1,k+1))  < tiny(1.0_r_um)) then 
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
