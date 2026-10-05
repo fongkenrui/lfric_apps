@@ -2745,6 +2745,15 @@ contains
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
               ! This usually happens when there is genesis and complete detrainment within a single level
               frac_entrain_up(map_wth(1,i) + k) = 0.0_r_def
+
+            ! Restore print statements
+              write(10, *) 'i, k =', i, k
+              write(10, *) 'frac_entrain_up = ', frac_entrain_up(map_wth(1,i) + k)
+              write(10, *) 'ent_up(i,1,k) =', ent_up(i,1,k)
+              write(10, *) 'up_flux_half(i,1,k) = ', up_flux_half(i,1,k)
+              write(10, *) 'up_flux_half(i,1,k+1) = ', up_flux_half(i,1,k+1)
+              write(10, *) 'gen_up_flux_half(i,1,k) = ', gen_up_flux_half(i,1,k)
+              flush(10)
             end if
           end do
         end do
