@@ -7,6 +7,7 @@
 !>
 module conv_comorph_kernel_mod
 
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   use argument_mod,            only : arg_type,                  &
                                       GH_FIELD, GH_SCALAR,       &
                                       GH_INTEGER, GH_REAL,       &
@@ -15,7 +16,7 @@ module conv_comorph_kernel_mod
                                       ANY_DISCONTINUOUS_SPACE_1, &
                                       ANY_DISCONTINUOUS_SPACE_2, &
                                       ANY_DISCONTINUOUS_SPACE_3
-  use constants_mod,           only : i_def, i_um, r_def, r_um
+  use constants_mod,           only : i_def, i_um, r_def, r_um, rmdi
   use empty_data_mod,          only : empty_real_data
   use fs_continuity_mod,       only : W3, Wtheta
   use kernel_mod,              only : kernel_type
@@ -2756,7 +2757,11 @@ contains
             write(10, *) 'gen_up_flux_half(i,1,k) = ', gen_up_flux_half(i,1,k)
             flush(10)
 
-            
+            ! Guard against infs
+            if (.not. ieee_is_finite(frac_entrain_up(map_wth(1,i) + k))) then
+              frac_entrain_up(map_wth(1,i) + k) = rmdi
+            end if
+
           end do
         end do
       end if
@@ -2777,6 +2782,11 @@ contains
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
               ! This usually happens when there is genesis and complete detrainment within a single level
               frac_entrain_down(map_wth(1,i) + k) = 0.0_r_def
+            end if
+
+            ! Guard against infs
+            if (.not. ieee_is_finite(frac_entrain_down(map_wth(1,i) + k))) then
+              frac_entrain_down(map_wth(1,i) + k) = rmdi
             end if
           end do
         end do
@@ -2799,6 +2809,11 @@ contains
               ! This usually happens when there is genesis and complete detrainment within a single level
               frac_detrain_up(map_wth(1,i) + k) = 0.0_r_def
             end if
+
+            ! Guard against infs
+            if (.not. ieee_is_finite(frac_detrain_up(map_wth(1,i) + k))) then
+              frac_detrain_up(map_wth(1,i) + k) = rmdi
+            end if
           end do
         end do
       end if
@@ -2817,6 +2832,11 @@ contains
               ! Guard against pathological cases where up_flux_half is zero but ent_up is nonzero...
               ! This usually happens when there is genesis and complete detrainment within a single level
               frac_detrain_down(map_wth(1,i) + k) = 0.0_r_def
+            end if
+
+            ! Guard against infs
+            if (.not. ieee_is_finite(frac_detrain_down(map_wth(1,i) + k))) then
+              frac_detrain_down(map_wth(1,i) + k) = rmdi
             end if
           end do
         end do
