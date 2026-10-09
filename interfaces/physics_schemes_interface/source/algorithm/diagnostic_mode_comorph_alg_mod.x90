@@ -997,12 +997,12 @@ contains
     call map_scalar_field(cape_diluted_coarse, cape_diluted)
     call map_scalar_field(pressure_inc_env_coarse, pressure_inc_env)
     ! Cloud fields
-    call restrict_scalar_min(cf_fro_coarse, cf_fro)
-    call restrict_scalar_min(cf_liq_coarse, cf_liq)
-    call restrict_scalar_min(cf_bulk_coarse, cf_bulk)
-    call restrict_scalar_min(cf_liq_n_coarse, cf_liq_n)
-    call restrict_scalar_min(cf_fro_n_coarse, cf_fro_n)
-    call restrict_scalar_min(cf_bulk_n_coarse, cf_bulk_n)
+    call map_scalar_field(cf_fro_coarse, cf_fro)
+    call map_scalar_field(cf_liq_coarse, cf_liq)
+    call map_scalar_field(cf_bulk_coarse, cf_bulk)
+    call map_scalar_field(cf_liq_n_coarse, cf_liq_n)
+    call map_scalar_field(cf_fro_n_coarse, cf_fro_n)
+    call map_scalar_field(cf_bulk_n_coarse, cf_bulk_n)
     ! Chemistry & Aerosol fields
     call map_scalar_field(o3p_coarse, o3p)
     call map_scalar_field(o1d_coarse, o1d)
@@ -1116,8 +1116,8 @@ contains
    ! Microphysics 
     call map_scalar_field(tnuc_coarse, tnuc)
     call map_scalar_field(precfrac_coarse, precfrac)
-    call map_scalar_field(ls_rain_coarse, ls_rain)
-    call map_scalar_field(ls_snow_coarse, ls_snow)
+    call restrict_scalar_min(ls_rain_coarse, ls_rain)
+    call restrict_scalar_min(ls_snow_coarse, ls_snow)
     ! This is a 2D column integral of a mixing ratio
     ! Should be interpreted as a scalar field?
     call map_scalar_field(ls_qw_sink_coarse, ls_qw_sink)
