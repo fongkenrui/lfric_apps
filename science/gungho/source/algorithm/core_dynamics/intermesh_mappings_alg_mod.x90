@@ -187,7 +187,7 @@ contains
     type(field_type),           intent(in)    :: source_field
     type(field_type),           intent(inout) :: target_field
     type(field_type),           intent(in)    :: source_delta
-    type(fled_type),            intent(in)    :: target_delta
+    type(field_type),           intent(in)    :: target_delta
 
     call invoke( name='inv_precipramp', &
             inv_precipramp_kernel_type(target_field, source_field, target_delta, source_delta) )

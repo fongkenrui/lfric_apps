@@ -108,7 +108,7 @@ contains
     real(kind=r_single), intent(in)    :: delta_fine(undf_fine)
 
     integer(kind=i_def) :: df, k, x_idx, y_idx, top_df
-    real(kind=r_double) :: coarse_value(nlayers-1+ndf), denom
+    real(kind=r_single) :: coarse_value(nlayers-1+ndf), denom
     ! Hardcoded variables needed for inverting precipramp scaling
     real(kind=r_single) :: par_radius_knob, par_radius_knob_max, par_radius_ppn_max
     real(kind=r_single) :: ppnrate, dxfac
@@ -186,8 +186,8 @@ contains
     integer(kind=i_def) :: df, k, x_idx, y_idx, top_df
     real(kind=r_double) :: coarse_value(nlayers-1+ndf), denom
     ! Hardcoded variables needed for inverting precipramp scaling
-    real(kind=r_single) :: par_radius_knob, par_radius_knob_max, par_radius_ppn_max
-    real(kind=r_single) :: ppnrate, dxfac
+    real(kind=r_double) :: par_radius_knob, par_radius_knob_max, par_radius_ppn_max
+    real(kind=r_double) :: ppnrate, dxfac
 
     ! Assume lowest order W3 or Wtheta space
     df = 1
