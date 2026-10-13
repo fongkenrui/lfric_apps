@@ -70,7 +70,8 @@ contains
                                     map_mr_bundle_intermesh, &
                                     map_mr_intermesh,        &
                                     restrict_scalar_max,     &
-                                    restrict_scalar_min
+                                    restrict_scalar_min,     &
+                                    inv_precipramp
     use physics_mappings_alg_mod,  only: map_physics_scalars
 
     implicit none
@@ -93,6 +94,7 @@ contains
     ! Temporary fields unpacked fields from collections
     type( field_type ), pointer :: exner_in_wth => null()
     type( field_type ), pointer :: delta => null()
+    type( field_type ), pointer :: delta_fine => null()
     type( field_type ), pointer :: rho_in_wth => null()
     type( field_type ), pointer :: wetrho_in_wth => null()
     type( field_type ), pointer :: wetrho_in_w3 => null()
@@ -471,7 +473,7 @@ contains
     type( field_type ) :: gen_massflux_up_coarse, gen_massflux_down_coarse
     type( field_type ) :: parcel_radius_coarse
 
-    type( mesh_type ), pointer  :: conv_mesh
+    type( mesh_type ), pointer  :: conv_mesh, mesh
     integer(i_def) :: ncells
 
     ! Loop variable
@@ -497,7 +499,11 @@ contains
       return
     end if
     
+    ! This is the coarse-mesh delta
     delta => get_delta_at_wtheta( conv_mesh%get_id() )
+    ! Get the equivalent fine-mesh delta
+    mesh  => rho%get_mesh()
+    delta_fine => get_delta_at_wtheta( mesh%get_id() )
 
     write(log_scratch_space,*) "conv_mesh_id = ", conv_mesh%get_id()
     call log_event( log_scratch_space, LOG_LEVEL_INFO )
@@ -1116,8 +1122,8 @@ contains
    ! Microphysics 
     call map_scalar_field(tnuc_coarse, tnuc)
     call map_scalar_field(precfrac_coarse, precfrac)
-    call restrict_scalar_min(ls_rain_coarse, ls_rain)
-    call restrict_scalar_min(ls_snow_coarse, ls_snow)
+    call inv_precipramp(ls_rain_coarse, ls_rain, delta, delta_fine)
+    call inv_precipramp(ls_snow_coarse, ls_snow, delta, delta_fine)
     ! This is a 2D column integral of a mixing ratio
     ! Should be interpreted as a scalar field?
     call map_scalar_field(ls_qw_sink_coarse, ls_qw_sink)

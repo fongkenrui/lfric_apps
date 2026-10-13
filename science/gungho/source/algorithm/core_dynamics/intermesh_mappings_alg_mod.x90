@@ -65,6 +65,7 @@ module intermesh_mappings_alg_mod
   public  :: map_mr_intermesh          ! Public routine for mapping single mixing ratio fields
   public  :: restrict_scalar_max       ! Public routine for max mapping
   public  :: restrict_scalar_min       ! Public routine for min mapping
+  public  :: inv_precipramp            ! Public routine for inv_precipramp hack job
 contains
 
   !> @brief Converts rho field to the shifted mesh
@@ -170,6 +171,28 @@ contains
             restrict_scalar_min_kernel_type(target_field, source_field) )
 
   end subroutine restrict_scalar_min
+
+  !> @brief Bespoke restriction of a W3/Wtheta field
+  !> @param[in,out] target_field  Target field, on a coarse mesh
+  !> @param[in]     source_field  Source field, on a fine mesh
+  !> @param[in,out] target_field  Target delta, on a coarse mesh
+  !> @param[in]     source_field  Source delta, on a fine mesh
+  subroutine inv_precipramp( target_field, source_field, target_delta, source_delta)
+
+    use sci_inv_precipramp_kernel_mod, &
+                                  only: inv_precipramp_kernel_type
+
+    implicit none
+
+    type(field_type),           intent(in)    :: source_field
+    type(field_type),           intent(inout) :: target_field
+    type(field_type),           intent(in)    :: source_delta
+    type(fled_type),            intent(in)    :: target_delta
+
+    call invoke( name='inv_precipramp', &
+            inv_precipramp_kernel_type(target_field, source_field, target_delta, source_delta) )
+
+  end subroutine inv_precipramp
 
   !> @brief Non-conservative restriction of a W3/Wtheta multidata field
   !> @param[in,out] target_field  Target field, on a coarse mesh
