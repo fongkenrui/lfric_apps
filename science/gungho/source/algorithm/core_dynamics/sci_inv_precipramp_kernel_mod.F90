@@ -219,7 +219,7 @@ contains
     ! Copy over values into coarse field and invert it back to ppnrate
     do k = 0, top_df
       dxfac = delta_coarse(map_coarse(df) + k) / 50.0e3_r_double
-      coarse_field(map_coarse(df) + k) = ((1.0_r_double/coarse_value(k+1)) - 1.0_r_double) / &
+      coarse_field(map_coarse(df) + k) = par_radius_ppn_max * ((1.0_r_double/coarse_value(k+1)) - 1.0_r_double) / &
                                          (((par_radius_knob_max/par_radius_knob) - 1.0_r_double) * dxfac)
     end do
 
