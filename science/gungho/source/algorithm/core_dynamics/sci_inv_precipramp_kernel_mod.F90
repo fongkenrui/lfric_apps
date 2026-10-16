@@ -133,10 +133,12 @@ contains
           !  fine_field(map_fine(df,cell_map(x_idx,y_idx))+k))
           dxfac = delta_fine(map_fine(df,cell_map(x_idx,y_idx))+k) / 50.0e3_r_single
           ! dxfac = 1.0_r_single
+          ! Min function has the effect of truncating the distribution so its now non-invertible
+          ! This shouldn't matter much for coarse-field ppnrate since its only used for ent scaling
           ppnrate = dxfac * fine_field(map_fine(df,cell_map(x_idx,y_idx))+k)
           coarse_value(k+1) = coarse_value(k+1) + (1.0_r_single/(1.0_r_single + &
                               ((par_radius_knob_max/par_radius_knob) - 1.0_r_single) * &
-                              (ppnrate / par_radius_ppn_max))) * denom
+                              min(1.0, ppnrate / par_radius_ppn_max))) * denom
         end do
       end do
     end do
@@ -214,7 +216,7 @@ contains
           ppnrate = dxfac * fine_field(map_fine(df,cell_map(x_idx,y_idx))+k)
           coarse_value(k+1) = coarse_value(k+1) + (1.0_r_double/(1.0_r_double + &
                               ((par_radius_knob_max/par_radius_knob) - 1.0_r_double) * &
-                              (ppnrate / par_radius_ppn_max))) * denom
+                              min(1.0, ppnrate / par_radius_ppn_max))) * denom
         end do
       end do
     end do
