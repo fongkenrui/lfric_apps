@@ -131,8 +131,8 @@ contains
         do x_idx = 1, ncell_fine_per_coarse_x
           !coarse_value(k+1) =  min(coarse_value(k+1), &
           !  fine_field(map_fine(df,cell_map(x_idx,y_idx))+k))
-          ! dxfac = delta_fine(map_fine(df,cell_map(x_idx,y_idx))+k) / 50.0e3_r_single
-          dxfac = 1.0_r_single
+          dxfac = delta_fine(map_fine(df,cell_map(x_idx,y_idx))+k) / 50.0e3_r_single
+          ! dxfac = 1.0_r_single
           ppnrate = dxfac * fine_field(map_fine(df,cell_map(x_idx,y_idx))+k)
           coarse_value(k+1) = coarse_value(k+1) + (1.0_r_single/(1.0_r_single + &
                               ((par_radius_knob_max/par_radius_knob) - 1.0_r_single) * &
@@ -143,8 +143,8 @@ contains
 
     ! Copy over values into coarse field and invert it back to ppnrate
     do k = 0, top_df
-      ! dxfac = delta_coarse(map_coarse(df) + k) / 50.0e3_r_single
-      dxfac = 1.0_r_single
+      dxfac = delta_coarse(map_coarse(df) + k) / 50.0e3_r_single
+      ! dxfac = 1.0_r_single
       coarse_field(map_coarse(df) + k) = par_radius_ppn_max * ((1.0_r_single/coarse_value(k+1)) - 1.0_r_single) / &
                                          (((par_radius_knob_max/par_radius_knob) - 1.0_r_single) * dxfac)
     end do
@@ -209,8 +209,8 @@ contains
         do x_idx = 1, ncell_fine_per_coarse_x
           !coarse_value(k+1) =  min(coarse_value(k+1), &
           !  fine_field(map_fine(df,cell_map(x_idx,y_idx))+k))
-          ! dxfac = delta_fine(map_fine(df,cell_map(x_idx,y_idx))+k) / 50.0e3_r_double
-          dxfac = 1.0_r_double
+          dxfac = delta_fine(map_fine(df,cell_map(x_idx,y_idx))+k) / 50.0e3_r_double
+          ! dxfac = 1.0_r_double
           ppnrate = dxfac * fine_field(map_fine(df,cell_map(x_idx,y_idx))+k)
           coarse_value(k+1) = coarse_value(k+1) + (1.0_r_double/(1.0_r_double + &
                               ((par_radius_knob_max/par_radius_knob) - 1.0_r_double) * &
@@ -221,8 +221,8 @@ contains
 
     ! Copy over values into coarse field and invert it back to ppnrate
     do k = 0, top_df
-      ! dxfac = delta_coarse(map_coarse(df) + k) / 50.0e3_r_double
-      dxfac = 1.0_r_double
+      dxfac = delta_coarse(map_coarse(df) + k) / 50.0e3_r_double
+      ! dxfac = 1.0_r_double
       coarse_field(map_coarse(df) + k) = par_radius_ppn_max * ((1.0_r_double/coarse_value(k+1)) - 1.0_r_double) / &
                                          (((par_radius_knob_max/par_radius_knob) - 1.0_r_double) * dxfac)
     end do
